@@ -1,0 +1,38 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <RoslynatorVersion>4.15.0</RoslynatorVersion>
+    <TaiwuModKitReferencesVersion>0.84.32-test</TaiwuModKitReferencesVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion
+      Include="Roslynator.Analyzers"
+      Version="$(RoslynatorVersion)"
+    />
+    <PackageVersion
+      Include="Roslynator.Formatting.Analyzers"
+      Version="$(RoslynatorVersion)"
+    />
+    <PackageVersion
+      Include="Taiwu.ModKit.References.Plugin"
+      Version="$(TaiwuModKitReferencesVersion)"
+    />
+    <PackageVersion
+      Include="Taiwu.ModKit.References.Shared"
+      Version="$(TaiwuModKitReferencesVersion)"
+    />
+    <PackageVersion
+      Include="Taiwu.ModKit.References.Unity"
+      Version="$(TaiwuModKitReferencesVersion)"
+    />
+    <PackageVersion
+      Include="Taiwu.ModKit.References.Frontend"
+      Version="$(TaiwuModKitReferencesVersion)"
+    />
+    <PackageVersion
+      Include="Taiwu.ModKit.References.Backend"
+      Version="$(TaiwuModKitReferencesVersion)"
+    />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,33 @@
+<Project DefaultTargets="Build">
+  <PropertyGroup>
+    <DprintCommand>mise exec -- dprint</DprintCommand>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ModProjects Include="mods/**/*.csproj" />
+  </ItemGroup>
+
+  <Target Name="InstallTools">
+    <Exec Command="mise install" />
+  </Target>
+
+  <Target Name="Restore" Condition="'@(ModProjects)' != ''">
+    <MSBuild Projects="@(ModProjects)" Targets="Restore" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="Restore">
+    <MSBuild
+      Projects="@(ModProjects)"
+      Targets="Build"
+      Condition="'@(ModProjects)' != ''"
+    />
+  </Target>
+
+  <Target Name="Format">
+    <Exec Command="$(DprintCommand) fmt" />
+  </Target>
+
+  <Target Name="Check">
+    <Exec Command="$(DprintCommand) check" />
+  </Target>
+</Project>
