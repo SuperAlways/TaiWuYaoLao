@@ -1,0 +1,35 @@
+<Project>
+  <PropertyGroup
+    Condition="'$(UsePublicizer)' == 'true' And '$(TaiwuModSide)' == 'Frontend'"
+  >
+    <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>
+  </PropertyGroup>
+
+  <PropertyGroup
+    Condition="'$(UsePublicizer)' == 'true' And '$(TaiwuModSide)' == 'Backend'"
+  >
+    <PublicizerRuntimeStrategies>IgnoresAccessChecksTo</PublicizerRuntimeStrategies>
+  </PropertyGroup>
+
+  <Target
+    Name="DeduplicatePublicizerRuntimeSupport"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="ResolveReferences"
+    Condition="'$(UsePublicizer)' == 'true' And '$(TaiwuModSide)' == 'Backend'"
+  >
+    <ItemGroup>
+      <_PublicizerRuntimeSupportProvider
+        Include="@(ReferencePath)"
+        Condition="'%(ReferencePath.Filename)' == 'MonoMod.Utils'"
+      />
+      <_PublicizerRuntimeSupportSource
+        Include="@(Compile)"
+        Condition="'%(Compile.NuGetPackageId)' == 'Krafs.Publicizer' And '%(Compile.Filename)' == 'IgnoresAccessChecksToAttribute'"
+      />
+      <Compile
+        Remove="@(_PublicizerRuntimeSupportSource)"
+        Condition="'@(_PublicizerRuntimeSupportProvider)' != ''"
+      />
+    </ItemGroup>
+  </Target>
+</Project>

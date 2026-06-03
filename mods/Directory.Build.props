@@ -1,25 +1,66 @@
-<Project>
+<Project InitialTargets="ValidateTaiwuModSide">
+  <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" />
+  <Import
+    Project="$(MSBuildProjectDirectory)/Taiwu.Mod.props"
+    Condition="Exists('$(MSBuildProjectDirectory)/Taiwu.Mod.props')"
+  />
+
   <PropertyGroup>
-    <TargetFramework Condition="'$(TargetFramework)' == ''"
+    <TargetFramework
+      Condition="'$(TargetFramework)' == '' And '$(TaiwuModSide)' == 'Frontend'"
     >netstandard2.1</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest</AnalysisLevel>
-    <AnalysisMode>All</AnalysisMode>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TargetFramework
+      Condition="'$(TargetFramework)' == '' And '$(TaiwuModSide)' == 'Backend'"
+    >net8.0</TargetFramework>
+    <AssemblyName Condition="'$(AssemblyName)' == ''"
+    >$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace Condition="'$(RootNamespace)' == ''"
+    >$(MSBuildProjectName)</RootNamespace>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <UsePublicizer
+      Condition="'$(UsePublicizer)' == '' And ('$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend')"
+    >true</UsePublicizer>
+    <InternalizeRuntimeDependencies
+      Condition="'$(InternalizeRuntimeDependencies)' == ''"
+    >true</InternalizeRuntimeDependencies>
+    <RenameInternalizedDependencies
+      Condition="'$(RenameInternalizedDependencies)' == ''"
+    >true</RenameInternalizedDependencies>
+    <AllowDuplicateInternalizedResources
+      Condition="'$(AllowDuplicateInternalizedResources)' == ''"
+    >false</AllowDuplicateInternalizedResources>
+    <ILRepackTargetsFile Condition="'$(ILRepackTargetsFile)' == ''"
+    >$(MSBuildThisFileDirectory)Taiwu.Mod.ILRepack.targets</ILRepackTargetsFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Roslynator.Analyzers" PrivateAssets="all" />
+  <Target Name="ValidateTaiwuModSide">
+    <Error
+      Condition="'$(TaiwuModSide)' == ''"
+      Text="TaiwuModSide must be Frontend or Backend. Set it in Taiwu.Mod.props."
+    />
+    <Error
+      Condition="'$(TaiwuModSide)' != 'Frontend' And '$(TaiwuModSide)' != 'Backend'"
+      Text="Unsupported TaiwuModSide '$(TaiwuModSide)'. Use Frontend or Backend."
+    />
+  </Target>
+
+  <ItemGroup
+    Condition="'$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend'"
+  >
     <PackageReference
-      Include="Roslynator.Formatting.Analyzers"
+      Include="ILRepack.Lib.MSBuild.Task"
+      PrivateAssets="all"
+      ExcludeAssets="runtime"
+      Condition="'$(InternalizeRuntimeDependencies)' != 'false'"
+    />
+    <PackageReference
+      Include="Krafs.Publicizer"
+      PrivateAssets="all"
+      ExcludeAssets="runtime"
+      Condition="'$(UsePublicizer)' == 'true'"
+    />
+    <PackageReference
+      Include="Taiwu.ModKit.References.Plugin"
       PrivateAssets="all"
     />
   </ItemGroup>

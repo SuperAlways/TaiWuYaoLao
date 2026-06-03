@@ -1,34 +1,110 @@
 # Taiwu.Mods
 
-太吾绘卷模组开发仓库。
+太吾绘卷 mod monorepo 模板仓库。
 
-当前仓库只初始化 monorepo 骨架，主体目录为 `mods/`。仓库还没有具体 mod 项目。
+从 GitHub 模板创建自己的仓库后，在 `mods/` 下维护一个或多个 mod，在 `shared/`
+下维护可被多个 mod 引用的内部共享项目。仓库命令行工具是 `tools/Taiwu.Mods.Cli/`：
+新增 mod、内部共享项目、取消解决方案注册和打包可部署目录都通过它执行。
 
-## 当前内容
+## 开始
 
-- `mods/`：后续 mod 项目的放置目录，目前只有共享构建配置。
-- `Taiwu.Mods.slnx`：解决方案入口，目前只保留 `mods/` 文件夹。
-- `Directory.Packages.props`：仓库级 NuGet 版本管理。
-- `repo.proj`：仓库维护入口。
-- `global.json`：.NET SDK 版本约束。
-- `mise.toml` / `dprint.json`：格式化工具配置。
-- `.env.example`：GitHub Packages token 模板。
+创建一个 mod：
 
-## 当前约定
+```powershell
+dotnet run --project tools/Taiwu.Mods.Cli -- create-mod --name MyMod
+```
 
-包版本以 `Directory.Packages.props` 为准。`mods/Directory.Build.props` 为 `mods/` 下的项目提供统一的 .NET 构建设置。
+`ModName` 必须是 C# 命名空间风格的标识符，例如 `MyMod` 或
+`MyCompany.MyMod`。创建后，生成器会复制 `templates/mod/`，替换模板变量，并把
+前后端项目加入 `Taiwu.Mods.slnx`。
 
-## 首次设置
+创建一个内部共享项目：
+
+```powershell
+dotnet run --project tools/Taiwu.Mods.Cli -- create-shared --name MyCompany.Taiwu.Shared
+```
+
+共享项目默认使用 `Shared` 端侧，适合纯共享抽象和通用实现。如果项目面向前端或后端，可以显式
+指定端侧来选择默认目标框架：
+
+```powershell
+dotnet run --project tools/Taiwu.Mods.Cli -- create-shared --name MyCompany.Taiwu.FrontendSupport --side Frontend
+dotnet run --project tools/Taiwu.Mods.Cli -- create-shared --name MyCompany.Taiwu.BackendSupport --side Backend
+```
+
+## 项目命令
+
+恢复解决方案依赖：
+
+```powershell
+dotnet restore Taiwu.Mods.slnx
+```
+
+刚从模板创建且尚未注册任何 mod 时，这个命令只恢复 `tools/Taiwu.Mods.Cli/`，不需要 GitHub
+token。如果解决方案里已有 mod 项目，恢复过程会下载 GitHub Packages 上的 `Taiwu.ModKit.*`
+游戏引用包；这时需要准备一个有 `read:packages` 权限的 GitHub classic personal access token，
+并在当前 PowerShell 会话中提供给 NuGet：
+
+```powershell
+$env:TAIWU_MODKIT_GITHUB_USER = "<GitHubUser>"
+$env:TAIWU_MODKIT_GITHUB_TOKEN = "<GitHubToken>"
+dotnet restore Taiwu.Mods.slnx
+```
+
+构建解决方案：
+
+```powershell
+dotnet build Taiwu.Mods.slnx
+```
+
+打包可部署目录：
+
+```powershell
+dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
+```
+
+`pack-mod` 默认使用 `Release` 构建前后端项目，并把 `Config.Lua` 和插件 DLL
+组装到 `artifacts/mods/MyMod/`。这个目录可直接替换游戏内对应 mod 目录。
+
+从解决方案取消注册某个 mod，但保留文件：
+
+```powershell
+dotnet run --project tools/Taiwu.Mods.Cli -- remove-mod --name MyMod
+```
+
+从解决方案取消注册某个内部共享项目，但保留文件：
+
+```powershell
+dotnet run --project tools/Taiwu.Mods.Cli -- remove-shared --name MyCompany.Taiwu.Shared
+```
+
+## 仓库维护
+
+检查和格式化仓库文件：
+
+```powershell
+dotnet msbuild repo.proj -t:Check
+dotnet msbuild repo.proj -t:Format
+```
+
+首次运行这些命令前执行：
 
 ```powershell
 mise trust
 dotnet msbuild repo.proj -t:InstallTools
 ```
 
-## 当前命令
+## 仓库结构
 
-```powershell
-dotnet build repo.proj
-dotnet msbuild repo.proj -t:Check
-dotnet msbuild repo.proj -t:Format
-```
+常用目录和文件如下。
+
+- `tools/Taiwu.Mods.Cli/`：创建 mod、内部共享项目、取消解决方案注册和打包可部署目录的命令行工具。
+- `mods/`：实际 mod 源码目录。前后端插件项目、Taiwu 引用、Publicizer 和依赖内部化约定见
+  `mods/README.md`。
+- `shared/`：内部共享项目目录。共享边界、目标框架和项目级配置入口见 `shared/README.md`。
+- `templates/mod/`、`templates/shared/`：命令行工具创建项目时使用的模板。
+- `repo.proj`：安装本地工具、检查和格式化命令。
+- `Taiwu.Mods.slnx`：解决方案入口，收录工具、已注册的 mod 项目和内部共享项目。
+- `Directory.Build.props`：仓库级编译、分析器和代码质量规则。
+- `Directory.Packages.props`：NuGet 包版本。
+- `NuGet.config`：NuGet 包源、包源映射，以及从环境变量读取 GitHub Packages 凭据的配置。

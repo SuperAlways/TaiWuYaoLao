@@ -1,4 +1,5 @@
 .env
 .vs/
+artifacts/
 bin/
 obj/

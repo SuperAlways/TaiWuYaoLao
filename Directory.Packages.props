@@ -2,10 +2,12 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <RoslynatorVersion>4.15.0</RoslynatorVersion>
-    <TaiwuModKitReferencesVersion>0.84.32-test</TaiwuModKitReferencesVersion>
+    <TaiwuModKitReferencesVersion>0.84.46-test</TaiwuModKitReferencesVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageVersion Include="ILRepack.Lib.MSBuild.Task" Version="2.0.45" />
+    <PackageVersion Include="Krafs.Publicizer" Version="2.3.0" />
     <PackageVersion
       Include="Roslynator.Analyzers"
       Version="$(RoslynatorVersion)"
@@ -14,6 +16,7 @@
       Include="Roslynator.Formatting.Analyzers"
       Version="$(RoslynatorVersion)"
     />
+    <PackageVersion Include="System.CommandLine" Version="2.0.8" />
     <PackageVersion
       Include="Taiwu.ModKit.References.Plugin"
       Version="$(TaiwuModKitReferencesVersion)"
