@@ -1,0 +1,105 @@
+name: Release Mod
+run-name: Release ${{ github.ref_name }}
+
+on:
+  push:
+    tags:
+      - "mods/*/v*"
+
+permissions:
+  contents: write
+  packages: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_NOLOGO: "true"
+
+jobs:
+  release:
+    name: Pack and Publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Parse release tag
+        id: release
+        run: |
+          tag="${GITHUB_REF_NAME}"
+
+          if [[ "$tag" != mods/*/v* ]]; then
+            echo "Release tag must use mods/<ModName>/v<Version>: $tag" >&2
+            exit 1
+          fi
+
+          mod_name="${tag#mods/}"
+          mod_name="${mod_name%%/*}"
+          mod_version="${tag#mods/${mod_name}/}"
+
+          if [[ -z "$mod_name" || -z "$mod_version" || "$mod_version" != v* ]]; then
+            echo "Release tag must use mods/<ModName>/v<Version>: $tag" >&2
+            exit 1
+          fi
+
+          echo "mod_name=$mod_name" >> "$GITHUB_OUTPUT"
+          echo "mod_version=$mod_version" >> "$GITHUB_OUTPUT"
+          echo "asset_name=${mod_name}-${mod_version}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore Taiwu.Mods.slnx --locked-mode
+        env:
+          TAIWU_MODKIT_GITHUB_TOKEN: ${{ secrets.TAIWU_MODKIT_GITHUB_TOKEN || github.token }}
+          TAIWU_MODKIT_GITHUB_USER: ${{ secrets.TAIWU_MODKIT_GITHUB_USER || github.actor }}
+
+      - name: Pack mod
+        run: >
+          dotnet run --no-restore --project tools/Taiwu.Mods.Cli --
+          pack-mod
+          --name "${{ steps.release.outputs.mod_name }}"
+          --configuration Release
+          --artifacts-root artifacts/mods
+
+      - name: Archive mod
+        id: archive
+        env:
+          ASSET_NAME: ${{ steps.release.outputs.asset_name }}
+          MOD_NAME: ${{ steps.release.outputs.mod_name }}
+        run: |
+          mkdir -p artifacts/releases
+
+          (
+            cd artifacts/mods
+            zip -r "../releases/${ASSET_NAME}" "${MOD_NAME}"
+          )
+
+          echo "asset_path=artifacts/releases/${ASSET_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub release
+        env:
+          ASSET_PATH: ${{ steps.archive.outputs.asset_path }}
+          GH_TOKEN: ${{ github.token }}
+          MOD_NAME: ${{ steps.release.outputs.mod_name }}
+          MOD_VERSION: ${{ steps.release.outputs.mod_version }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "$ASSET_PATH" \
+            --title "${MOD_NAME} ${MOD_VERSION}" \
+            --notes "自动打包的可部署目录。下载并解压后，使用 \`${MOD_NAME}\` 目录替换游戏内对应 mod 目录。"

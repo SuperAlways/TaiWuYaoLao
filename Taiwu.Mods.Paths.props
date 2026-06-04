@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <TaiwuModsRoot>$(MSBuildThisFileDirectory)</TaiwuModsRoot>
+    <TaiwuModsModsDir>$(TaiwuModsRoot)mods/</TaiwuModsModsDir>
+    <TaiwuModsSharedDir>$(TaiwuModsRoot)shared/</TaiwuModsSharedDir>
+    <TaiwuModsToolsDir>$(TaiwuModsRoot)tools/</TaiwuModsToolsDir>
+  </PropertyGroup>
+</Project>

@@ -1,7 +1,8 @@
 {
   "$schema": "https://dprint.dev/schemas/v0.json",
   "excludes": [
-    "artifacts/**"
+    "artifacts/**",
+    "**/packages.lock.json"
   ],
   "json": {},
   "markdown": {

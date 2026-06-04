@@ -1,5 +1,8 @@
 <Project>
-  <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" />
+  <Import
+    Project="$([MSBuild]::GetPathOfFileAbove('Taiwu.Mods.Paths.props', '$(MSBuildThisFileDirectory)'))"
+  />
+  <Import Project="$(TaiwuModsRoot)Directory.Build.props" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>

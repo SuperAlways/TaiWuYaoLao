@@ -51,6 +51,11 @@ $env:TAIWU_MODKIT_GITHUB_TOKEN = "<GitHubToken>"
 dotnet restore Taiwu.Mods.slnx
 ```
 
+仓库启用 NuGet lock file，用于固定每个项目的 NuGet 依赖解析结果。新增项目、调整
+`PackageReference` 或更新 `Directory.Packages.props` 后，运行上面的 restore 命令并提交对应
+项目目录下生成或更新的 `packages.lock.json`。CI 使用 locked restore 校验依赖声明和 lock file
+是否一致。
+
 构建解决方案：
 
 ```powershell
@@ -65,6 +70,17 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 
 `pack-mod` 默认使用 `Release` 构建前后端项目，并把 `Config.Lua` 和插件 DLL
 组装到 `artifacts/mods/MyMod/`。这个目录可直接替换游戏内对应 mod 目录。
+
+发布到 GitHub Release：
+
+```powershell
+git tag mods/MyMod/v1.2.3
+git push origin mods/MyMod/v1.2.3
+```
+
+`mods/<ModName>/v<Version>` 是仓库的发布 tag 约定。推送后，GitHub Actions 会以
+`<ModName>` 运行 `pack-mod`，上传 `MyMod-v1.2.3.zip` 到对应 GitHub Release。zip
+内包含可直接替换游戏 mod 目录的 `MyMod/` 目录；`ModName` 必须与 `mods/` 下的一级目录名一致。
 
 从解决方案取消注册某个 mod，但保留文件：
 
@@ -81,7 +97,7 @@ dotnet run --project tools/Taiwu.Mods.Cli -- remove-shared --name MyCompany.Taiw
 ## 仓库维护
 
 `repo.proj` 承载仓库维护目标，维护命令通过 `dotnet msbuild` 执行。维护工具由
-`aqua.yaml` 声明，下载校验由 `aqua-checksums.json` 固定；首次使用维护目标前，确保本机已安装
+`aqua.yml` 声明，下载校验由 `aqua-checksums.json` 固定；首次使用维护目标前，确保本机已安装
 `aqua`，例如 Windows 可用 `winget install aquaproj.aqua` 或 `scoop install main/aqua`。
 
 ```powershell
@@ -95,7 +111,7 @@ dotnet msbuild repo.proj -t:Check
 dotnet msbuild repo.proj -t:Format
 ```
 
-更新 `aqua.yaml` 中的工具版本后，同步刷新校验文件：
+更新 `aqua.yml` 中的工具版本后，同步刷新校验文件：
 
 ```powershell
 dotnet msbuild repo.proj -t:UpdateToolChecksums
@@ -111,8 +127,10 @@ dotnet msbuild repo.proj -t:UpdateToolChecksums
 - `shared/`：内部共享项目目录。共享边界、目标框架和项目级配置入口见 `shared/README.md`。
 - `templates/`：命令行工具创建项目时使用的 Scriban 模板。模板维护约定见
   `templates/README.md`。
+- `.github/workflows/`：GitHub Actions 工作流，覆盖 PR 验证和 mod release 打包。
 - `repo.proj`：安装本地工具、检查和格式化命令。
-- `aqua.yaml`、`aqua-checksums.json`：仓库维护工具版本和下载校验。
+- `Taiwu.Mods.Paths.props`：仓库级 MSBuild 路径 alias，供子目录 props 和项目引用稳定目录。
+- `aqua.yml`、`aqua-checksums.json`：仓库维护工具版本和下载校验。
 - `Taiwu.Mods.slnx`：解决方案入口，收录工具、已注册的 mod 项目和内部共享项目。
 - `Directory.Build.props`：仓库级编译、分析器和代码质量规则。
 - `Directory.Packages.props`：NuGet 包版本。

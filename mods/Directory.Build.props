@@ -1,5 +1,8 @@
 <Project InitialTargets="ValidateTaiwuModSide">
-  <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" />
+  <Import
+    Project="$([MSBuild]::GetPathOfFileAbove('Taiwu.Mods.Paths.props', '$(MSBuildThisFileDirectory)'))"
+  />
+  <Import Project="$(TaiwuModsRoot)Directory.Build.props" />
   <Import
     Project="$(MSBuildProjectDirectory)/Taiwu.Mod.props"
     Condition="Exists('$(MSBuildProjectDirectory)/Taiwu.Mod.props')"
@@ -32,7 +35,7 @@
       Condition="'$(AllowDuplicateInternalizedResources)' == ''"
     >false</AllowDuplicateInternalizedResources>
     <ILRepackTargetsFile Condition="'$(ILRepackTargetsFile)' == ''"
-    >$(MSBuildThisFileDirectory)Taiwu.Mod.ILRepack.targets</ILRepackTargetsFile>
+    >$(TaiwuModsModsDir)Taiwu.Mod.ILRepack.targets</ILRepackTargetsFile>
   </PropertyGroup>
 
   <Target Name="ValidateTaiwuModSide">
