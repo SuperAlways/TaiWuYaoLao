@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <DprintCommand>mise exec -- dprint</DprintCommand>
+    <DprintCommand>aqua exec -- dprint</DprintCommand>
   </PropertyGroup>
 
   <Target Name="Check">
@@ -12,6 +12,10 @@
   </Target>
 
   <Target Name="InstallTools">
-    <Exec Command="mise install" />
+    <Exec Command="aqua install" />
+  </Target>
+
+  <Target Name="UpdateToolChecksums">
+    <Exec Command="aqua update-checksum" />
   </Target>
 </Project>

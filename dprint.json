@@ -4,12 +4,23 @@
     "artifacts/**"
   ],
   "json": {},
-  "markdown": {},
+  "markdown": {
+    "associations": [
+      "**/*.md.scriban"
+    ]
+  },
   "toml": {},
   "yaml": {},
+  "stylua": {
+    "associations": [
+      "**/*.{lua,Lua}",
+      "**/*.{lua,Lua}.scriban"
+    ]
+  },
   "markup": {
     "associations": [
-      "**/*.{csproj,proj,props,targets,slnx}"
+      "**/*.{csproj,proj,props,targets,slnx}",
+      "**/*.{csproj,proj,props,targets,slnx}.scriban"
     ]
   },
   "plugins": [
@@ -17,6 +28,7 @@
     "https://plugins.dprint.dev/markdown-0.22.1.wasm",
     "https://plugins.dprint.dev/toml-0.7.0.wasm",
     "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.6.0.wasm",
+    "https://plugins.dprint.dev/RubixDev/stylua-v0.2.1.wasm",
     "https://plugins.dprint.dev/g-plane/markup_fmt-v0.27.2.wasm"
   ]
 }

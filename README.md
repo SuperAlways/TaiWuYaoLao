@@ -15,7 +15,7 @@ dotnet run --project tools/Taiwu.Mods.Cli -- create-mod --name MyMod
 ```
 
 `ModName` 必须是 C# 命名空间风格的标识符，例如 `MyMod` 或
-`MyCompany.MyMod`。创建后，生成器会复制 `templates/mod/`，替换模板变量，并把
+`MyCompany.MyMod`。创建后，生成器会复制 `templates/mod/`，渲染模板变量，并把
 前后端项目加入 `Taiwu.Mods.slnx`。
 
 创建一个内部共享项目：
@@ -80,6 +80,14 @@ dotnet run --project tools/Taiwu.Mods.Cli -- remove-shared --name MyCompany.Taiw
 
 ## 仓库维护
 
+`repo.proj` 承载仓库维护目标，维护命令通过 `dotnet msbuild` 执行。维护工具由
+`aqua.yaml` 声明，下载校验由 `aqua-checksums.json` 固定；首次使用维护目标前，确保本机已安装
+`aqua`，例如 Windows 可用 `winget install aquaproj.aqua` 或 `scoop install main/aqua`。
+
+```powershell
+dotnet msbuild repo.proj -t:InstallTools
+```
+
 检查和格式化仓库文件：
 
 ```powershell
@@ -87,11 +95,10 @@ dotnet msbuild repo.proj -t:Check
 dotnet msbuild repo.proj -t:Format
 ```
 
-首次运行这些命令前执行：
+更新 `aqua.yaml` 中的工具版本后，同步刷新校验文件：
 
 ```powershell
-mise trust
-dotnet msbuild repo.proj -t:InstallTools
+dotnet msbuild repo.proj -t:UpdateToolChecksums
 ```
 
 ## 仓库结构
@@ -102,8 +109,10 @@ dotnet msbuild repo.proj -t:InstallTools
 - `mods/`：实际 mod 源码目录。前后端插件项目、Taiwu 引用、Publicizer 和依赖内部化约定见
   `mods/README.md`。
 - `shared/`：内部共享项目目录。共享边界、目标框架和项目级配置入口见 `shared/README.md`。
-- `templates/mod/`、`templates/shared/`：命令行工具创建项目时使用的模板。
+- `templates/`：命令行工具创建项目时使用的 Scriban 模板。模板维护约定见
+  `templates/README.md`。
 - `repo.proj`：安装本地工具、检查和格式化命令。
+- `aqua.yaml`、`aqua-checksums.json`：仓库维护工具版本和下载校验。
 - `Taiwu.Mods.slnx`：解决方案入口，收录工具、已注册的 mod 项目和内部共享项目。
 - `Directory.Build.props`：仓库级编译、分析器和代码质量规则。
 - `Directory.Packages.props`：NuGet 包版本。

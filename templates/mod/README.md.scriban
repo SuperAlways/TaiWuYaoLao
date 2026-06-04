@@ -1,4 +1,4 @@
-# {{ModName}}
+# {{ mod.name }}
 
 太吾绘卷 Mod。
 
@@ -7,18 +7,18 @@
 从仓库根目录构建插件项目：
 
 ```powershell
-dotnet build mods/{{ModName}}/src/Frontend/{{ModName}}.Frontend.csproj
-dotnet build mods/{{ModName}}/src/Backend/{{ModName}}.Backend.csproj
+dotnet build mods/{{ mod.name }}/src/Frontend/{{ mod.name }}.Frontend.csproj
+dotnet build mods/{{ mod.name }}/src/Backend/{{ mod.name }}.Backend.csproj
 ```
 
 打包可部署目录：
 
 ```powershell
-dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name {{ModName}}
+dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name {{ mod.name }}
 ```
 
 `pack-mod` 会把 `Config.Lua` 和插件 DLL 组装到仓库根目录的
-`artifacts/mods/{{ModName}}/`。
+`artifacts/mods/{{ mod.name }}/`。
 
 插件项目的本地构建设置写在对应项目的 `Taiwu.Mod.props`。
 

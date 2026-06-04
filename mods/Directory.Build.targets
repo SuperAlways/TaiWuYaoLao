@@ -8,7 +8,8 @@
   <PropertyGroup
     Condition="'$(UsePublicizer)' == 'true' And '$(TaiwuModSide)' == 'Backend'"
   >
-    <PublicizerRuntimeStrategies>IgnoresAccessChecksTo</PublicizerRuntimeStrategies>
+    <PublicizerRuntimeStrategies
+    >IgnoresAccessChecksTo</PublicizerRuntimeStrategies>
   </PropertyGroup>
 
   <Target

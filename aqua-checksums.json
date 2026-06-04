@@ -1,0 +1,34 @@
+{
+  "checksums": [
+    {
+      "id": "github_release/github.com/dprint/dprint/0.54.0/dprint-aarch64-apple-darwin.zip",
+      "checksum": "1D6A8FB14D66CBA0F049738EDD4AB3B1AFC1DE6D936CD32E483E33284CFD1ADE",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/dprint/dprint/0.54.0/dprint-aarch64-unknown-linux-musl.zip",
+      "checksum": "9A66B5931CA30402A3DD2933C432C6B6316EEDD08037AB0AEB8D24CD17B2A301",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/dprint/dprint/0.54.0/dprint-x86_64-apple-darwin.zip",
+      "checksum": "FDBFFA16CF0890CA30E958FFDABE7748E733867651A438EDE1501F0E1A7B5E91",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/dprint/dprint/0.54.0/dprint-x86_64-pc-windows-msvc.zip",
+      "checksum": "3FD881ACAF7FD4FBC5D07C3030CE79B965A4CB7128FE0EB1EBE725188CCD2715",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/dprint/dprint/0.54.0/dprint-x86_64-unknown-linux-musl.zip",
+      "checksum": "859AE94E596105201FAA59A3FB4BEDC8316E226E3E154AE410F9373461E1E41C",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "registries/github_content/github.com/aquaproj/aqua-registry/v4.520.1/registry.yaml",
+      "checksum": "22E49997625639802B4DF79A731754F5D5528739B4ED0B63C22C18F07E947396",
+      "algorithm": "sha256"
+    }
+  ]
+}

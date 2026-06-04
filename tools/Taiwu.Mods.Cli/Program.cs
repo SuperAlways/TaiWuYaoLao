@@ -2,18 +2,14 @@ using System.ComponentModel;
 using System.CommandLine;
 using System.Diagnostics;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Taiwu.Mods.Cli;
 
-internal static partial class Program
+internal static class Program
 {
-    private const string ModNameToken = "__ModName__";
-    private const string MarkdownModNameToken = "{{ModName}}";
-    private const string ProjectNameToken = "__ProjectName__";
-    private const string MarkdownProjectNameToken = "{{ProjectName}}";
-    private const string TargetFrameworkToken = "__TargetFramework__";
+    private const string DefaultModVersion = "0.0.0";
     private const string DefaultModTemplateRelativePath = "templates/mod";
     private const string DefaultSharedTemplateRelativePath = "templates/shared";
     private const string DefaultModsRelativePath = "mods";
@@ -99,17 +95,12 @@ internal static partial class Program
         string modsRoot = Path.GetFullPath(options.ModsRoot ?? Path.Combine(repoRoot, DefaultModsRelativePath));
         string modRoot = Path.Combine(modsRoot, options.Name);
 
-        if (!Directory.Exists(templateRoot))
-        {
-            throw new DirectoryNotFoundException($"Template directory does not exist: {templateRoot}");
-        }
-
         if (Directory.Exists(modRoot) && !options.Force)
         {
             throw new InvalidOperationException($"Mod directory already exists: {modRoot}. Pass --force to overwrite template files.");
         }
 
-        CopyTemplate(templateRoot, modRoot, CreateModTemplateReplacements(options.Name), options.Force);
+        TemplateDirectory.Create(templateRoot, TemplateRenderer.ForMod(options.Name, DefaultModVersion)).CopyTo(modRoot, options.Force);
 
         if (!options.SkipSolution && IsUnderDirectory(modRoot, repoRoot))
         {
@@ -129,17 +120,12 @@ internal static partial class Program
         string sharedRoot = Path.GetFullPath(options.SharedRoot ?? Path.Combine(repoRoot, DefaultSharedRelativePath));
         string projectRoot = Path.Combine(sharedRoot, options.Name);
 
-        if (!Directory.Exists(templateRoot))
-        {
-            throw new DirectoryNotFoundException($"Template directory does not exist: {templateRoot}");
-        }
-
         if (Directory.Exists(projectRoot) && !options.Force)
         {
             throw new InvalidOperationException($"Shared project directory already exists: {projectRoot}. Pass --force to overwrite template files.");
         }
 
-        CopyTemplate(templateRoot, projectRoot, CreateSharedProjectTemplateReplacements(options.Name, side), options.Force);
+        TemplateDirectory.Create(templateRoot, TemplateRenderer.ForSharedProject(options.Name, side, GetDefaultSharedProjectTargetFramework(side))).CopyTo(projectRoot, options.Force);
 
         if (!options.SkipSolution && IsUnderDirectory(projectRoot, repoRoot))
         {
@@ -147,36 +133,6 @@ internal static partial class Program
         }
 
         Console.WriteLine($"Created shared project '{options.Name}' at {projectRoot}");
-    }
-
-    private static void CopyTemplate(string templateRoot, string destinationRoot, IReadOnlyDictionary<string, string> replacements, bool force)
-    {
-        foreach (string templateFile in Directory.EnumerateFiles(templateRoot, "*", SearchOption.AllDirectories))
-        {
-            string relativePath = Path.GetRelativePath(templateRoot, templateFile);
-            string destinationRelativePath = ReplaceTokens(relativePath, replacements);
-            string destinationPath = Path.Combine(destinationRoot, destinationRelativePath);
-
-            if (File.Exists(destinationPath) && !force)
-            {
-                throw new IOException($"Destination file already exists: {destinationPath}");
-            }
-
-            string? destinationDirectory = Path.GetDirectoryName(destinationPath);
-            if (!string.IsNullOrEmpty(destinationDirectory))
-            {
-                _ = Directory.CreateDirectory(destinationDirectory);
-            }
-
-            if (ShouldReplaceTokens(templateFile))
-            {
-                string content = File.ReadAllText(templateFile, Encoding.UTF8);
-                File.WriteAllText(destinationPath, ReplaceTokens(content, replacements), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-                continue;
-            }
-
-            File.Copy(templateFile, destinationPath, overwrite: force);
-        }
     }
 
     private static void AddProjectsToSolution(string repoRoot, IEnumerable<string> fullProjectPaths)
@@ -403,11 +359,6 @@ internal static partial class Program
         EnsureSolutionFolder(repoRoot, SharedSolutionFolderName);
     }
 
-    private static bool ShouldReplaceTokens(string templateFile)
-    {
-        return TextTemplateExtensions.Contains(Path.GetExtension(templateFile));
-    }
-
     private static string[] GetModProjectFullPaths(string modsRoot, string modName)
     {
         return
@@ -497,36 +448,6 @@ internal static partial class Program
         return standardOutput.Trim();
     }
 
-    private static Dictionary<string, string> CreateModTemplateReplacements(string modName)
-    {
-        return new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            [ModNameToken] = modName,
-            [MarkdownModNameToken] = modName,
-        };
-    }
-
-    private static Dictionary<string, string> CreateSharedProjectTemplateReplacements(string projectName, SharedProjectSide side)
-    {
-        return new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            [ProjectNameToken] = projectName,
-            [MarkdownProjectNameToken] = projectName,
-            [TargetFrameworkToken] = GetDefaultSharedProjectTargetFramework(side),
-        };
-    }
-
-    private static string ReplaceTokens(string value, IReadOnlyDictionary<string, string> replacements)
-    {
-        string result = value;
-        foreach (KeyValuePair<string, string> replacement in replacements)
-        {
-            result = result.Replace(replacement.Key, replacement.Value, StringComparison.Ordinal);
-        }
-
-        return result;
-    }
-
     private static void ValidateNamespaceStyleIdentifier(string value, string valueName)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -534,16 +455,11 @@ internal static partial class Program
             throw new ArgumentException($"{valueName} cannot be empty.");
         }
 
-        if (!NamespaceStyleIdentifierRegex().IsMatch(value))
-        {
-            throw new ArgumentException($"{valueName} must be a C# namespace-style identifier, for example MyMod or MyCompany.MyMod.");
-        }
-
         foreach (string segment in value.Split('.'))
         {
-            if (CSharpKeywords.Contains(segment))
+            if (!SyntaxFacts.IsValidIdentifier(segment) || SyntaxFacts.GetKeywordKind(segment) != SyntaxKind.None)
             {
-                throw new ArgumentException($"{valueName} segment '{segment}' is a C# keyword.");
+                throw new ArgumentException($"{valueName} must be a C# namespace-style identifier, for example MyMod or MyCompany.MyMod.");
             }
         }
     }
@@ -589,112 +505,10 @@ internal static partial class Program
         return fullPath.StartsWith(fullDirectory, StringComparison.OrdinalIgnoreCase);
     }
 
-    [GeneratedRegex(@"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")]
-    private static partial Regex NamespaceStyleIdentifierRegex();
-
-    private static readonly HashSet<string> TextTemplateExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".config",
-        ".cs",
-        ".csproj",
-        ".json",
-        ".lua",
-        ".md",
-        ".proj",
-        ".props",
-        ".slnx",
-        ".toml",
-        ".txt",
-        ".xml",
-        ".yaml",
-        ".yml",
-    };
-
     private static readonly HashSet<string> PackagePluginOutputExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         ".dll",
         ".json",
-    };
-
-    private static readonly HashSet<string> CSharpKeywords = new(StringComparer.Ordinal)
-    {
-        "abstract",
-        "as",
-        "base",
-        "bool",
-        "break",
-        "byte",
-        "case",
-        "catch",
-        "char",
-        "checked",
-        "class",
-        "const",
-        "continue",
-        "decimal",
-        "default",
-        "delegate",
-        "do",
-        "double",
-        "else",
-        "enum",
-        "event",
-        "explicit",
-        "extern",
-        "false",
-        "finally",
-        "fixed",
-        "float",
-        "for",
-        "foreach",
-        "goto",
-        "if",
-        "implicit",
-        "in",
-        "int",
-        "interface",
-        "internal",
-        "is",
-        "lock",
-        "long",
-        "namespace",
-        "new",
-        "null",
-        "object",
-        "operator",
-        "out",
-        "override",
-        "params",
-        "private",
-        "protected",
-        "public",
-        "readonly",
-        "ref",
-        "return",
-        "sbyte",
-        "sealed",
-        "short",
-        "sizeof",
-        "stackalloc",
-        "static",
-        "string",
-        "struct",
-        "switch",
-        "this",
-        "throw",
-        "true",
-        "try",
-        "typeof",
-        "uint",
-        "ulong",
-        "unchecked",
-        "unsafe",
-        "ushort",
-        "using",
-        "virtual",
-        "void",
-        "volatile",
-        "while",
     };
 }
 

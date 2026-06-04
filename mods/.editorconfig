@@ -1,0 +1,3 @@
+[*.cs]
+# Mod code does not require generated API documentation.
+dotnet_diagnostic.CS1591.severity = none

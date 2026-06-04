@@ -1,0 +1,25 @@
+return {
+  Title = "{{ mod.name }}",
+  Source = 0,
+  FileId = 0,
+  Version = "{{ mod.version }}",
+  GameVersion = "0.84.46-test",
+  Author = "",
+  Description = "",
+  WorkshopCover = nil,
+  Visibility = 0,
+  DefaultSettings = {},
+  UpdateLogList = {},
+  ChangeConfig = false,
+  HasArchive = false,
+  NeedRestartWhenSettingChanged = false,
+  BackendPlugins = {
+    "{{ mod.name }}.Backend.dll",
+  },
+  BackendPatches = {},
+  FrontendPlugins = {
+    "{{ mod.name }}.Frontend.dll",
+  },
+  FrontendPatches = {},
+  EventPackages = {},
+}
