@@ -29,7 +29,7 @@ internal sealed class CommandLineOptions
 
     public bool SkipSolution { get; init; }
 
-    public static Command CreateCommand(Action<CommandLineOptions> run)
+    public static Command CreateCommand(Func<CommandLineOptions, CancellationToken, Task> run)
     {
         Command command = new("Taiwu.Mods.Cli", "太吾 mod 仓库维护命令。");
 
@@ -43,7 +43,7 @@ internal sealed class CommandLineOptions
         return command;
     }
 
-    private static Command CreateCreateModCommand(Action<CommandLineOptions> run)
+    private static Command CreateCreateModCommand(Func<CommandLineOptions, CancellationToken, Task> run)
     {
         Option<string> nameOption = CreateNameOption("Mod 名称。", "ModName");
         Option<string> repoRootOption = CreateRepoRootOption();
@@ -57,7 +57,7 @@ internal sealed class CommandLineOptions
         command.Options.Add(modsRootOption);
         command.Options.Add(forceOption);
         command.Options.Add(skipSolutionOption);
-        command.SetAction(parseResult =>
+        command.SetAction((parseResult, cancellationToken) =>
             run(
                 new CommandLineOptions
                 {
@@ -67,12 +67,13 @@ internal sealed class CommandLineOptions
                     ModsRoot = parseResult.GetValue(modsRootOption),
                     Force = parseResult.GetValue(forceOption),
                     SkipSolution = parseResult.GetValue(skipSolutionOption),
-                }));
+                },
+                cancellationToken));
 
         return command;
     }
 
-    private static Command CreateRemoveModCommand(Action<CommandLineOptions> run)
+    private static Command CreateRemoveModCommand(Func<CommandLineOptions, CancellationToken, Task> run)
     {
         Option<string> nameOption = CreateNameOption("Mod 名称。", "ModName");
         Option<string> repoRootOption = CreateRepoRootOption();
@@ -82,7 +83,7 @@ internal sealed class CommandLineOptions
         command.Options.Add(nameOption);
         command.Options.Add(repoRootOption);
         command.Options.Add(modsRootOption);
-        command.SetAction(parseResult =>
+        command.SetAction((parseResult, cancellationToken) =>
             run(
                 new CommandLineOptions
                 {
@@ -90,12 +91,13 @@ internal sealed class CommandLineOptions
                     Operation = CliOperation.RemoveMod,
                     RepoRoot = parseResult.GetRequiredValue(repoRootOption),
                     ModsRoot = parseResult.GetValue(modsRootOption),
-                }));
+                },
+                cancellationToken));
 
         return command;
     }
 
-    private static Command CreatePackModCommand(Action<CommandLineOptions> run)
+    private static Command CreatePackModCommand(Func<CommandLineOptions, CancellationToken, Task> run)
     {
         Option<string> nameOption = CreateNameOption("Mod 名称。", "ModName");
         Option<string> repoRootOption = CreateRepoRootOption();
@@ -109,7 +111,7 @@ internal sealed class CommandLineOptions
         command.Options.Add(modsRootOption);
         command.Options.Add(artifactsRootOption);
         command.Options.Add(configurationOption);
-        command.SetAction(parseResult =>
+        command.SetAction((parseResult, cancellationToken) =>
             run(
                 new CommandLineOptions
                 {
@@ -119,12 +121,13 @@ internal sealed class CommandLineOptions
                     ModsRoot = parseResult.GetValue(modsRootOption),
                     ArtifactsRoot = parseResult.GetValue(artifactsRootOption),
                     Configuration = parseResult.GetRequiredValue(configurationOption),
-                }));
+                },
+                cancellationToken));
 
         return command;
     }
 
-    private static Command CreateCreateSharedCommand(Action<CommandLineOptions> run)
+    private static Command CreateCreateSharedCommand(Func<CommandLineOptions, CancellationToken, Task> run)
     {
         Option<string> nameOption = CreateNameOption("内部共享项目名称。", "ProjectName");
         Option<string> repoRootOption = CreateRepoRootOption();
@@ -140,7 +143,7 @@ internal sealed class CommandLineOptions
         command.Options.Add(sharedSideOption);
         command.Options.Add(forceOption);
         command.Options.Add(skipSolutionOption);
-        command.SetAction(parseResult =>
+        command.SetAction((parseResult, cancellationToken) =>
             run(
                 new CommandLineOptions
                 {
@@ -151,12 +154,13 @@ internal sealed class CommandLineOptions
                     SharedSide = parseResult.GetRequiredValue(sharedSideOption),
                     Force = parseResult.GetValue(forceOption),
                     SkipSolution = parseResult.GetValue(skipSolutionOption),
-                }));
+                },
+                cancellationToken));
 
         return command;
     }
 
-    private static Command CreateRemoveSharedCommand(Action<CommandLineOptions> run)
+    private static Command CreateRemoveSharedCommand(Func<CommandLineOptions, CancellationToken, Task> run)
     {
         Option<string> nameOption = CreateNameOption("内部共享项目名称。", "ProjectName");
         Option<string> repoRootOption = CreateRepoRootOption();
@@ -166,7 +170,7 @@ internal sealed class CommandLineOptions
         command.Options.Add(nameOption);
         command.Options.Add(repoRootOption);
         command.Options.Add(sharedRootOption);
-        command.SetAction(parseResult =>
+        command.SetAction((parseResult, cancellationToken) =>
             run(
                 new CommandLineOptions
                 {
@@ -174,7 +178,8 @@ internal sealed class CommandLineOptions
                     Operation = CliOperation.RemoveShared,
                     RepoRoot = parseResult.GetRequiredValue(repoRootOption),
                     SharedRoot = parseResult.GetValue(sharedRootOption),
-                }));
+                },
+                cancellationToken));
 
         return command;
     }

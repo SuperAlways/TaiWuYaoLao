@@ -1,8 +1,6 @@
 using System.ComponentModel;
 using System.CommandLine;
-using System.Diagnostics;
-using System.Text;
-using System.Xml.Linq;
+using CliWrap.Exceptions;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Taiwu.Mods.Cli;
@@ -16,35 +14,25 @@ internal static class Program
     private const string DefaultSharedRelativePath = "shared";
     private const string PluginsDirectoryName = "Plugins";
     private const string SolutionFileName = "Taiwu.Mods.slnx";
-    private const string ModsSolutionFolderName = "/mods/";
-    private const string SharedSolutionFolderName = "/shared/";
+    private const string ModsSolutionFolderName = "mods";
+    private const string SharedSolutionFolderName = "shared";
 
-    public static int Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         try
         {
-            Command command = CommandLineOptions.CreateCommand(Run);
-            return command.Parse(args).Invoke(CreateInvocationConfiguration());
+            Command command = CommandLineOptions.CreateCommand(RunAsync);
+            return await command.Parse(args)
+                .InvokeAsync(CreateInvocationConfiguration())
+                .ConfigureAwait(false);
         }
-        catch (ArgumentException ex)
+        catch (OperationCanceledException)
         {
-            return ReportError(ex);
+            return 130;
         }
-        catch (IOException ex)
+        catch (Exception ex) when (ShouldReportError(ex))
         {
-            return ReportError(ex);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return ReportError(ex);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return ReportError(ex);
-        }
-        catch (Win32Exception ex)
-        {
-            return ReportError(ex);
+            return await ReportErrorAsync(ex).ConfigureAwait(false);
         }
     }
 
@@ -56,37 +44,36 @@ internal static class Program
         };
     }
 
-    private static int ReportError(Exception ex)
+    private static async Task<int> ReportErrorAsync(Exception ex)
     {
-        Console.Error.WriteLine($"error: {ex.Message}");
+        await Console.Error.WriteLineAsync($"error: {ex.Message}").ConfigureAwait(false);
         return 1;
     }
 
-    private static void Run(CommandLineOptions options)
+    private static bool ShouldReportError(Exception ex)
     {
-        switch (options.Operation)
-        {
-            case CliOperation.CreateMod:
-                CreateMod(options);
-                break;
-            case CliOperation.RemoveMod:
-                RemoveMod(options);
-                break;
-            case CliOperation.PackMod:
-                PackMod(options);
-                break;
-            case CliOperation.CreateShared:
-                CreateSharedProject(options);
-                break;
-            case CliOperation.RemoveShared:
-                RemoveSharedProject(options);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(options));
-        }
+        return ex is ArgumentException
+            or IOException
+            or UnauthorizedAccessException
+            or InvalidOperationException
+            or CommandExecutionException
+            or Win32Exception;
     }
 
-    private static void CreateMod(CommandLineOptions options)
+    private static Task RunAsync(CommandLineOptions options, CancellationToken cancellationToken)
+    {
+        return options.Operation switch
+        {
+            CliOperation.CreateMod => CreateModAsync(options, cancellationToken),
+            CliOperation.RemoveMod => RemoveModAsync(options, cancellationToken),
+            CliOperation.PackMod => PackModAsync(options, cancellationToken),
+            CliOperation.CreateShared => CreateSharedProjectAsync(options, cancellationToken),
+            CliOperation.RemoveShared => RemoveSharedProjectAsync(options, cancellationToken),
+            _ => throw new ArgumentOutOfRangeException(nameof(options)),
+        };
+    }
+
+    private static async Task CreateModAsync(CommandLineOptions options, CancellationToken cancellationToken)
     {
         ValidateNamespaceStyleIdentifier(options.Name, "ModName");
 
@@ -104,13 +91,14 @@ internal static class Program
 
         if (!options.SkipSolution && IsUnderDirectory(modRoot, repoRoot))
         {
-            AddProjectsToSolution(repoRoot, GetModProjectFullPaths(modsRoot, options.Name));
+            await AddProjectsToSolutionAsync(repoRoot, ModsSolutionFolderName, GetModProjectFullPaths(modsRoot, options.Name), cancellationToken)
+                .ConfigureAwait(false);
         }
 
         Console.WriteLine($"Created mod '{options.Name}' at {modRoot}");
     }
 
-    private static void CreateSharedProject(CommandLineOptions options)
+    private static async Task CreateSharedProjectAsync(CommandLineOptions options, CancellationToken cancellationToken)
     {
         ValidateNamespaceStyleIdentifier(options.Name, "ProjectName");
         SharedProjectSide side = ParseSharedProjectSide(options.SharedSide);
@@ -129,81 +117,79 @@ internal static class Program
 
         if (!options.SkipSolution && IsUnderDirectory(projectRoot, repoRoot))
         {
-            AddProjectsToSolution(repoRoot, [GetSharedProjectFullPath(sharedRoot, options.Name)]);
+            await AddProjectsToSolutionAsync(repoRoot, SharedSolutionFolderName, [GetSharedProjectFullPath(sharedRoot, options.Name)], cancellationToken)
+                .ConfigureAwait(false);
         }
 
         Console.WriteLine($"Created shared project '{options.Name}' at {projectRoot}");
     }
 
-    private static void AddProjectsToSolution(string repoRoot, IEnumerable<string> fullProjectPaths)
+    private static Task AddProjectsToSolutionAsync(
+        string repoRoot,
+        string solutionFolderName,
+        IEnumerable<string> fullProjectPaths,
+        CancellationToken cancellationToken)
     {
-        string solutionPath = Path.Combine(repoRoot, SolutionFileName);
-        if (!File.Exists(solutionPath))
-        {
-            throw new FileNotFoundException($"Solution file does not exist: {solutionPath}");
-        }
-
         string[] projectPaths =
         [
             .. fullProjectPaths.Select(fullProjectPath => GetRepoRelativePath(repoRoot, fullProjectPath)),
         ];
 
-        RunDotnet(repoRoot, ["sln", SolutionFileName, "add", .. projectPaths]);
-        EnsureStandardSolutionFolders(repoRoot);
+        return ProcessRunner.RunAsync(
+            "dotnet",
+            repoRoot,
+            [
+                "sln",
+                SolutionFileName,
+                "add",
+                "--solution-folder",
+                solutionFolderName,
+                .. projectPaths,
+                "--include-references",
+                "false",
+            ],
+            cancellationToken);
     }
 
-    private static void RemoveMod(CommandLineOptions options)
+    private static Task RemoveModAsync(CommandLineOptions options, CancellationToken cancellationToken)
     {
         ValidateNamespaceStyleIdentifier(options.Name, "ModName");
 
         string repoRoot = Path.GetFullPath(options.RepoRoot);
         string modsRoot = Path.GetFullPath(options.ModsRoot ?? Path.Combine(repoRoot, DefaultModsRelativePath));
-        RemoveProjectsFromSolution(repoRoot, "mod", options.Name, GetModProjectFullPaths(modsRoot, options.Name));
+        return RemoveProjectsFromSolutionAsync(
+            repoRoot,
+            GetModProjectFullPaths(modsRoot, options.Name),
+            cancellationToken);
     }
 
-    private static void RemoveSharedProject(CommandLineOptions options)
+    private static Task RemoveSharedProjectAsync(CommandLineOptions options, CancellationToken cancellationToken)
     {
         ValidateNamespaceStyleIdentifier(options.Name, "ProjectName");
 
         string repoRoot = Path.GetFullPath(options.RepoRoot);
         string sharedRoot = Path.GetFullPath(options.SharedRoot ?? Path.Combine(repoRoot, DefaultSharedRelativePath));
-        RemoveProjectsFromSolution(repoRoot, "shared project", options.Name, [GetSharedProjectFullPath(sharedRoot, options.Name)]);
+        return RemoveProjectsFromSolutionAsync(
+            repoRoot,
+            [GetSharedProjectFullPath(sharedRoot, options.Name)],
+            cancellationToken);
     }
 
-    private static void RemoveProjectsFromSolution(string repoRoot, string projectKind, string projectName, IEnumerable<string> fullProjectPaths)
+    private static async Task RemoveProjectsFromSolutionAsync(
+        string repoRoot,
+        IEnumerable<string> fullProjectPaths,
+        CancellationToken cancellationToken)
     {
-        string solutionPath = Path.Combine(repoRoot, SolutionFileName);
-        if (!File.Exists(solutionPath))
-        {
-            throw new FileNotFoundException($"Solution file does not exist: {solutionPath}");
-        }
+        string[] projectPaths =
+        [
+            .. fullProjectPaths.Select(fullProjectPath => GetRepoRelativePath(repoRoot, fullProjectPath)),
+        ];
 
-        List<string> existingProjectPaths = [];
-        foreach (string fullProjectPath in fullProjectPaths)
-        {
-            string projectPath = GetRepoRelativePath(repoRoot, fullProjectPath);
-            if (File.Exists(fullProjectPath))
-            {
-                existingProjectPaths.Add(projectPath);
-            }
-            else
-            {
-                Console.WriteLine($"Skipped missing project file: {projectPath}");
-            }
-        }
-
-        if (existingProjectPaths.Count == 0)
-        {
-            Console.WriteLine($"No solution projects found for {projectKind} '{projectName}'.");
-            return;
-        }
-
-        RunDotnet(repoRoot, ["sln", SolutionFileName, "remove", .. existingProjectPaths]);
-        EnsureStandardSolutionFolders(repoRoot);
-        Console.WriteLine($"Removed {projectKind} '{projectName}' projects from {SolutionFileName}. Files were not deleted.");
+        await ProcessRunner.RunAsync("dotnet", repoRoot, ["sln", SolutionFileName, "remove", .. projectPaths], cancellationToken)
+            .ConfigureAwait(false);
     }
 
-    private static void PackMod(CommandLineOptions options)
+    private static async Task PackModAsync(CommandLineOptions options, CancellationToken cancellationToken)
     {
         ValidateNamespaceStyleIdentifier(options.Name, "ModName");
 
@@ -221,15 +207,8 @@ internal static class Program
         string[] fullProjectPaths = GetModProjectFullPaths(modsRoot, options.Name);
         foreach (string fullProjectPath in fullProjectPaths)
         {
-            if (!File.Exists(fullProjectPath))
-            {
-                throw new FileNotFoundException($"Mod project does not exist: {fullProjectPath}");
-            }
-        }
-
-        foreach (string fullProjectPath in fullProjectPaths)
-        {
-            RunDotnet(repoRoot, "build", fullProjectPath, "--configuration", options.Configuration);
+            await ProcessRunner.RunAsync("dotnet", repoRoot, ["build", fullProjectPath, "--configuration", options.Configuration], cancellationToken)
+                .ConfigureAwait(false);
         }
 
         if (Directory.Exists(packageRoot))
@@ -238,7 +217,8 @@ internal static class Program
         }
 
         CopyPackageFiles(modRoot, packageRoot);
-        CopyPluginOutputs(repoRoot, fullProjectPaths, options.Configuration, packageRoot);
+        await CopyPluginOutputsAsync(repoRoot, fullProjectPaths, options.Configuration, packageRoot, cancellationToken)
+            .ConfigureAwait(false);
         Console.WriteLine($"Packed mod '{options.Name}' to {packageRoot}");
     }
 
@@ -276,15 +256,17 @@ internal static class Program
             || fileName is ".gitignore" or ".gitkeep" or "README.md";
     }
 
-    private static void CopyPluginOutputs(string repoRoot, IEnumerable<string> projectPaths, string configuration, string packageRoot)
+    private static async Task CopyPluginOutputsAsync(
+        string repoRoot,
+        IEnumerable<string> projectPaths,
+        string configuration,
+        string packageRoot,
+        CancellationToken cancellationToken)
     {
         foreach (string projectPath in projectPaths)
         {
-            string outputPath = GetProjectTargetDirectory(repoRoot, projectPath, configuration);
-            if (!Directory.Exists(outputPath))
-            {
-                throw new DirectoryNotFoundException($"Project output directory does not exist: {outputPath}");
-            }
+            string outputPath = await GetProjectTargetDirectoryAsync(repoRoot, projectPath, configuration, cancellationToken)
+                .ConfigureAwait(false);
 
             foreach (string sourcePath in Directory.EnumerateFiles(outputPath))
             {
@@ -306,14 +288,17 @@ internal static class Program
         }
     }
 
-    private static string GetProjectTargetDirectory(string repoRoot, string projectPath, string configuration)
+    private static async Task<string> GetProjectTargetDirectoryAsync(
+        string repoRoot,
+        string projectPath,
+        string configuration,
+        CancellationToken cancellationToken)
     {
-        string targetDirectory = RunDotnetForOutput(
+        string targetDirectory = await ProcessRunner.RunForOutputAsync(
+            "dotnet",
             repoRoot,
-            "msbuild",
-            projectPath,
-            "-getProperty:TargetDir",
-            $"-p:Configuration={configuration}");
+            ["msbuild", projectPath, "-getProperty:TargetDir", $"-p:Configuration={configuration}"],
+            cancellationToken).ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(targetDirectory))
         {
@@ -324,39 +309,6 @@ internal static class Program
             ?? throw new InvalidOperationException($"Project path has no directory: {projectPath}");
 
         return Path.GetFullPath(targetDirectory, projectDirectory);
-    }
-
-    private static void EnsureSolutionFolder(string repoRoot, string folderName)
-    {
-        string solutionPath = Path.Combine(repoRoot, SolutionFileName);
-        XDocument document = XDocument.Load(solutionPath);
-        XElement root = document.Root ?? throw new InvalidOperationException($"Solution file has no root element: {solutionPath}");
-
-        if (root.Elements("Folder").Any(element => string.Equals((string?)element.Attribute("Name"), folderName, StringComparison.Ordinal)))
-        {
-            return;
-        }
-
-        XElement folder = new("Folder", new XAttribute("Name", folderName));
-        XElement? insertBefore = root.Elements("Folder").FirstOrDefault(element =>
-            string.CompareOrdinal((string?)element.Attribute("Name"), folderName) > 0);
-
-        if (insertBefore is null)
-        {
-            root.Add(folder);
-        }
-        else
-        {
-            insertBefore.AddBeforeSelf(folder);
-        }
-
-        File.WriteAllText(solutionPath, $"{document}{Environment.NewLine}", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-    }
-
-    private static void EnsureStandardSolutionFolders(string repoRoot)
-    {
-        EnsureSolutionFolder(repoRoot, ModsSolutionFolderName);
-        EnsureSolutionFolder(repoRoot, SharedSolutionFolderName);
     }
 
     private static string[] GetModProjectFullPaths(string modsRoot, string modName)
@@ -371,81 +323,6 @@ internal static class Program
     private static string GetSharedProjectFullPath(string sharedRoot, string projectName)
     {
         return Path.Combine(sharedRoot, projectName, $"{projectName}.csproj");
-    }
-
-    private static void RunDotnet(string workingDirectory, params string[] arguments)
-    {
-        ProcessStartInfo startInfo = new()
-        {
-            FileName = "dotnet",
-            WorkingDirectory = workingDirectory,
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-        };
-
-        foreach (string argument in arguments)
-        {
-            startInfo.ArgumentList.Add(argument);
-        }
-
-        using Process process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Failed to start dotnet.");
-
-        string standardOutput = process.StandardOutput.ReadToEnd();
-        string standardError = process.StandardError.ReadToEnd();
-        process.WaitForExit();
-
-        if (!string.IsNullOrWhiteSpace(standardOutput))
-        {
-            Console.Write(standardOutput);
-        }
-
-        if (!string.IsNullOrWhiteSpace(standardError))
-        {
-            Console.Error.Write(standardError);
-        }
-
-        if (process.ExitCode != 0)
-        {
-            throw new InvalidOperationException($"dotnet {string.Join(' ', arguments)} failed with exit code {process.ExitCode}.");
-        }
-    }
-
-    private static string RunDotnetForOutput(string workingDirectory, params string[] arguments)
-    {
-        ProcessStartInfo startInfo = new()
-        {
-            FileName = "dotnet",
-            WorkingDirectory = workingDirectory,
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-        };
-
-        foreach (string argument in arguments)
-        {
-            startInfo.ArgumentList.Add(argument);
-        }
-
-        using Process process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Failed to start dotnet.");
-
-        string standardOutput = process.StandardOutput.ReadToEnd();
-        string standardError = process.StandardError.ReadToEnd();
-        process.WaitForExit();
-
-        if (!string.IsNullOrWhiteSpace(standardError))
-        {
-            Console.Error.Write(standardError);
-        }
-
-        if (process.ExitCode != 0)
-        {
-            throw new InvalidOperationException($"dotnet {string.Join(' ', arguments)} failed with exit code {process.ExitCode}.");
-        }
-
-        return standardOutput.Trim();
     }
 
     private static void ValidateNamespaceStyleIdentifier(string value, string valueName)

@@ -94,32 +94,7 @@ dotnet run --project tools/Taiwu.Mods.Cli -- remove-mod --name MyMod
 dotnet run --project tools/Taiwu.Mods.Cli -- remove-shared --name MyCompany.Taiwu.Shared
 ```
 
-## 仓库维护
-
-`repo.proj` 承载仓库维护目标，维护命令通过 `dotnet msbuild` 执行。维护工具由
-`aqua.yml` 声明，下载校验由 `aqua-checksums.json` 固定；首次使用维护目标前，确保本机已安装
-`aqua`，例如 Windows 可用 `winget install aquaproj.aqua` 或 `scoop install main/aqua`。
-
-```powershell
-dotnet msbuild repo.proj -t:InstallTools
-```
-
-检查和格式化仓库文件：
-
-```powershell
-dotnet msbuild repo.proj -t:Check
-dotnet msbuild repo.proj -t:Format
-```
-
-更新 `aqua.yml` 中的工具版本后，同步刷新校验文件：
-
-```powershell
-dotnet msbuild repo.proj -t:UpdateToolChecksums
-```
-
 ## 仓库结构
-
-常用目录和文件如下。
 
 - `tools/Taiwu.Mods.Cli/`：创建 mod、内部共享项目、取消解决方案注册和打包可部署目录的命令行工具。
 - `mods/`：实际 mod 源码目录。前后端插件项目、Taiwu 引用、Publicizer 和依赖内部化约定见
@@ -128,10 +103,30 @@ dotnet msbuild repo.proj -t:UpdateToolChecksums
 - `templates/`：命令行工具创建项目时使用的 Scriban 模板。模板维护约定见
   `templates/README.md`。
 - `.github/workflows/`：GitHub Actions 工作流，覆盖 PR 验证和 mod release 打包。
-- `repo.proj`：安装本地工具、检查和格式化命令。
+- `artifacts/mods/`：`pack-mod` 输出的可部署目录。
 - `Taiwu.Mods.Paths.props`：仓库级 MSBuild 路径 alias，供子目录 props 和项目引用稳定目录。
-- `aqua.yml`、`aqua-checksums.json`：仓库维护工具版本和下载校验。
 - `Taiwu.Mods.slnx`：解决方案入口，收录工具、已注册的 mod 项目和内部共享项目。
 - `Directory.Build.props`：仓库级编译、分析器和代码质量规则。
 - `Directory.Packages.props`：NuGet 包版本。
 - `NuGet.config`：NuGet 包源、包源映射，以及从环境变量读取 GitHub Packages 凭据的配置。
+
+## 仓库维护
+
+需要检查或格式化仓库文档、配置和项目文件时运行：
+
+```powershell
+dotnet msbuild repo.proj -t:Check
+dotnet msbuild repo.proj -t:Format
+```
+
+这些目标通过 `aqua` 调用仓库声明的维护工具。本机没有 `aqua` 时，Windows 可用 `winget install aquaproj.aqua` 或 `scoop install aqua`。如需提前安装这些工具，运行：
+
+```powershell
+dotnet msbuild repo.proj -t:InstallTools
+```
+
+更新 `aqua.yml` 中的工具版本后，同步刷新校验文件：
+
+```powershell
+dotnet msbuild repo.proj -t:UpdateToolChecksums
+```
