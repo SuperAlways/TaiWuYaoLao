@@ -1,4 +1,4 @@
-<Project InitialTargets="ValidateTaiwuModSide">
+<Project>
   <Import
     Project="$([MSBuild]::GetPathOfFileAbove('Taiwu.Mods.Paths.props', '$(MSBuildThisFileDirectory)'))"
   />
@@ -19,45 +19,16 @@
     >$(MSBuildProjectName)</AssemblyName>
     <RootNamespace Condition="'$(RootNamespace)' == ''"
     >$(MSBuildProjectName)</RootNamespace>
-    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <GenerateDependencyFile Condition="'$(GenerateDependencyFile)' == ''"
     >false</GenerateDependencyFile>
     <UsePublicizer
       Condition="'$(UsePublicizer)' == '' And ('$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend')"
     >true</UsePublicizer>
-    <InternalizeRuntimeDependencies
-      Condition="'$(InternalizeRuntimeDependencies)' == ''"
-    >true</InternalizeRuntimeDependencies>
-    <RenameInternalizedDependencies
-      Condition="'$(RenameInternalizedDependencies)' == ''"
-    >true</RenameInternalizedDependencies>
-    <AllowDuplicateInternalizedResources
-      Condition="'$(AllowDuplicateInternalizedResources)' == ''"
-    >false</AllowDuplicateInternalizedResources>
-    <ILRepackTargetsFile Condition="'$(ILRepackTargetsFile)' == ''"
-    >$(TaiwuModsModsDir)Taiwu.Mod.ILRepack.targets</ILRepackTargetsFile>
   </PropertyGroup>
-
-  <Target Name="ValidateTaiwuModSide">
-    <Error
-      Condition="'$(TaiwuModSide)' == ''"
-      Text="TaiwuModSide must be Frontend or Backend. Set it in Taiwu.Mod.props."
-    />
-    <Error
-      Condition="'$(TaiwuModSide)' != 'Frontend' And '$(TaiwuModSide)' != 'Backend'"
-      Text="Unsupported TaiwuModSide '$(TaiwuModSide)'. Use Frontend or Backend."
-    />
-  </Target>
 
   <ItemGroup
     Condition="'$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend'"
   >
-    <PackageReference
-      Include="ILRepack.Lib.MSBuild.Task"
-      PrivateAssets="all"
-      ExcludeAssets="runtime"
-      Condition="'$(InternalizeRuntimeDependencies)' != 'false'"
-    />
     <PackageReference
       Include="Krafs.Publicizer"
       PrivateAssets="all"

@@ -1,8 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="CliWrap" />
+    <PackageReference
+      Include="ILRepack"
+      GeneratePathProperty="true"
+      PrivateAssets="all"
+    />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Scriban" />
     <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(PkgILRepack)' != ''">
+    <None
+      Include="$(PkgILRepack)/tools/*"
+      Link="tools/%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+    />
   </ItemGroup>
 </Project>

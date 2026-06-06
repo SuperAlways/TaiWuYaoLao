@@ -13,9 +13,11 @@
   </ItemGroup>
   -->
 
+  <!-- merge/copy 只解析入口项目 build 输出中的 copy-local 引用。 -->
   <!--
-  <PropertyGroup>
-    <InternalizeRuntimeDependencies>false</InternalizeRuntimeDependencies>
-  </PropertyGroup>
+  <ItemGroup>
+    <TaiwuModMergeDependency Include="Your.Assembly.dll" />
+    <TaiwuModCopyDependency Include="Other.Assembly.dll" />
+  </ItemGroup>
   -->
 </Project>

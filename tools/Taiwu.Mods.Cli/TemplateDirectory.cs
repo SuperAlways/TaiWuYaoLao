@@ -21,7 +21,7 @@ internal sealed class TemplateDirectory
     {
         if (!Directory.Exists(templateRoot))
         {
-            throw new DirectoryNotFoundException($"Template directory does not exist: {templateRoot}");
+            throw new DirectoryNotFoundException($"模板目录不存在：{templateRoot}");
         }
 
         return new TemplateDirectory(templateRoot, renderer);
@@ -45,7 +45,7 @@ internal sealed class TemplateDirectory
 
         if (File.Exists(destinationPath) && !force)
         {
-            throw new IOException($"Destination file already exists: {destinationPath}");
+            throw new IOException($"目标文件已存在：{destinationPath}");
         }
 
         string? destinationDirectory = Path.GetDirectoryName(destinationPath);
@@ -68,7 +68,7 @@ internal sealed class TemplateDirectory
     {
         if (string.IsNullOrWhiteSpace(destinationRelativePath))
         {
-            throw new InvalidOperationException($"Template path rendered to an empty path: {templateFile}");
+            throw new InvalidOperationException($"模板路径渲染为空：{templateFile}");
         }
 
         string destinationPath = Path.GetFullPath(Path.Combine(destinationRoot, destinationRelativePath));
@@ -79,7 +79,7 @@ internal sealed class TemplateDirectory
             || ContainsParentDirectorySegment(destinationRelativePath)
             || !destinationPath.StartsWith(destinationRootPath, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException($"Template path rendered outside the destination root: {templateFile}");
+            throw new InvalidOperationException($"模板路径渲染到了目标根目录之外：{templateFile}");
         }
 
         return destinationPath;

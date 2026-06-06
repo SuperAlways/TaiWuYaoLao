@@ -1,4 +1,9 @@
 <Project>
+  <Import
+    Project="$(TaiwuModsModsDir)Taiwu.Mod.Pack.targets"
+    Condition="'$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend'"
+  />
+
   <PropertyGroup
     Condition="'$(UsePublicizer)' == 'true' And '$(TaiwuModSide)' == 'Frontend'"
   >

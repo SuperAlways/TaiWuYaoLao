@@ -22,7 +22,7 @@ internal static class ProcessRunner
             return;
         }
 
-        throw new InvalidOperationException($"{CreateDisplayCommand(fileName, arguments)} failed with exit code {result.ExitCode}.");
+        throw new InvalidOperationException($"命令执行失败（退出码 {result.ExitCode}）：{CreateDisplayCommand(fileName, arguments)}");
     }
 
     public static async Task<string> RunForOutputAsync(
@@ -39,7 +39,7 @@ internal static class ProcessRunner
         {
             WriteIfNotEmpty(Console.Out, result.StandardOutput);
             WriteIfNotEmpty(Console.Error, result.StandardError);
-            throw new InvalidOperationException($"{CreateDisplayCommand(fileName, arguments)} failed with exit code {result.ExitCode}.");
+            throw new InvalidOperationException($"命令执行失败（退出码 {result.ExitCode}）：{CreateDisplayCommand(fileName, arguments)}");
         }
 
         return result.StandardOutput.Trim();

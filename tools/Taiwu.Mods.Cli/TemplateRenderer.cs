@@ -65,7 +65,7 @@ internal sealed class TemplateRenderer
         }
         catch (ScriptRuntimeException ex)
         {
-            throw new InvalidOperationException($"Failed to render template '{sourcePath}': {ex.Message}", ex);
+            throw new InvalidOperationException($"渲染模板失败 '{sourcePath}'：{ex.Message}", ex);
         }
     }
 
@@ -94,6 +94,12 @@ internal sealed class TemplateRenderer
 
     private static string CreateErrorMessage(string operation, string sourcePath, IEnumerable<object> messages)
     {
-        return $"Failed to {operation} template '{sourcePath}':{Environment.NewLine}{string.Join(Environment.NewLine, messages)}";
+        string operationText = operation switch
+        {
+            "parse" => "解析",
+            _ => operation,
+        };
+
+        return $"{operationText}模板失败 '{sourcePath}'：{Environment.NewLine}{string.Join(Environment.NewLine, messages)}";
     }
 }
