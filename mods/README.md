@@ -93,14 +93,14 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 每个依赖选择一种动作。同一个 DLL 同时写进 `TaiwuModMergeDependency` 和
 `TaiwuModCopyDependency` 会报错；复制依赖写入 `Plugins/<DLL 文件名>`。
 
-`TaiwuModMergeDependency` 和 `TaiwuModCopyDependency` 都只从入口项目的 copy-local 引用中解析，也就是
-标准 MSBuild `ResolveReferences` 已决定复制到入口项目输出目录的程序集。`pack-mod` 只从这个 build
-输出中按 DLL 文件名筛选，再执行 copy 或 merge。
+`TaiwuModMergeDependency` 和 `TaiwuModCopyDependency` 都只从入口项目本次构建的 copy-local 输出 DLL 中
+解析。也就是说，`pack-mod` 复用标准 MSBuild/NuGet 已经做出的“哪些程序集应该进入入口项目输出目录”
+决策，只按 DLL 文件名从这些输出里筛选，再执行 copy 或 merge。
 
-`Include` 使用 DLL 文件名；解析范围是入口项目输出目录，NuGet 缓存路径和被引用项目的输出路径不参与
-匹配。需要随 mod 部署的包依赖，也要先由项目本身通过标准 MSBuild 行为进入入口项目 build 输出；
-例如在需要复制 NuGet 依赖的 class library 中设置 `CopyLocalLockFileAssemblies=true`。游戏或运行时
-已经提供的 DLL 作为外部运行时依赖处理。
+`Include` 使用 DLL 文件名；NuGet 缓存路径、被引用项目的输出路径，以及残留在入口项目输出目录但本次构建
+不再 copy-local 的同名 DLL 都不参与匹配。需要随 mod 部署的依赖，要先通过项目自身的 MSBuild/NuGet
+引用配置进入入口项目 copy-local 输出，再用 `TaiwuModMergeDependency` 或 `TaiwuModCopyDependency`
+声明打包动作。游戏或运行时已经提供的 DLL 作为外部运行时依赖处理。
 
 被合并的依赖会内部化并重命名，降低不同 mod 携带同名依赖时的冲突风险。需要调整内部化策略时，在项目中设置：
 

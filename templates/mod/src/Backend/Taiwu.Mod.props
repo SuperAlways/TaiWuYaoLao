@@ -13,7 +13,7 @@
   </ItemGroup>
   -->
 
-  <!-- merge/copy 只解析入口项目 build 输出中的 copy-local 引用。 -->
+  <!-- merge/copy 只匹配入口项目 build copy-local 输出中的 DLL。 -->
   <!--
   <ItemGroup>
     <TaiwuModMergeDependency Include="Your.Assembly.dll" />

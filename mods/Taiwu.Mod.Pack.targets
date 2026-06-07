@@ -15,18 +15,22 @@
 
   <Target
     Name="ResolveTaiwuModPackManifestAssets"
-    DependsOnTargets="ResolveReferences"
+    DependsOnTargets="Build"
   >
     <ItemGroup>
-      <_TaiwuModDependencyCandidate
-        Include="$(TargetDir)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)"
-        Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' And Exists('$(TargetDir)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)')"
+      <_TaiwuModCopyLocalDependencyOutput
+        Include="$(OutDir)%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)"
+        Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll'"
       >
         <AssemblyFileName
         >%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</AssemblyFileName>
         <AssemblyFileNameKey
         >$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)').ToLowerInvariant())</AssemblyFileNameKey>
-      </_TaiwuModDependencyCandidate>
+      </_TaiwuModCopyLocalDependencyOutput>
+      <_TaiwuModDependencyCandidate
+        Include="@(_TaiwuModCopyLocalDependencyOutput)"
+        Condition="Exists('%(_TaiwuModCopyLocalDependencyOutput.FullPath)')"
+      />
       <_TaiwuModUniqueDependencyCandidate
         Include="@(_TaiwuModDependencyCandidate)"
         KeepDuplicates="false"
@@ -120,11 +124,11 @@
     />
     <Error
       Condition="'@(_TaiwuModUnresolvedMergeDependency)' != ''"
-      Text="TaiwuModMergeDependency was not found in copy-local references: @(_TaiwuModUnresolvedMergeDependency->'%(AssemblyFileName)', ', ')"
+      Text="TaiwuModMergeDependency was not found in build copy-local outputs: @(_TaiwuModUnresolvedMergeDependency->'%(AssemblyFileName)', ', ')"
     />
     <Error
       Condition="'@(_TaiwuModUnresolvedCopyDependency)' != ''"
-      Text="TaiwuModCopyDependency was not found in copy-local references: @(_TaiwuModUnresolvedCopyDependency->'%(AssemblyFileName)', ', ')"
+      Text="TaiwuModCopyDependency was not found in build copy-local outputs: @(_TaiwuModUnresolvedCopyDependency->'%(AssemblyFileName)', ', ')"
     />
   </Target>
 

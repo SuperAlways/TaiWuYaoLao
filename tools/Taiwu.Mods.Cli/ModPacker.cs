@@ -14,11 +14,11 @@ internal sealed class ModPacker(
         string modRoot = Path.Combine(modsRoot, modName);
         string packageRoot = Path.Combine(artifactsRoot, modName);
 
-        string[] projectPaths = GetModProjectFullPaths(modName);
-        foreach (string projectPath in projectPaths)
+        List<PackManifest> manifests = [];
+        foreach (string projectPath in GetModProjectFullPaths(modName))
         {
-            await ProcessRunner.RunAsync("dotnet", repoRoot, ["build", projectPath, "--configuration", configuration], cancellationToken)
-                .ConfigureAwait(false);
+            PackManifest manifest = await GenerateProjectPackManifestAsync(projectPath, cancellationToken).ConfigureAwait(false);
+            manifests.Add(manifest);
         }
 
         if (Directory.Exists(packageRoot))
@@ -27,9 +27,8 @@ internal sealed class ModPacker(
         }
 
         CopyPackageFiles(modRoot, packageRoot);
-        foreach (string projectPath in projectPaths)
+        foreach (PackManifest manifest in manifests)
         {
-            PackManifest manifest = await GenerateProjectPackManifestAsync(projectPath, cancellationToken).ConfigureAwait(false);
             await WritePackManifestOutputsAsync(manifest, packageRoot, cancellationToken).ConfigureAwait(false);
         }
 
@@ -69,7 +68,7 @@ internal sealed class ModPacker(
         await ProcessRunner.RunAsync(
             "dotnet",
             repoRoot,
-            ["msbuild", projectPath, "-t:GenerateTaiwuModPackManifest", $"-p:Configuration={configuration}"],
+            ["msbuild", projectPath, "-restore", "-t:GenerateTaiwuModPackManifest", $"-p:Configuration={configuration}"],
             cancellationToken).ConfigureAwait(false);
 
         return ReadPackManifest(manifestPath);
