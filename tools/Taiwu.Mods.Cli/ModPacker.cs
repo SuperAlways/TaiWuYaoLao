@@ -71,8 +71,7 @@ internal sealed class ModPacker(
         CancellationToken cancellationToken)
     {
         PackPlanBuilder builder = new();
-        PackFile? entry = null;
-        PackAssemblyOptions? options = null;
+        PackAssemblyInput? assemblyInput = null;
         List<PackFile> mergeDependencies = [];
         List<string> libraryPaths = [];
 
@@ -84,13 +83,12 @@ internal sealed class ModPacker(
             switch (output.Kind)
             {
                 case "Entry":
-                    if (entry is not null)
+                    if (assemblyInput is not null)
                     {
                         throw new InvalidOperationException($"项目声明了多个组包入口程序集：{projectPath}");
                     }
 
-                    entry = CreateFile(output);
-                    options = CreateOptions(output);
+                    assemblyInput = new PackAssemblyInput(CreateFile(output), CreateOptions(output));
                     break;
 
                 case "Merge":
@@ -114,7 +112,7 @@ internal sealed class ModPacker(
             }
         }
 
-        if (entry is null)
+        if (assemblyInput is null)
         {
             if (mergeDependencies.Count != 0)
             {
@@ -125,10 +123,10 @@ internal sealed class ModPacker(
         {
             builder.AddAssembly(
                 new PackAssembly(
-                    entry,
+                    assemblyInput.Entry,
                     mergeDependencies,
                     [.. libraryPaths.Distinct(StringComparer.OrdinalIgnoreCase)],
-                    options ?? throw new InvalidOperationException($"项目组包入口程序集缺少合并选项：{projectPath}")));
+                    assemblyInput.Options));
         }
 
         return builder.Build();
@@ -451,6 +449,10 @@ internal sealed class ModPacker(
         PackFile Entry,
         IReadOnlyList<PackFile> MergeDependencies,
         IReadOnlyList<string> LibraryPaths,
+        PackAssemblyOptions Options);
+
+    private sealed record PackAssemblyInput(
+        PackFile Entry,
         PackAssemblyOptions Options);
 
     private abstract record PackPlanOutput(

@@ -55,7 +55,7 @@ internal sealed class TemplateRenderer
         Template template = Template.Parse(templateText, sourcePath);
         if (template.HasErrors)
         {
-            throw new InvalidOperationException(CreateErrorMessage("parse", sourcePath, template.Messages));
+            throw new InvalidOperationException(CreateParseErrorMessage(sourcePath, template.Messages));
         }
 
         TemplateContext context = CreateContext();
@@ -92,14 +92,8 @@ internal sealed class TemplateRenderer
         return context;
     }
 
-    private static string CreateErrorMessage(string operation, string sourcePath, IEnumerable<object> messages)
+    private static string CreateParseErrorMessage(string sourcePath, IEnumerable<object> messages)
     {
-        string operationText = operation switch
-        {
-            "parse" => "解析",
-            _ => operation,
-        };
-
-        return $"{operationText}模板失败 '{sourcePath}'：{Environment.NewLine}{string.Join(Environment.NewLine, messages)}";
+        return $"解析模板失败 '{sourcePath}'：{Environment.NewLine}{string.Join(Environment.NewLine, messages)}";
     }
 }

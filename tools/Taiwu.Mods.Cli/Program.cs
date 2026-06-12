@@ -85,16 +85,15 @@ internal static class Program
             throw new InvalidOperationException($"Mod 目录已存在：{modRoot}。如需覆盖模板文件，请传入 --force。");
         }
 
+        EnsureCanRegisterGeneratedProject(modRoot, repoRoot, "Mod");
+
         TemplateDirectory.Create(templateRoot, TemplateRenderer.ForMod(options.Name, DefaultModVersion)).CopyTo(modRoot, options.Force);
 
-        if (!options.SkipSolution && IsUnderDirectory(modRoot, repoRoot))
-        {
-            await AddProjectsToSolutionAsync(
-                repoRoot,
-                ModsSolutionFolderName,
-                GetModProjectFullPaths(modsRoot, options.Name),
-                cancellationToken);
-        }
+        await AddProjectsToSolutionAsync(
+            repoRoot,
+            ModsSolutionFolderName,
+            GetModProjectFullPaths(modsRoot, options.Name),
+            cancellationToken);
 
         Console.WriteLine($"已创建 mod '{options.Name}'：{modRoot}");
     }
@@ -114,16 +113,15 @@ internal static class Program
             throw new InvalidOperationException($"内部共享项目目录已存在：{projectRoot}。如需覆盖模板文件，请传入 --force。");
         }
 
+        EnsureCanRegisterGeneratedProject(projectRoot, repoRoot, "内部共享项目");
+
         TemplateDirectory.Create(templateRoot, TemplateRenderer.ForSharedProject(options.Name, side, GetDefaultSharedProjectTargetFramework(side))).CopyTo(projectRoot, options.Force);
 
-        if (!options.SkipSolution && IsUnderDirectory(projectRoot, repoRoot))
-        {
-            await AddProjectsToSolutionAsync(
-                repoRoot,
-                SharedSolutionFolderName,
-                [GetSharedProjectFullPath(sharedRoot, options.Name)],
-                cancellationToken);
-        }
+        await AddProjectsToSolutionAsync(
+            repoRoot,
+            SharedSolutionFolderName,
+            [GetSharedProjectFullPath(sharedRoot, options.Name)],
+            cancellationToken);
 
         Console.WriteLine($"已创建内部共享项目 '{options.Name}'：{projectRoot}");
     }
@@ -234,6 +232,20 @@ internal static class Program
     private static string GetSharedProjectFullPath(string sharedRoot, string projectName)
     {
         return Path.Combine(sharedRoot, projectName, $"{projectName}.csproj");
+    }
+
+    private static void EnsureCanRegisterGeneratedProject(
+        string projectRoot,
+        string repoRoot,
+        string projectKind)
+    {
+        if (IsUnderDirectory(projectRoot, repoRoot))
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"{projectKind} 目录不在仓库根目录下，无法注册到解决方案：{projectRoot}");
     }
 
     private static void ValidateNamespaceStyleIdentifier(string value, string valueName)

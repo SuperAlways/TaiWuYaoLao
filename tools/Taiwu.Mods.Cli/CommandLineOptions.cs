@@ -27,8 +27,6 @@ internal sealed class CommandLineOptions
 
     public bool Force { get; init; }
 
-    public bool SkipSolution { get; init; }
-
     public static Command CreateCommand(Func<CommandLineOptions, CancellationToken, Task> run)
     {
         Command command = new("Taiwu.Mods.Cli", "太吾 mod 仓库维护命令。");
@@ -49,14 +47,12 @@ internal sealed class CommandLineOptions
         Option<string> repoRootOption = CreateRepoRootOption();
         Option<string?> modsRootOption = CreateModsRootOption();
         Option<bool> forceOption = CreateForceOption();
-        Option<bool> skipSolutionOption = CreateSkipSolutionOption();
         Command command = new("create-mod", "复制 mod 模板并把项目注册到解决方案。");
 
         command.Options.Add(nameOption);
         command.Options.Add(repoRootOption);
         command.Options.Add(modsRootOption);
         command.Options.Add(forceOption);
-        command.Options.Add(skipSolutionOption);
         command.SetAction((parseResult, cancellationToken) =>
             run(
                 new CommandLineOptions
@@ -66,7 +62,6 @@ internal sealed class CommandLineOptions
                     RepoRoot = parseResult.GetRequiredValue(repoRootOption),
                     ModsRoot = parseResult.GetValue(modsRootOption),
                     Force = parseResult.GetValue(forceOption),
-                    SkipSolution = parseResult.GetValue(skipSolutionOption),
                 },
                 cancellationToken));
 
@@ -134,7 +129,6 @@ internal sealed class CommandLineOptions
         Option<string?> sharedRootOption = CreateSharedRootOption();
         Option<string> sharedSideOption = CreateSharedSideOption();
         Option<bool> forceOption = CreateForceOption();
-        Option<bool> skipSolutionOption = CreateSkipSolutionOption();
         Command command = new("create-shared", "复制内部共享项目模板并把项目注册到解决方案。");
 
         command.Options.Add(nameOption);
@@ -142,7 +136,6 @@ internal sealed class CommandLineOptions
         command.Options.Add(sharedRootOption);
         command.Options.Add(sharedSideOption);
         command.Options.Add(forceOption);
-        command.Options.Add(skipSolutionOption);
         command.SetAction((parseResult, cancellationToken) =>
             run(
                 new CommandLineOptions
@@ -153,7 +146,6 @@ internal sealed class CommandLineOptions
                     SharedRoot = parseResult.GetValue(sharedRootOption),
                     SharedSide = parseResult.GetRequiredValue(sharedSideOption),
                     Force = parseResult.GetValue(forceOption),
-                    SkipSolution = parseResult.GetValue(skipSolutionOption),
                 },
                 cancellationToken));
 
@@ -259,13 +251,6 @@ internal sealed class CommandLineOptions
         };
     }
 
-    private static Option<bool> CreateSkipSolutionOption()
-    {
-        return new Option<bool>("--skip-solution")
-        {
-            Description = "不把新建项目加入解决方案。",
-        };
-    }
 }
 
 internal enum CliOperation
