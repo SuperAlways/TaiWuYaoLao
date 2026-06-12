@@ -19,7 +19,8 @@
     >$(MSBuildProjectName)</AssemblyName>
     <RootNamespace Condition="'$(RootNamespace)' == ''"
     >$(MSBuildProjectName)</RootNamespace>
-    <GenerateDependencyFile Condition="'$(GenerateDependencyFile)' == ''"
+    <GenerateDependencyFile
+      Condition="'$(GenerateDependencyFile)' == '' And ('$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend')"
     >false</GenerateDependencyFile>
     <UsePublicizer
       Condition="'$(UsePublicizer)' == '' And ('$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend')"

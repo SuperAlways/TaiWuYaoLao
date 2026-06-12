@@ -16,7 +16,7 @@ dotnet run --project tools/Taiwu.Mods.Cli -- create-mod --name MyMod
 
 `ModName` 必须是 C# 命名空间风格的标识符，例如 `MyMod` 或
 `MyCompany.MyMod`。创建后，生成器会复制 `templates/mod/`，渲染模板变量，并把
-前后端项目加入 `Taiwu.Mods.slnx`。
+模板内项目加入 `Taiwu.Mods.slnx`。生成的 `Taiwu.Mod.Pack.proj` 是该 mod 的可部署目录组包入口。
 
 创建一个内部共享项目：
 
@@ -68,9 +68,9 @@ dotnet build Taiwu.Mods.slnx
 dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 ```
 
-`pack-mod` 默认使用 `Release` 构建前后端项目，再把 `Config.Lua`、插件入口 DLL，以及按声明合并
-或复制的依赖组装到 `artifacts/mods/MyMod/`。这个目录可直接替换游戏内对应 mod 目录；插件入口和
-依赖部署约定见 `mods/README.md`。
+`pack-mod` 默认使用 `Release` 运行 `mods/MyMod/Taiwu.Mod.Pack.proj`，并把该组包入口
+声明的文件、目录和项目产物组装到 `artifacts/mods/MyMod/`。这个目录可直接替换游戏内对应 mod
+目录；组包声明、插件入口、依赖部署和发布目录项目约定见 `mods/README.md`。
 
 发布到 GitHub Release：
 
@@ -98,8 +98,8 @@ dotnet run --project tools/Taiwu.Mods.Cli -- remove-shared --name MyCompany.Taiw
 ## 仓库结构
 
 - `tools/Taiwu.Mods.Cli/`：创建 mod、内部共享项目、取消解决方案注册和打包可部署目录的命令行工具。
-- `mods/`：实际 mod 源码目录。前后端插件项目、Taiwu 引用、Publicizer 和依赖部署约定见
-  `mods/README.md`。
+- `mods/`：实际 mod 源码目录。组包声明、前后端插件项目、Taiwu 引用、Publicizer、插件依赖和
+  发布目录项目约定见 `mods/README.md`。
 - `shared/`：内部共享项目目录。共享边界、目标框架和项目级配置入口见 `shared/README.md`。
 - `templates/`：命令行工具创建项目时使用的 Scriban 模板。模板维护约定见
   `templates/README.md`。

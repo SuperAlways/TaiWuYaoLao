@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Taiwu.Mods.Cli;
 
 internal sealed class ModPacker(
@@ -6,125 +8,221 @@ internal sealed class ModPacker(
     string artifactsRoot,
     string configuration)
 {
-    private const string PluginsDirectoryName = "Plugins";
     private const string ILRepackToolRelativePath = "tools/ILRepack.exe";
+    private const string PackProjectFileName = "Taiwu.Mod.Pack.proj";
+    private const string ResolvePackOutputsTargetName = "ResolveTaiwuModPackOutputs";
 
     public async Task PackAsync(string modName, CancellationToken cancellationToken)
     {
         string modRoot = Path.Combine(modsRoot, modName);
         string packageRoot = Path.Combine(artifactsRoot, modName);
-
-        List<PackManifest> manifests = [];
-        foreach (string projectPath in GetModProjectFullPaths(modName))
+        string packProjectPath = Path.Combine(modRoot, PackProjectFileName);
+        if (!File.Exists(packProjectPath))
         {
-            PackManifest manifest = await GenerateProjectPackManifestAsync(projectPath, cancellationToken).ConfigureAwait(false);
-            manifests.Add(manifest);
+            throw new InvalidOperationException($"未找到 mod 组包入口：{packProjectPath}");
         }
+
+        PackPlan plan = await ResolveModPackAsync(packProjectPath, cancellationToken);
 
         if (Directory.Exists(packageRoot))
         {
             Directory.Delete(packageRoot, recursive: true);
         }
 
-        CopyPackageFiles(modRoot, packageRoot);
-        foreach (PackManifest manifest in manifests)
-        {
-            await WritePackManifestOutputsAsync(manifest, packageRoot, cancellationToken).ConfigureAwait(false);
-        }
+        await WritePackPlanOutputsAsync(plan, packageRoot, cancellationToken);
 
         Console.WriteLine($"已打包 mod '{modName}'：{packageRoot}");
     }
 
-    private static void CopyPackageFiles(string modRoot, string packageRoot)
+    private async Task<PackPlan> ResolveModPackAsync(
+        string packProjectPath,
+        CancellationToken cancellationToken)
     {
-        foreach (string sourcePath in Directory.EnumerateFiles(modRoot, "*", SearchOption.AllDirectories))
+        PackPlanBuilder builder = new();
+        foreach (PackOutput output in await GetPackOutputsAsync(
+            packProjectPath,
+            restore: false,
+            cancellationToken))
         {
-            string relativePath = Path.GetRelativePath(modRoot, sourcePath);
-            if (ShouldExcludeFromPackage(relativePath))
+            switch (output.Kind)
             {
-                continue;
+                case "Project":
+                    builder.Add(await ResolveProjectPackAsync(output.SourcePath, cancellationToken));
+                    break;
+
+                case "File":
+                    builder.AddFile(CreateFile(output));
+                    break;
+
+                case "Directory":
+                    builder.AddDirectory(CreateDirectory(output));
+                    break;
+
+                default:
+                    throw new InvalidOperationException($"mod 组包入口输出了不支持的包产物类型 '{output.Kind}'：{output.SourcePath}");
             }
-
-            CopyFile(sourcePath, Path.Combine(packageRoot, relativePath));
-        }
-    }
-
-    private static bool ShouldExcludeFromPackage(string relativePath)
-    {
-        string normalizedPath = relativePath.Replace(Path.DirectorySeparatorChar, '/');
-        string fileName = Path.GetFileName(normalizedPath);
-        return normalizedPath.StartsWith("src/", StringComparison.Ordinal)
-            || normalizedPath.StartsWith($"{PluginsDirectoryName}/", StringComparison.Ordinal)
-            || normalizedPath.StartsWith("bin/", StringComparison.Ordinal)
-            || normalizedPath.StartsWith("obj/", StringComparison.Ordinal)
-            || normalizedPath.Contains("/bin/", StringComparison.Ordinal)
-            || normalizedPath.Contains("/obj/", StringComparison.Ordinal)
-            || fileName is ".gitignore" or ".gitkeep" or "README.md";
-    }
-
-    private async Task<PackManifest> GenerateProjectPackManifestAsync(string projectPath, CancellationToken cancellationToken)
-    {
-        string manifestPath = await GetProjectPackManifestPathAsync(projectPath, cancellationToken).ConfigureAwait(false);
-        await ProcessRunner.RunAsync(
-            "dotnet",
-            repoRoot,
-            ["msbuild", projectPath, "-restore", "-t:GenerateTaiwuModPackManifest", $"-p:Configuration={configuration}"],
-            cancellationToken).ConfigureAwait(false);
-
-        return ReadPackManifest(manifestPath);
-    }
-
-    private async Task<string> GetProjectPackManifestPathAsync(string projectPath, CancellationToken cancellationToken)
-    {
-        string manifestPath = await ProcessRunner.RunForOutputAsync(
-            "dotnet",
-            repoRoot,
-            ["msbuild", projectPath, "-getProperty:TaiwuModPackManifestFile", $"-p:Configuration={configuration}"],
-            cancellationToken).ConfigureAwait(false);
-
-        return Path.GetFullPath(NormalizePathSeparators(manifestPath), Path.GetDirectoryName(projectPath)!);
-    }
-
-    private static PackManifest ReadPackManifest(string manifestPath)
-    {
-        PackManifestBuilder builder = new(manifestPath);
-        int lineNumber = 0;
-        foreach (string line in File.ReadLines(manifestPath))
-        {
-            lineNumber++;
-            string[] fields = line.TrimStart('\uFEFF').Split('|');
-            builder.Add(fields[0], fields[1], fields[2], lineNumber);
         }
 
         return builder.Build();
     }
 
-    private async Task WritePackManifestOutputsAsync(
-        PackManifest manifest,
-        string packageRoot,
+    private async Task<PackPlan> ResolveProjectPackAsync(
+        string projectPath,
         CancellationToken cancellationToken)
     {
-        if (manifest.MergeDependencies.Count == 0)
+        PackPlanBuilder builder = new();
+        PackFile? entry = null;
+        PackAssemblyOptions? options = null;
+        List<PackFile> mergeDependencies = [];
+        List<string> libraryPaths = [];
+
+        foreach (PackOutput output in await GetPackOutputsAsync(
+            projectPath,
+            restore: true,
+            cancellationToken))
         {
-            CopyManifestFile(manifest.Entry, packageRoot);
+            switch (output.Kind)
+            {
+                case "Entry":
+                    if (entry is not null)
+                    {
+                        throw new InvalidOperationException($"项目声明了多个组包入口程序集：{projectPath}");
+                    }
+
+                    entry = CreateFile(output);
+                    options = CreateOptions(output);
+                    break;
+
+                case "Merge":
+                    mergeDependencies.Add(CreateFile(output, packagePath: string.Empty));
+                    break;
+
+                case "Library":
+                    libraryPaths.Add(output.SourcePath);
+                    break;
+
+                case "File":
+                    builder.AddFile(CreateFile(output));
+                    break;
+
+                case "Directory":
+                    builder.AddDirectory(CreateDirectory(output));
+                    break;
+
+                default:
+                    throw new InvalidOperationException($"项目输出了不支持的包产物类型 '{output.Kind}'：{output.SourcePath}");
+            }
+        }
+
+        if (entry is null)
+        {
+            if (mergeDependencies.Count != 0)
+            {
+                throw new InvalidOperationException($"项目声明了需要合并的依赖，但没有声明 TaiwuModPackEntry：{projectPath}");
+            }
         }
         else
         {
-            await MergeEntryAssemblyAsync(manifest, packageRoot, cancellationToken).ConfigureAwait(false);
+            builder.AddAssembly(
+                new PackAssembly(
+                    entry,
+                    mergeDependencies,
+                    [.. libraryPaths.Distinct(StringComparer.OrdinalIgnoreCase)],
+                    options ?? throw new InvalidOperationException($"项目组包入口程序集缺少合并选项：{projectPath}")));
         }
 
-        foreach (PackManifestFile dependency in manifest.CopyDependencies)
+        return builder.Build();
+    }
+
+    private async Task<IReadOnlyList<PackOutput>> GetPackOutputsAsync(
+        string projectPath,
+        bool restore,
+        CancellationToken cancellationToken)
+    {
+        string target = restore
+            ? $"Restore;{ResolvePackOutputsTargetName}"
+            : ResolvePackOutputsTargetName;
+        string output = await ProcessRunner.RunForOutputAsync(
+            "dotnet",
+            repoRoot,
+            [
+                "msbuild",
+                projectPath,
+                $"-t:{target}",
+                $"-getTargetResult:{ResolvePackOutputsTargetName}",
+                $"-p:Configuration={configuration}",
+            ],
+            cancellationToken);
+
+        return ReadPackOutputs(output, projectPath);
+    }
+
+    private static List<PackOutput> ReadPackOutputs(string json, string projectPath)
+    {
+        using JsonDocument document = JsonDocument.Parse(json);
+        JsonElement targetResult = document.RootElement
+            .GetProperty("TargetResults")
+            .GetProperty(ResolvePackOutputsTargetName);
+        string result = GetRequiredString(targetResult, "Result");
+        if (!string.Equals(result, "Success", StringComparison.Ordinal))
         {
-            CopyManifestFile(dependency, packageRoot);
+            throw new InvalidOperationException($"MSBuild 目标执行失败：{projectPath}: {ResolvePackOutputsTargetName}: {result}");
+        }
+
+        if (!targetResult.TryGetProperty("Items", out JsonElement items))
+        {
+            return [];
+        }
+
+        List<PackOutput> outputs = [];
+        foreach (JsonElement item in items.EnumerateArray())
+        {
+            Dictionary<string, string> metadata = CreateMetadata(item);
+            outputs.Add(
+                new PackOutput(
+                    metadata["SourcePath"],
+                    metadata["Kind"],
+                    metadata.GetValueOrDefault("PackagePath"),
+                    metadata));
+        }
+
+        return outputs;
+    }
+
+    private async Task WritePackPlanOutputsAsync(
+        PackPlan plan,
+        string packageRoot,
+        CancellationToken cancellationToken)
+    {
+        foreach (PackAssembly assembly in plan.Assemblies)
+        {
+            if (assembly.MergeDependencies.Count == 0)
+            {
+                CopyPackFile(assembly.Entry, packageRoot);
+            }
+            else
+            {
+                await MergeEntryAssemblyAsync(assembly, packageRoot, cancellationToken);
+            }
+        }
+
+        foreach (PackFile file in plan.Files)
+        {
+            CopyPackFile(file, packageRoot);
+        }
+
+        foreach (PackDirectory directory in plan.Directories)
+        {
+            CopyPackDirectory(directory, packageRoot);
         }
     }
 
     private async Task MergeEntryAssemblyAsync(
-        PackManifest manifest,
+        PackAssembly assembly,
         string packageRoot,
         CancellationToken cancellationToken)
     {
-        string outputPath = GetPackageDestinationPath(manifest.Entry, packageRoot);
+        string outputPath = GetPackageDestinationPath(assembly.Entry, packageRoot);
         string? outputDirectory = Path.GetDirectoryName(outputPath);
         if (!string.IsNullOrEmpty(outputDirectory))
         {
@@ -139,39 +237,49 @@ internal sealed class ModPacker(
             $"/out:{outputPath}",
         ];
 
-        if (manifest.Options.InternalizeMergedDependencies)
+        if (assembly.Options.InternalizeMergedDependencies)
         {
             arguments.Add("/internalize");
-            if (manifest.Options.RenameInternalizedDependencies)
+            if (assembly.Options.RenameInternalizedDependencies)
             {
                 arguments.Add("/renameinternalized");
             }
         }
 
-        if (manifest.Options.AllowDuplicateInternalizedResources)
+        if (assembly.Options.AllowDuplicateInternalizedResources)
         {
             arguments.Add("/allowduplicateresources");
         }
 
-        if (!string.IsNullOrEmpty(manifest.Options.KeyFile))
+        if (!string.IsNullOrEmpty(assembly.Options.KeyFile))
         {
-            arguments.Add($"/keyfile:{manifest.Options.KeyFile}");
+            arguments.Add($"/keyfile:{assembly.Options.KeyFile}");
         }
 
-        foreach (string libraryPath in manifest.LibraryPaths)
+        foreach (string libraryPath in assembly.LibraryPaths)
         {
             arguments.Add($"/lib:{libraryPath}");
         }
 
-        arguments.Add(manifest.Entry.SourcePath);
-        arguments.AddRange(manifest.MergeDependencies.Select(static dependency => dependency.SourcePath));
+        arguments.Add(assembly.Entry.SourcePath);
+        arguments.AddRange(assembly.MergeDependencies.Select(static dependency => dependency.SourcePath));
 
-        await ProcessRunner.RunAsync("dotnet", repoRoot, arguments, cancellationToken).ConfigureAwait(false);
+        await ProcessRunner.RunAsync("dotnet", repoRoot, arguments, cancellationToken);
     }
 
-    private static void CopyManifestFile(PackManifestFile entry, string packageRoot)
+    private static void CopyPackFile(PackFile file, string packageRoot)
     {
-        CopyFile(entry.SourcePath, GetPackageDestinationPath(entry, packageRoot));
+        CopyFile(file.SourcePath, GetPackageDestinationPath(file, packageRoot));
+    }
+
+    private static void CopyPackDirectory(PackDirectory directory, string packageRoot)
+    {
+        string destinationRoot = GetPackageDestinationPath(directory, packageRoot);
+        foreach (string sourcePath in Directory.EnumerateFiles(directory.SourcePath, "*", SearchOption.AllDirectories))
+        {
+            string relativePath = Path.GetRelativePath(directory.SourcePath, sourcePath);
+            CopyFile(sourcePath, Path.Combine(destinationRoot, relativePath));
+        }
     }
 
     private static void CopyFile(string sourcePath, string destinationPath)
@@ -182,21 +290,106 @@ internal sealed class ModPacker(
             _ = Directory.CreateDirectory(destinationDirectory);
         }
 
-        File.Copy(sourcePath, destinationPath, overwrite: true);
+        File.Copy(sourcePath, destinationPath, overwrite: false);
     }
 
-    private static string GetPackageDestinationPath(PackManifestFile entry, string packageRoot)
+    private static PackFile CreateFile(PackOutput output, string? packagePath = null)
     {
-        return Path.GetFullPath(entry.PackagePath, packageRoot);
+        return new PackFile(
+            output.SourcePath,
+            packagePath ?? NormalizePackagePath(output.PackagePath ?? string.Empty, output.SourcePath));
     }
 
-    private string[] GetModProjectFullPaths(string modName)
+    private static PackDirectory CreateDirectory(PackOutput output)
     {
-        return
-        [
-            Path.Combine(modsRoot, modName, "src", "Frontend", $"{modName}.Frontend.csproj"),
-            Path.Combine(modsRoot, modName, "src", "Backend", $"{modName}.Backend.csproj"),
-        ];
+        return new PackDirectory(
+            output.SourcePath,
+            NormalizePackagePath(output.PackagePath ?? string.Empty, output.SourcePath));
+    }
+
+    private static PackAssemblyOptions CreateOptions(PackOutput output)
+    {
+        return new PackAssemblyOptions(
+            bool.Parse(GetRequiredMetadata(output, "InternalizeMergedDependencies")),
+            bool.Parse(GetRequiredMetadata(output, "RenameInternalizedDependencies")),
+            bool.Parse(GetRequiredMetadata(output, "AllowDuplicateInternalizedResources")),
+            output.Metadata.GetValueOrDefault("KeyFile"));
+    }
+
+    private static string GetPackageDestinationPath(PackPlanOutput output, string packageRoot)
+    {
+        string destinationPath = Path.GetFullPath(
+            NormalizePathSeparators(output.PackagePath),
+            packageRoot);
+        string fullPackageRoot = Path.GetFullPath(packageRoot);
+        if (!IsUnderDirectoryOrSame(destinationPath, fullPackageRoot))
+        {
+            throw new InvalidOperationException($"包产物路径越过可部署目录：{output.SourcePath}: {output.PackagePath}");
+        }
+
+        return destinationPath;
+    }
+
+    private static string NormalizePackagePath(string packagePath, string sourcePath)
+    {
+        string normalizedPath = packagePath.Replace('\\', '/').Trim('/');
+        if (normalizedPath.Length == 0)
+        {
+            throw new InvalidOperationException($"包产物 PackagePath 不能为空：{sourcePath}");
+        }
+
+        if (Path.IsPathRooted(packagePath) || normalizedPath.Contains(':', StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"包产物 PackagePath 必须是相对路径：{sourcePath}: {packagePath}");
+        }
+
+        foreach (string segment in normalizedPath.Split('/'))
+        {
+            if (segment.Length == 0 || segment is "." or "..")
+            {
+                throw new InvalidOperationException($"包产物 PackagePath 无效：{sourcePath}: {packagePath}");
+            }
+        }
+
+        return normalizedPath;
+    }
+
+    private static Dictionary<string, string> CreateMetadata(JsonElement item)
+    {
+        Dictionary<string, string> metadata = new(StringComparer.OrdinalIgnoreCase);
+        foreach (JsonProperty property in item.EnumerateObject())
+        {
+            metadata[property.Name] = property.Value.ValueKind == JsonValueKind.String
+                ? property.Value.GetString() ?? string.Empty
+                : property.Value.ToString();
+        }
+
+        return metadata;
+    }
+
+    private static string GetRequiredString(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out JsonElement property))
+        {
+            throw new InvalidOperationException($"MSBuild JSON 输出缺少 '{propertyName}'。");
+        }
+
+        return property.GetString() ?? string.Empty;
+    }
+
+    private static string GetRequiredMetadata(PackOutput output, string name)
+    {
+        return output.Metadata.TryGetValue(name, out string? value)
+            ? value
+            : throw new InvalidOperationException($"包产物缺少 '{name}'：{output.SourcePath}");
+    }
+
+    private static bool IsUnderDirectoryOrSame(string path, string directory)
+    {
+        string fullPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        string fullDirectory = Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        return string.Equals(fullPath, fullDirectory, StringComparison.OrdinalIgnoreCase)
+            || fullPath.StartsWith($"{fullDirectory}{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string GetILRepackToolPath()
@@ -209,94 +402,72 @@ internal sealed class ModPacker(
         return path.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
     }
 
-    private sealed class PackManifestBuilder(string manifestPath)
+    private sealed class PackPlanBuilder
     {
-        private readonly List<PackManifestFile> _mergeDependencies = [];
-        private readonly List<PackManifestFile> _copyDependencies = [];
-        private readonly List<string> _libraryPaths = [];
-        private readonly Dictionary<string, string> _options = new(StringComparer.OrdinalIgnoreCase);
-        private PackManifestFile? _entry;
+        private readonly List<PackAssembly> _assemblies = [];
+        private readonly List<PackFile> _files = [];
+        private readonly List<PackDirectory> _directories = [];
 
-        public void Add(string kind, string firstValue, string secondValue, int lineNumber)
+        public void Add(PackPlan plan)
         {
-            switch (kind)
-            {
-                case "entry":
-                    SetEntry(firstValue, secondValue, lineNumber);
-                    break;
-
-                case "merge":
-                    _mergeDependencies.Add(CreateFile(firstValue, string.Empty, lineNumber));
-                    break;
-
-                case "copy":
-                    _copyDependencies.Add(CreateFile(firstValue, secondValue, lineNumber));
-                    break;
-
-                case "library":
-                    _libraryPaths.Add(Path.GetFullPath(NormalizePathSeparators(firstValue)));
-                    break;
-
-                case "option":
-                    _options[firstValue] = secondValue;
-                    break;
-
-                default:
-                    throw new InvalidOperationException($"未知 pack manifest 记录类型：{manifestPath}:{lineNumber}: {kind}");
-            }
+            _assemblies.AddRange(plan.Assemblies);
+            _files.AddRange(plan.Files);
+            _directories.AddRange(plan.Directories);
         }
 
-        public PackManifest Build()
+        public void AddAssembly(PackAssembly assembly)
         {
-            PackManifestFile entry = _entry
-                ?? throw new InvalidOperationException($"pack manifest 缺少 entry 记录：{manifestPath}");
-
-            return new PackManifest(entry, _mergeDependencies, _copyDependencies, [.. _libraryPaths.Distinct(StringComparer.OrdinalIgnoreCase)], CreateOptions());
+            _assemblies.Add(assembly);
         }
 
-        private void SetEntry(string sourcePath, string packagePath, int lineNumber)
+        public void AddFile(PackFile file)
         {
-            if (_entry is not null)
-            {
-                throw new InvalidOperationException($"pack manifest 包含多个 entry 记录：{manifestPath}");
-            }
-
-            _entry = CreateFile(sourcePath, packagePath, lineNumber);
+            _files.Add(file);
         }
 
-        private PackManifestFile CreateFile(string sourcePath, string packagePath, int lineNumber)
+        public void AddDirectory(PackDirectory directory)
         {
-            return new PackManifestFile(
-                Path.GetFullPath(NormalizePathSeparators(sourcePath)),
-                packagePath,
-                manifestPath,
-                lineNumber);
+            _directories.Add(directory);
         }
 
-        private PackManifestOptions CreateOptions()
+        public PackPlan Build()
         {
-            return new PackManifestOptions(
-                bool.Parse(_options["InternalizeMergedDependencies"]),
-                bool.Parse(_options["RenameInternalizedDependencies"]),
-                bool.Parse(_options["AllowDuplicateInternalizedResources"]),
-                _options.GetValueOrDefault("KeyFile"));
+            return new PackPlan(_assemblies, _files, _directories);
         }
     }
 
-    private sealed record PackManifest(
-        PackManifestFile Entry,
-        IReadOnlyList<PackManifestFile> MergeDependencies,
-        IReadOnlyList<PackManifestFile> CopyDependencies,
-        IReadOnlyList<string> LibraryPaths,
-        PackManifestOptions Options);
-
-    private sealed record PackManifestFile(
+    private sealed record PackOutput(
         string SourcePath,
-        string PackagePath,
-        string ManifestPath,
-        int LineNumber);
+        string Kind,
+        string? PackagePath,
+        IReadOnlyDictionary<string, string> Metadata);
 
-    private sealed record PackManifestOptions(
+    private sealed record PackPlan(
+        IReadOnlyList<PackAssembly> Assemblies,
+        IReadOnlyList<PackFile> Files,
+        IReadOnlyList<PackDirectory> Directories);
+
+    private sealed record PackAssembly(
+        PackFile Entry,
+        IReadOnlyList<PackFile> MergeDependencies,
+        IReadOnlyList<string> LibraryPaths,
+        PackAssemblyOptions Options);
+
+    private abstract record PackPlanOutput(
+        string SourcePath,
+        string PackagePath);
+
+    private sealed record PackFile(
+        string SourcePath,
+        string PackagePath)
+        : PackPlanOutput(SourcePath, PackagePath);
+
+    private sealed record PackDirectory(
+        string SourcePath,
+        string PackagePath)
+        : PackPlanOutput(SourcePath, PackagePath);
+
+    private sealed record PackAssemblyOptions(
         bool InternalizeMergedDependencies,
         bool RenameInternalizedDependencies,
         bool AllowDuplicateInternalizedResources,

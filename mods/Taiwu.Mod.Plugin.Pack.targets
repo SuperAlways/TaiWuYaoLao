@@ -1,0 +1,9 @@
+<Project>
+  <ItemGroup>
+    <TaiwuModPackEntry
+      Include="$(TargetPath)"
+      PackagePath="Plugins/$(TargetFileName)"
+      Condition="'$(TaiwuModPackPluginEntry)' != 'false'"
+    />
+  </ItemGroup>
+</Project>

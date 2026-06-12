@@ -1,6 +1,7 @@
 <Project>
+  <Import Project="$(TaiwuModsModsDir)Taiwu.Mod.Project.Pack.targets" />
   <Import
-    Project="$(TaiwuModsModsDir)Taiwu.Mod.Pack.targets"
+    Project="$(TaiwuModsModsDir)Taiwu.Mod.Plugin.Pack.targets"
     Condition="'$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend'"
   />
 

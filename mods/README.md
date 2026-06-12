@@ -13,6 +13,7 @@ dotnet run --project tools/Taiwu.Mods.Cli -- create-mod --name MyMod
 ```text
 mods/MyMod/
   Config.Lua
+  Taiwu.Mod.Pack.proj
   README.md
   src/
     Frontend/
@@ -24,7 +25,7 @@ mods/MyMod/
 `mods/Directory.Build.props` 根据端侧设置。
 
 构建插件项目时可以直接使用 `dotnet build`。普通构建只负责 SDK 默认的 `bin/` 和 `obj/` 输出，
-不生成打包清单、不组装 `artifacts/mods/`，也不执行依赖合并。
+不解析包产物、不组装 `artifacts/mods/`，也不执行依赖合并。
 
 打包可部署目录：
 
@@ -32,8 +33,83 @@ mods/MyMod/
 dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 ```
 
-`pack-mod` 默认使用 `Release` 构建前后端项目，再把 `Config.Lua`、插件入口 DLL，以及按声明合并
-或复制的依赖组装到 `artifacts/mods/MyMod/`。
+`pack-mod` 默认使用 `Release` 运行 `mods/MyMod/Taiwu.Mod.Pack.proj`，并把该组包入口
+声明的文件、目录和项目产物组装到 `artifacts/mods/MyMod/`。
+
+## 组包声明
+
+每个 mod 的 `Taiwu.Mod.Pack.proj` 是可部署目录的组包入口。它只描述最终目录由哪些文件、目录和
+项目组成，不给项目额外标记类型；太吾插件、共享 DLL、发布目录和普通静态文件都走同一条
+组合路径。
+
+```xml
+<Project>
+  <Import
+    Project="$([MSBuild]::GetPathOfFileAbove('Taiwu.Mods.Paths.props', '$(MSBuildThisFileDirectory)'))"
+  />
+  <Import Project="$(TaiwuModsModsDir)Taiwu.Mod.Pack.targets" />
+
+  <ItemGroup>
+    <TaiwuModPackFile Include="Config.Lua" PackagePath="Config.Lua" />
+    <TaiwuModPackProject Include="src/Frontend/MyMod.Frontend.csproj" />
+    <TaiwuModPackProject Include="src/Backend/MyMod.Backend.csproj" />
+  </ItemGroup>
+</Project>
+```
+
+在组包入口中，`TaiwuModPackFile` 复制单个文件，`TaiwuModPackDirectory` 复制目录，
+`TaiwuModPackProject` 引入一个参与组包的项目。包内路径写在 `PackagePath` 元数据中，必须是相对路径。
+
+被 `TaiwuModPackProject` 引入的项目通过项目级包产物进入最终目录。`mods/Directory.Build.targets`
+已经为 `mods/` 下的普通 SDK 项目导入默认项目组包目标；前端和后端插件项目还会自动把入口 DLL
+声明为 `Plugins/<TargetFileName>`。模板生成的前后端项目通常只需要在 `Taiwu.Mod.Pack.proj`
+中被引用，不需要手写入口程序集声明。
+
+项目自身需要额外输出文件或目录时，在项目文件或项目旁的 `Taiwu.Mod.props` 中声明：
+
+```xml
+<ItemGroup>
+  <TaiwuModPackFile Include="$(TargetPath)" PackagePath="Plugins/MyMod.Ipc.dll" />
+</ItemGroup>
+```
+
+项目级可用声明包括：
+
+- `TaiwuModPackFile`：复制单个文件。
+- `TaiwuModPackDirectory`：复制目录。
+- `TaiwuModPackEntry`：入口程序集。只有项目需要自行声明入口 DLL 并参与依赖合并时才直接使用。
+
+`TaiwuModPackProject` 只用于 mod 的组包入口，不在项目级继续嵌套。
+
+需要把某个项目的 `dotnet publish` 输出目录整体放进包内时，在该项目中导入发布目录组包目标：
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <TaiwuModPublishPackagePath>Tools/Worker</TaiwuModPublishPackagePath>
+  </PropertyGroup>
+
+  <Import Project="$(TaiwuModsModsDir)Taiwu.Mod.PublishDirectory.Pack.targets" />
+</Project>
+```
+
+然后在 mod 的 `Taiwu.Mod.Pack.proj` 中加入：
+
+```xml
+<ItemGroup>
+  <TaiwuModPackProject Include="src/Worker/MyMod.Worker.csproj" />
+</ItemGroup>
+```
+
+`pack-mod` 会先运行该项目的 `Publish` target，再把 `$(PublishDir)` 复制到 `Tools/Worker/`。
+没有显式设置 `TaiwuModPublishPackagePath` 时，发布目录默认进入 `Processes/<ProjectName>/`。
+项目可以用普通 .NET publish 属性控制是否 self-contained、single-file、RID 等发布细节。
+
+只有维护新的组包 helper，或项目不使用仓库默认项目组包目标时，才需要直接关心
+`ResolveTaiwuModPackOutputs`。这是 `pack-mod` 读取项目包产物的 MSBuild 边界；CLI 使用
+MSBuild 目标结果 JSON，不要求项目生成额外清单文件。
 
 ## Taiwu 引用和 Publicizer
 
@@ -70,9 +146,9 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 目录按文件名加载这些插件入口 DLL。`FrontendPlugins` 和 `BackendPlugins` 只列插件入口 DLL；
 独立依赖 DLL 同样部署到 `Plugins/` 下。
 
-`pack-mod` 会把 `Config.Lua` 中声明的插件入口 DLL 部署到 `Plugins/`。额外依赖需要在插件项目旁的
-`Taiwu.Mod.props` 或项目文件中显式声明。普通 `dotnet build` 负责生成项目常规输出；`pack-mod`
-在构建后读取这些声明生成打包清单。
+前端和后端插件项目会自动把自身入口 DLL 声明为 `Plugins/<TargetFileName>`。额外依赖需要在插件项目旁
+的 `Taiwu.Mod.props` 或项目文件中显式声明。普通 `dotnet build` 负责生成项目常规输出；`pack-mod`
+在构建后读取项目包产物组装最终包。
 
 依赖部署有两种动作。需要作为独立文件复制到 `Plugins/` 时，声明：
 
@@ -91,16 +167,15 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 ```
 
 每个依赖选择一种动作。同一个 DLL 同时写进 `TaiwuModMergeDependency` 和
-`TaiwuModCopyDependency` 会报错；复制依赖写入 `Plugins/<DLL 文件名>`。
+`TaiwuModCopyDependency` 会报错；复制依赖写入 `Plugins/<DLL 文件名>`。这两个依赖声明只表达太吾
+插件入口的 DLL 处理方式；非插件项目的运行时依赖应放在项目自己的发布目录中。
 
-`TaiwuModMergeDependency` 和 `TaiwuModCopyDependency` 都只从入口项目本次构建的 copy-local 输出 DLL 中
-解析。也就是说，`pack-mod` 复用标准 MSBuild/NuGet 已经做出的“哪些程序集应该进入入口项目输出目录”
-决策，只按 DLL 文件名从这些输出里筛选，再执行 copy 或 merge。
+`Include` 只写 DLL 文件名。`pack-mod` 不读取 NuGet 缓存路径或任意项目输出路径，而是在入口项目
+本次构建后，从进入该项目输出目录的 DLL 中按文件名匹配，再执行复制或合并。
 
-`Include` 使用 DLL 文件名；NuGet 缓存路径、被引用项目的输出路径，以及残留在入口项目输出目录但本次构建
-不再 copy-local 的同名 DLL 都不参与匹配。需要随 mod 部署的依赖，要先通过项目自身的 MSBuild/NuGet
-引用配置进入入口项目 copy-local 输出，再用 `TaiwuModMergeDependency` 或 `TaiwuModCopyDependency`
-声明打包动作。游戏或运行时已经提供的 DLL 作为外部运行时依赖处理。
+需要随 mod 部署的依赖，要先通过项目自身的 `ProjectReference`、`PackageReference` 等标准引用进入
+入口项目输出目录，再用 `TaiwuModMergeDependency` 或 `TaiwuModCopyDependency` 声明打包动作。
+游戏或运行时已经提供的 DLL 作为外部运行时依赖处理。
 
 被合并的依赖会内部化并重命名，降低不同 mod 携带同名依赖时的冲突风险。需要调整内部化策略时，在项目中设置：
 

@@ -14,8 +14,7 @@ internal static class ProcessRunner
         CommandResult result = await CreateCommand(fileName, workingDirectory, arguments)
             .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine))
             .WithStandardErrorPipe(PipeTarget.ToDelegate(Console.Error.WriteLine))
-            .ExecuteAsync(cancellationToken)
-            .ConfigureAwait(false);
+            .ExecuteAsync(cancellationToken);
 
         if (result.ExitCode == 0)
         {
@@ -32,8 +31,7 @@ internal static class ProcessRunner
         CancellationToken cancellationToken)
     {
         BufferedCommandResult result = await CreateCommand(fileName, workingDirectory, arguments)
-            .ExecuteBufferedAsync(cancellationToken)
-            .ConfigureAwait(false);
+            .ExecuteBufferedAsync(cancellationToken);
 
         if (result.ExitCode != 0)
         {

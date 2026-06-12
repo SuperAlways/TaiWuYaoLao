@@ -10,5 +10,11 @@ dotnet_analyzer_diagnostic.severity = warning
 
 csharp_style_namespace_declarations = file_scoped:warning
 
+# CA2007 adds noise in application and tool code; use ConfigureAwait only when it is meaningful.
+dotnet_diagnostic.CA2007.severity = none
+
+# IDE0005 requires generated XML documentation when enforced during build.
+dotnet_diagnostic.IDE0005.severity = none
+
 # Guard clauses are clearer than conditional return expressions in this repository.
 dotnet_style_prefer_conditional_expression_over_return = false:warning
