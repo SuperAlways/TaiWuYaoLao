@@ -232,16 +232,14 @@ internal sealed class ModPacker(
             GetILRepackToolPath(),
             "/ndebug",
             "/parallel",
+            "/copyattrs",
+            "/allowMultiple",
             $"/out:{outputPath}",
         ];
 
         if (assembly.Options.InternalizeMergedDependencies)
         {
             arguments.Add("/internalize");
-            if (assembly.Options.RenameInternalizedDependencies)
-            {
-                arguments.Add("/renameinternalized");
-            }
         }
 
         if (assembly.Options.AllowDuplicateInternalizedResources)
@@ -309,7 +307,6 @@ internal sealed class ModPacker(
     {
         return new PackAssemblyOptions(
             bool.Parse(GetRequiredMetadata(output, "InternalizeMergedDependencies")),
-            bool.Parse(GetRequiredMetadata(output, "RenameInternalizedDependencies")),
             bool.Parse(GetRequiredMetadata(output, "AllowDuplicateInternalizedResources")),
             output.Metadata.GetValueOrDefault("KeyFile"));
     }
@@ -471,7 +468,6 @@ internal sealed class ModPacker(
 
     private sealed record PackAssemblyOptions(
         bool InternalizeMergedDependencies,
-        bool RenameInternalizedDependencies,
         bool AllowDuplicateInternalizedResources,
         string? KeyFile);
 }

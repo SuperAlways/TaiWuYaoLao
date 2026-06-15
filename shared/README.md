@@ -24,6 +24,10 @@ shared/MyCompany.Taiwu.Shared/
 和 `Frontend` 项目目标框架为 `netstandard2.1`，`Backend` 项目目标框架为 `net8.0`。纯共享抽象
 或通用实现可以保持为普通 C# class library。
 
+如果同一个共享项目同时被前端和后端插件引用，且依赖 `Taiwu.ModKit.References.*` 游戏引用包，
+需要多目标编译，例如 `netstandard2.1;net8.0`。这样前端插件消费 `netstandard2.1` 产物，
+后端插件消费 `net8.0` 产物，NuGet 会按目标框架选择对应的游戏引用资产。
+
 需要访问游戏 API 时，再按实际代码需要添加 `Taiwu.ModKit.References.Frontend` 或
 `Taiwu.ModKit.References.Backend` 等引用包。需要访问游戏 DLL 的非 public API 时，在项目自己的
 `.csproj` 中显式添加 `Krafs.Publicizer` 引用、启用 `UsePublicizer`，并声明具体 `Publicize` 项。

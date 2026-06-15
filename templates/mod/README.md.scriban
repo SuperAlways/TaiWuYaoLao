@@ -23,8 +23,8 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name {{ mod.name }}
 最终包内容从 `Taiwu.Mod.Pack.proj` 开始维护。新增静态文件、目录、额外项目或发布目录时，先看上一级
 [mods/README.md](../README.md) 的组包约定，再更新对应项目文件。
 
-插件项目的本地构建设置写在对应项目的 `Taiwu.Mod.props`。需要随包部署的依赖也在这里用
-`TaiwuModMergeDependency` 或 `TaiwuModCopyDependency` 声明，并只由 `pack-mod` 使用。
+插件项目的本地构建设置、插件入口子目录和需要随包部署的依赖写在对应项目的 `Taiwu.Mod.props`。
+依赖部署用 `TaiwuModMergeDependency` 或 `TaiwuModCopyDependency` 声明，并只由 `pack-mod` 使用。
 
 ## 项目结构
 
