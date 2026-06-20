@@ -1,10 +1,12 @@
 # Taiwu.Mods
 
+[![zread](https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff)](https://zread.ai/Wanxiang-Sanctum/taiwu-mods)
+
 太吾绘卷 mod monorepo 模板仓库。
 
-从 GitHub 模板创建自己的仓库后，在 `mods/` 下维护一个或多个 mod，在 `shared/`
-下维护可被多个 mod 引用的内部共享项目。仓库命令行工具是 `tools/Taiwu.Mods.Cli/`：
-新增 mod、内部共享项目、取消解决方案注册和打包可部署目录都通过它执行。
+从 GitHub 模板创建自己的仓库后，`mods/` 放置一个或多个 mod，`shared/` 放置可被多个
+mod 引用的内部共享项目。仓库命令行工具是 `tools/Taiwu.Mods.Cli/`：新增 mod、内部共享项目、
+取消解决方案注册和打包可部署目录都通过它执行。
 
 ## 开始
 
@@ -97,13 +99,15 @@ dotnet run --project tools/Taiwu.Mods.Cli -- remove-shared --name MyCompany.Taiw
 
 ## 仓库结构
 
-- `tools/Taiwu.Mods.Cli/`：创建 mod、内部共享项目、取消解决方案注册和打包可部署目录的命令行工具。
 - `mods/`：实际 mod 源码目录。组包声明、前后端插件项目、Taiwu 引用、Publicizer、插件依赖和
   发布目录项目约定见 `mods/README.md`。
 - `shared/`：内部共享项目目录。共享边界、目标框架和项目级配置入口见 `shared/README.md`。
-- `templates/`：命令行工具创建项目时使用的 Scriban 模板。模板维护约定见
+- `templates/`：命令行工具创建项目时使用的 Scriban 模板。模板目录和渲染规则见
   `templates/README.md`。
+- `tools/`：创建 mod、内部共享项目、取消解决方案注册和打包可部署目录的命令行工具，实现入口见
+  `tools/README.md`。
 - `.github/workflows/`：GitHub Actions 工作流，覆盖 PR 验证和 mod release 打包。
+- `docs/`：跨具体 Mod 复用的太吾机制、平台机制、发布经验和跨项目判断；入口见 `docs/README.md`。
 - `artifacts/mods/`：`pack-mod` 输出的可部署目录。
 - `Taiwu.Mods.Paths.props`：仓库级 MSBuild 路径 alias，供子目录 props 和项目引用稳定目录。
 - `Taiwu.Mods.slnx`：解决方案入口，收录工具、已注册的 mod 项目和内部共享项目。
@@ -111,23 +115,23 @@ dotnet run --project tools/Taiwu.Mods.Cli -- remove-shared --name MyCompany.Taiw
 - `Directory.Packages.props`：NuGet 包版本。
 - `NuGet.config`：NuGet 包源、包源映射，以及从环境变量读取 GitHub Packages 凭据的配置。
 
-## 仓库维护
+## 阅读入口
 
-需要检查或格式化仓库文档、配置和项目文件时运行：
+- `mods/README.md`：mod 共同遵守的组包、插件入口、引用和部署规则。
+- `shared/README.md`：内部共享项目边界、目标框架和项目级配置入口。
+- `templates/README.md`：模板目录、模板变量和渲染规则。
+- `tools/README.md`：仓库命令行工具的实现入口。
+- `docs/README.md`：跨具体 Mod 复用的太吾机制、平台机制、发布经验和跨项目判断。
+- `CONTRIBUTING.md`：维护模板仓库、文档、模板和工具时使用的规则。
 
-```powershell
-dotnet msbuild repo.proj -t:Check
-dotnet msbuild repo.proj -t:Format
-```
+具体 mod 的玩法、运行链路、工作区内容和源码模块说明见对应 `mods/<ModName>/README.md` 及其子目录
+README。内部共享项目自己的 API、运行时依赖和部署建议见 `shared/<ProjectName>/README.md`。
 
-这些目标通过 `aqua` 调用仓库声明的维护工具。本机没有 `aqua` 时，Windows 可用 `winget install aquaproj.aqua` 或 `scoop install aqua`。如需提前安装这些工具，运行：
+## 外部依据
 
-```powershell
-dotnet msbuild repo.proj -t:InstallTools
-```
+模板生成的 mod 项目引用 `Taiwu.ModKit.References.*` NuGet 包。包切分、打包和发布流程由
+[`taiwu-modkit`](https://github.com/Wanxiang-Sanctum/taiwu-modkit) 的工具与配置管理；本仓库通过
+`Directory.Packages.props` 固定版本，并通过 `NuGet.config` 配置包源。
 
-更新 `aqua.yml` 中的工具版本后，同步刷新校验文件：
-
-```powershell
-dotnet msbuild repo.proj -t:UpdateToolChecksums
-```
+涉及游戏机制、游戏文本、运行时行为或 Steam Workshop 语义时，文档以太吾绘卷游戏本体和对应外部平台为依据。
+`taiwu-modkit` 中的游戏观察快照承担组织内部检索、跳转和变更对照。
