@@ -1,9 +1,24 @@
 # mods
 
-Mod 源码目录。
+Mod 源码和组包规则目录。
 
-每个一级子目录是一个独立 Mod。本 README 记录所有 mod 共同遵守的组包、插件入口、引用和部署规则；
-具体玩法、运行链路和源码模块边界放在各 mod 自己的 README 中。
+本文面向从模板创建仓库后的 Mod 仓库维护者，也作为模板仓库维护共同规则的源头。每个一级子目录是一个独立 Mod；本文维护
+Mod 目录约定，以及所有 Mod 共同遵守的组包、插件入口、引用和部署规则，不维护具体 Mod 的使用者文案。
+
+具体 Mod 的 `README.md` 面向 Mod 使用者；源码模块、内部设计和项目内维护入口由对应
+`mods/<ModName>/DEVELOPMENT.md`、`mods/<ModName>/docs/` 或源码子目录 README 维护。
+
+## 目录约定
+
+`mods/` 下的一级子目录就是实际 Mod 边界。目录名同时用于 `pack-mod --name <ModName>`、发布 tag 中的
+`mods/<ModName>/v<Version>` 约定，以及可部署目录 `artifacts/mods/<ModName>/`。
+
+从模板创建出的仓库如果维护多个 Mod，可以在本节放置一级目录索引；索引只保留选择信息和稳定入口。面向使用者的文案留在对应
+`README.md` 并由具体 Mod 自己组织；源码模块说明留在对应 `DEVELOPMENT.md`、`docs/` 或源码子目录 README。
+
+## 新建与构建
+
+以下命令默认从仓库根目录运行。需要从其它目录调用 CLI 时，传入 `--repo-root <path>`。
 
 新建 Mod：
 
@@ -11,15 +26,22 @@ Mod 源码目录。
 dotnet run --project tools/Taiwu.Mods.Cli -- create-mod --name MyMod
 ```
 
+`ModName` 必须是 C# 命名空间风格的标识符，例如 `MyMod` 或 `MyCompany.MyMod`。
+
 新建后，Mod 目录包含游戏读取的 `Config.Lua`、项目内 README，以及前端和后端两个插件项目。
 太吾游戏读取 `Config.Lua` 以及同步 Steam Workshop 字段的通用语义见仓库级文档
 [`docs/taiwu-mod-steam-publishing-boundary.md`](../docs/taiwu-mod-steam-publishing-boundary.md)。
+
+创建命令生成新 Mod 的初始骨架。项目创建后，真实包内容和维护入口由该 Mod 的 `Taiwu.Mod.Pack.proj`、插件项目文件和项目旁
+`Taiwu.Mod.props` 维护；`templates/` 只作为新项目起点。新增实际 Mod 时，`README.md` 只保留面向使用者的最小入口，
+`DEVELOPMENT.md` 承接源码维护入口。
 
 ```text
 mods/MyMod/
   Config.Lua
   Taiwu.Mod.Pack.proj
   README.md
+  DEVELOPMENT.md
   src/
     Frontend/
     Backend/
@@ -39,7 +61,8 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 ```
 
 `pack-mod` 默认使用 `Release` 运行 `mods/MyMod/Taiwu.Mod.Pack.proj`，并把该组包入口
-声明的文件、目录和项目产物组装到 `artifacts/mods/MyMod/`。
+声明的文件、目录和项目产物组装到 `artifacts/mods/MyMod/`。需要调整构建配置或输出根目录时，使用
+`--configuration` 或 `--artifacts-root`。
 
 ## 组包声明
 
@@ -63,12 +86,12 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 ```
 
 在组包入口中，`TaiwuModPackFile` 复制单个文件，`TaiwuModPackDirectory` 复制目录，
-`TaiwuModPackProject` 引入一个参与组包的项目。包内路径写在 `PackagePath` 元数据中，必须是相对路径。
+`TaiwuModPackProject` 引入一个参与组包的项目。包内路径写在 `PackagePath` 元数据中，必须是非空相对路径，不能越过可部署目录。
 
 被 `TaiwuModPackProject` 引入的项目通过项目级包产物进入最终目录。`mods/Directory.Build.targets`
 已经为 `mods/` 下的普通 SDK 项目导入默认项目组包目标；前端和后端插件项目还会自动把入口 DLL
-声明到 `Plugins/` 下。模板生成的前后端项目通常只需要在 `Taiwu.Mod.Pack.proj` 中被引用，不需要
-手写入口程序集声明。
+声明为 `Plugins/<TargetFileName>`。模板生成的前后端项目通常只需要在 `Taiwu.Mod.Pack.proj`
+中被引用，不需要手写入口程序集声明。
 
 项目自身需要额外输出文件或目录时，在项目文件或项目旁的 `Taiwu.Mod.props` 中声明：
 
@@ -119,7 +142,7 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 
 这些 `Taiwu.ModKit.References.*` 包由组织内部
 [`taiwu-modkit`](https://github.com/Wanxiang-Sanctum/taiwu-modkit) 仓库的引用包工具生成和发布；包拆分原则、DLL
-选择和发布目标由该仓库的工具配置管理。本仓库通过稳定包 ID 选择需要引用的包，并在仓库根
+选择和发布目标归该仓库的工具配置维护。本仓库通过稳定包 ID 选择需要引用的包，并在仓库根
 `Directory.Packages.props` 固定版本。
 
 插件项目默认具备编译期 Publicizer 支持，但不会自动公开化游戏 DLL。需要在编译期访问游戏 DLL
@@ -152,9 +175,9 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 目录加载这些插件入口 DLL。列表项是相对 `Plugins/` 的入口路径，可以是文件名，也可以包含子目录；
 游戏本体的普通插件依赖解析以 `Plugins/` 根目录为基准。
 
-前端和后端插件项目默认把自身入口 DLL 声明到 `Plugins/` 下，并在 `Config.Lua` 中直接使用
-`<TargetFileName>`。额外依赖需要在插件项目旁的 `Taiwu.Mod.props` 或项目文件中显式声明。普通
-`dotnet build` 负责生成项目常规输出；`pack-mod` 在构建后读取项目包产物组装最终包。
+前端和后端插件项目会自动把自身入口 DLL 声明为 `Plugins/<TargetFileName>`，并在 `Config.Lua` 中直接使用
+`<TargetFileName>`。额外依赖需要在插件项目旁的 `Taiwu.Mod.props` 或项目文件中显式声明。普通 `dotnet build`
+负责生成项目常规输出；`pack-mod` 在构建后读取项目包产物组装最终包。
 
 只有 Mod 自己提供了子目录依赖解析能力时，才应把入口和复制依赖部署到 `Plugins/` 下的其他子目录。
 在插件项目旁的 `Taiwu.Mod.props` 中设置：
@@ -168,7 +191,7 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 `TaiwuModPluginSubdirectory` 是相对 `Plugins/` 的子目录，例如 `Frontend` 或
 `Frontend/Tools`，不要包含 `Plugins/` 前缀或首尾斜杠。未设置时入口和复制依赖直接部署到
 `Plugins/`。设置后，在 `Config.Lua` 中使用相对 `Plugins/` 的入口路径，例如
-`Frontend/Tools/MyMod.Frontend.dll`。这个设置只改变包内路径；子目录依赖解析必须由 mod 声明的
+`Frontend/Tools/MyMod.Frontend.dll`。这个设置只改变包内路径；子目录依赖解析必须由 Mod 声明的
 前置加载器或运行时组件提供。
 
 依赖部署有两种动作。需要作为独立文件随入口复制时，声明：

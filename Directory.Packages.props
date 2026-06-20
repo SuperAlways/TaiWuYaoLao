@@ -2,7 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <RoslynatorVersion>4.15.0</RoslynatorVersion>
-    <TaiwuModKitReferencesVersion>0.84.63-test</TaiwuModKitReferencesVersion>
+    <TaiwuModKitReferencesVersion>1.0.1</TaiwuModKitReferencesVersion>
   </PropertyGroup>
 
   <ItemGroup>

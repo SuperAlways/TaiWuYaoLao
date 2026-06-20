@@ -3,8 +3,8 @@
 这份机制参考说明太吾绘卷游戏内 Mod 配置、用户设置、插件入口和 Steam Workshop 发布之间的边界。依据是太吾读取和
 写回 `Config.Lua` 的游戏行为、太吾内置上传流程，以及 Steam Workshop 内容目录、item 属性和 custom metadata 语义。
 
-本文只解释机制边界。具体 Mod 的字段取值、模板初始值、`pack-mod` 组包声明和发布流水线见具体 Mod README、
-`mods/README.md`、根 README 或专门的仓库经验文档。
+本文不维护具体 Mod 的取值、本仓库模板、`pack-mod` 组包声明或发布流水线。那些内容由具体 Mod 的 `Config.Lua`、
+`README.md`、`DEVELOPMENT.md`、`mods/README.md`、`docs/development/README.md` 或专门的仓库经验文档维护。
 
 ## 核心结论
 
@@ -14,8 +14,8 @@
   `ISteamUGC.SetItemContent` 的内容目录交给 Steam。
 - 标题、简介、标签、可见性、依赖、更新说明、预览图和 custom metadata 通过 Steam API 写入 Workshop item 状态；其中
   一部分也会写回 `Config.Lua`，但不因此成为包内额外文件。
-- 普通“编辑后上传/更新”会临时移走 Mod 根目录下的 `Settings.Lua`，避免把玩家本机设置值发布出去；“直接上传”不会执行这个
-  保护步骤。
+- 普通“编辑后上传/更新”会临时移走 Mod 根目录下的 `Settings.Lua`，避免把玩家本机设置值发布出去；“直接上传”不会执行这
+  个保护步骤。
 
 ## 文件与数据归属
 
@@ -72,8 +72,6 @@
 ## Config.Lua 字段
 
 下面的字段说明描述太吾读取和写回 `Config.Lua` 的语义，不是 Steam API schema，也不是发布内容白名单。
-模板初始字段由 `templates/mod/Config.Lua.scriban` 和生成项目 README 说明。下面列出的字段由游戏读取、写回或
-具体功能使用；未出现在模板起步字段中的发布、设置、依赖、封面、风险提示等字段，按实际 Mod 需要添加即可。
 
 | 字段 | 类型 | 含义 |
 | --- | --- | --- |
@@ -139,12 +137,13 @@ UGC description/summary 条目。
 `Dropdown`、`ToggleGroup` 和 `Slider` 的值会被游戏夹到合法范围内。玩家改值后，游戏把实际值写入
 `Settings.Lua`，再同步给前后端运行时；插件收到设置更新时会调用 `OnModSettingUpdate`。
 
-## 依据
+## 维护依据
 
-本文的机制依据来自太吾游戏侧的 `ModManager`、`ModInfoWithDisplayData`、`SteamManager`、
+本文维护时核对太吾游戏侧的 `ModManager`、`ModInfoWithDisplayData`、`SteamManager`、
 `UI_ModPanel`、`Game.Views.Mod.Upload.ModUploadEditPanel`、`ModDirectlyUploadPanel`、
 `GameData.Domains.Mod.ModInfo`、`ModSource`、`EModVisibility` 和设置项类型读取路径；Steam 内容目录和 item 状态语义参考
 Steamworks [`ISteamUGC`](https://partner.steamgames.com/doc/api/ISteamUGC) 与
-[`Workshop Implementation Guide`](https://partner.steamgames.com/doc/features/workshop/implementation)。组织内部可通过
-[`taiwu-modkit`](https://github.com/Wanxiang-Sanctum/taiwu-modkit) 仓库根目录下的 `game/` 生成快照检索这些游戏侧路径；
-快照只是检索入口，不是机制来源。
+[`Workshop Implementation Guide`](https://partner.steamgames.com/doc/features/workshop/implementation)。组织内部维护者
+可以通过 [`taiwu-modkit`](https://github.com/Wanxiang-Sanctum/taiwu-modkit) 仓库根目录下的 `game/` 生成快照检索这些
+游戏侧路径。太吾游戏版本更新后，如果 Mod 管理界面、上传流程或 `Config.Lua` 字段发生变化，先复核游戏侧行为；需要使用
+组织内部快照时，在 `taiwu-modkit` 中重新生成后再复核本文。

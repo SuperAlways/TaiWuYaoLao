@@ -1,6 +1,9 @@
 # {{ project.name }}
 
-太吾绘卷 mod 仓库内部共享项目。
+{{ project.name }} 是太吾绘卷 Mod 仓库内部共享项目。
+
+本文面向维护这个共享项目的人。共享项目的共同边界、目标框架和引用规则见上一级
+[shared/README.md](../README.md)；本文件只维护 {{ project.name }} 自己的约定。
 
 ## 开发
 
@@ -12,5 +15,7 @@ dotnet build shared/{{ project.name }}/{{ project.name }}.csproj
 
 目标框架、Taiwu 引用和 Publicizer 设置写在 `.csproj`。
 
-共享项目不作为独立插件入口写入 mod 包。需要部署共享项目 DLL 或其 runtime 依赖时，在引用它的
+## 引用与部署
+
+共享项目不作为独立插件入口写入 Mod 包。需要部署共享项目 DLL 或其 runtime 依赖时，在引用它的
 前端或后端插件项目中声明依赖部署动作。
