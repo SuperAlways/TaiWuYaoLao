@@ -11,12 +11,24 @@
     <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>
   </PropertyGroup>
 
-  <PropertyGroup
+  <Target
+    Name="ResolveBackendPublicizerRuntimeStrategies"
+    BeforeTargets="PublicizeAssemblies"
     Condition="'$(UsePublicizer)' == 'true' And '$(TaiwuModSide)' == 'Backend'"
   >
-    <PublicizerRuntimeStrategies
-    >IgnoresAccessChecksTo</PublicizerRuntimeStrategies>
-  </PropertyGroup>
+    <!-- Krafs.Publicizer emits IgnoresAccessChecksToAttribute from publicized
+         assemblies; without a publicized assembly, the attribute receives an
+         empty assembly name. -->
+    <PropertyGroup>
+      <_TaiwuPublicizeTargets>@(Publicize)</_TaiwuPublicizeTargets>
+      <PublicizerRuntimeStrategies
+        Condition="'$(PublicizeAll)' == 'true' Or '$(_TaiwuPublicizeTargets)' != ''"
+      >IgnoresAccessChecksTo</PublicizerRuntimeStrategies>
+      <PublicizerRuntimeStrategies
+        Condition="'$(PublicizeAll)' != 'true' And '$(_TaiwuPublicizeTargets)' == ''"
+      >Unsafe</PublicizerRuntimeStrategies>
+    </PropertyGroup>
+  </Target>
 
   <Target
     Name="DeduplicatePublicizerRuntimeSupport"

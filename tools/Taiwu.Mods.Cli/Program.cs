@@ -82,7 +82,7 @@ internal static class Program
 
         if (Directory.Exists(modRoot) && !options.Force)
         {
-            throw new InvalidOperationException($"Mod 目录已存在：{modRoot}。如需覆盖模板文件，请传入 --force。");
+            throw new InvalidOperationException($"Mod 目录已存在：{modRoot}。如需覆盖目标中与模板同名的文件，请传入 --force。");
         }
 
         EnsureCanRegisterGeneratedProject(modRoot, repoRoot, "Mod");
@@ -110,7 +110,7 @@ internal static class Program
 
         if (Directory.Exists(projectRoot) && !options.Force)
         {
-            throw new InvalidOperationException($"内部共享项目目录已存在：{projectRoot}。如需覆盖模板文件，请传入 --force。");
+            throw new InvalidOperationException($"内部共享项目目录已存在：{projectRoot}。如需覆盖目标中与模板同名的文件，请传入 --force。");
         }
 
         EnsureCanRegisterGeneratedProject(projectRoot, repoRoot, "内部共享项目");

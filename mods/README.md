@@ -159,7 +159,10 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 ```
 
 前端通常从 `Assembly-CSharp` 开始，后端通常从 `GameData` 开始；如果只需要具体类型或成员，优先写
-更窄的 `Publicize Include`。Publicizer 运行时策略由仓库按端侧固定选择，不作为普通 Mod 配置入口。
+更窄的 `Publicize Include`。Publicizer 运行时策略由仓库按端侧和实际公开化目标选择，不作为普通 Mod 配置入口。后端项目
+只有在声明了 `Publicize` 或 `PublicizeAll=true` 时才使用 `IgnoresAccessChecksTo`；没有公开化目标时保持 `Unsafe`。这与
+Krafs.Publicizer 的实现有关：它从公开化输出生成 `IgnoresAccessChecksToAttribute`，没有公开化输出时，该 attribute
+的程序集名会为空。
 
 需要关闭默认 Publicizer 支持时，可以在 `Taiwu.Mod.props` 中设置：
 

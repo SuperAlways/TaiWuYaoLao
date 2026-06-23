@@ -2,7 +2,7 @@ return {
   Title = "{{ mod.name }}",
   FileId = 0,
   Version = "{{ mod.version }}",
-  GameVersion = "1.0.1",
+  GameVersion = "1.0.20",
   Author = "",
   Description = "",
   BackendPlugins = {

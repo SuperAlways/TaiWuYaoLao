@@ -19,14 +19,15 @@ Scriban 渲染；需要渲染内容的文件以 `.scriban` 结尾，输出时会
 
 渲染使用严格变量；模板引用未定义变量时，创建命令会失败。只有需要内容渲染的文件使用 `.scriban` 后缀。
 
-## 输出文档边界
+## 输出文案边界
 
-面向 Mod 使用者的 README 模板只生成最小入口，不规定下游 Mod 的品牌表达、发布文案或信息结构。每个 Mod 可以按自己的
-读者、发布渠道和维护习惯组织文档。
+面向 Mod 使用者的 README 模板只生成最小入口：说明这是哪个 Mod，并指向源码维护文档。具体功能、安装方式、品牌表达、发布文案、
+兼容性和信息结构由具体 Mod 按自己的读者、发布渠道和维护习惯组织，不在模板中预设填空结构。
 
 - `templates/mod/README.md.scriban` 生成面向 Mod 使用者的最小入口。
 - `templates/mod/DEVELOPMENT.md.scriban` 生成面向源码维护者的项目维护入口。
-- `templates/shared/README.md.scriban` 生成内部共享项目维护入口。
+- `templates/mod/Config.Lua.scriban` 生成游戏读取的配置字段占位；字段语义由机制参考维护，具体展示取值由具体 Mod 修改。
+- `templates/shared/README.md.scriban` 生成内部共享项目维护入口，并承接 `shared/README.md` 的共享 API 约定。
 
-调整目录级规则时，同步复核对应模板，避免新项目重新生成旧的文档关系。更细的同步规则见
+调整目录级规则时，同步复核对应模板，让新项目沿用当前文档关系。更细的同步规则见
 [`docs/development/documentation.md`](../docs/development/documentation.md)。

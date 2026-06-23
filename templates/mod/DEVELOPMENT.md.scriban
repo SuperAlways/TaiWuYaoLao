@@ -21,12 +21,11 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name {{ mod.name }}
 
 ## 组包边界
 
-最终包内容由 `Taiwu.Mod.Pack.proj` 声明。新增静态文件、目录、额外项目或发布目录时，先看上一级
-[mods/README.md](../README.md) 的组包约定，再更新组包入口或对应项目文件。
+最终包内容由 `Taiwu.Mod.Pack.proj` 声明。新增静态文件、目录、额外项目或发布目录时，先按上一级
+[mods/README.md](../README.md) 选择组包 item，再更新组包入口或对应项目文件。
 
-插件项目的本地构建设置和需要随包部署的依赖写在对应项目的 `Taiwu.Mod.props`。依赖部署用
-`TaiwuModMergeDependency` 或 `TaiwuModCopyDependency` 声明，并只由 `pack-mod` 使用。普通 `dotnet build`
-只负责项目常规输出，不组装可部署目录。
+插件项目的本地构建设置和随包部署的依赖写在对应项目的 `Taiwu.Mod.props`。`pack-mod` 读取
+`TaiwuModMergeDependency` 和 `TaiwuModCopyDependency` 并组装可部署目录；普通 `dotnet build` 保持项目常规输出。
 
 ## 项目结构
 
@@ -39,6 +38,6 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name {{ mod.name }}
 
 ## 同步清单
 
-- 修改使用者说明或 `Config.Lua` 中的公开配置时，按实际需要同步更新 [README.md](README.md)。
-- 修改插件入口、静态文件、额外项目或发布目录时，同步更新 `Taiwu.Mod.Pack.proj` 与对应项目文件。
-- 修改依赖合并、复制或 Publicizer 设置时，同步更新对应项目的 `Taiwu.Mod.props`。
+- 公开配置或面向使用者的说明变化时，同步更新 [README.md](README.md)。
+- 包内容变化时，同步更新 `Taiwu.Mod.Pack.proj`、项目文件或项目旁 `Taiwu.Mod.props` 中拥有该声明的位置。
+- 依赖合并、复制或 Publicizer 设置变化时，同步更新对应项目的 `Taiwu.Mod.props`。

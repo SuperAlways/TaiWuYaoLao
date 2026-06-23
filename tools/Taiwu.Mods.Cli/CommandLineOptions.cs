@@ -247,7 +247,7 @@ internal sealed class CommandLineOptions
     {
         return new Option<bool>("--force")
         {
-            Description = "覆盖已存在的模板文件。",
+            Description = "覆盖目标中与模板同名的文件。",
         };
     }
 
