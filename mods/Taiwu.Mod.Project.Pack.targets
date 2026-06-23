@@ -1,11 +1,5 @@
 <Project>
   <PropertyGroup>
-    <InternalizeMergedDependencies
-      Condition="'$(InternalizeMergedDependencies)' == ''"
-    >true</InternalizeMergedDependencies>
-    <AllowDuplicateInternalizedResources
-      Condition="'$(AllowDuplicateInternalizedResources)' == ''"
-    >false</AllowDuplicateInternalizedResources>
     <TaiwuModPackDependsOn Condition="'$(TaiwuModPackDependsOn)' == ''"
     >Build</TaiwuModPackDependsOn>
   </PropertyGroup>
@@ -15,6 +9,8 @@
     BeforeTargets="CoreCompile"
     Condition="'$(AllowUnsafeBlocks)' != 'true' And '@(TaiwuModMergeDependency)' != ''"
   >
+    <!-- 合并依赖可能携带 Krafs.Publicizer 的 Unsafe 运行时访问策略。
+         ILRepack 将这些依赖并入入口 DLL 后，入口项目也必须在编译时启用 unsafe。 -->
     <PropertyGroup>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
@@ -187,10 +183,6 @@
         <Kind>Entry</Kind>
         <SourcePath>%(TaiwuModPackEntry.FullPath)</SourcePath>
         <PackagePath>%(TaiwuModPackEntry.PackagePath)</PackagePath>
-        <InternalizeMergedDependencies
-        >$(InternalizeMergedDependencies)</InternalizeMergedDependencies>
-        <AllowDuplicateInternalizedResources
-        >$(AllowDuplicateInternalizedResources)</AllowDuplicateInternalizedResources>
         <KeyFile>$(KeyFile)</KeyFile>
       </_TaiwuPackOutput>
       <_TaiwuPackOutput Include="@(_TaiwuUniqueMergeDll)">

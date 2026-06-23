@@ -197,7 +197,11 @@ Krafs.Publicizer 的实现有关：它从公开化输出生成 `IgnoresAccessChe
 `Frontend/Tools/MyMod.Frontend.dll`。这个设置只改变包内路径；子目录依赖解析必须由 Mod 声明的
 前置加载器或运行时组件提供。
 
-依赖部署有两种动作。需要作为独立文件随入口复制时，声明：
+插件入口项目的额外 DLL 依赖有两种部署动作。`Include` 只写 DLL 文件名；对应 DLL 必须先通过
+项目自身的 `ProjectReference`、`PackageReference` 等标准引用进入入口项目输出目录。`pack-mod`
+不读取 NuGet 缓存路径或任意项目输出路径，而是在本次构建输出中按文件名匹配。
+
+需要作为独立文件随入口复制时，声明：
 
 ```xml
 <ItemGroup>
@@ -218,23 +222,11 @@ Krafs.Publicizer 的实现有关：它从公开化输出生成 `IgnoresAccessChe
 复制依赖跟随入口 DLL 的目录，因此同样要求 Mod 具备子目录依赖解析能力。这两个依赖声明只表达太吾
 插件入口的 DLL 处理方式；非插件项目的运行时依赖应放在项目自己的发布目录中。
 
-`Include` 只写 DLL 文件名。`pack-mod` 不读取 NuGet 缓存路径或任意项目输出路径，而是在入口项目
-本次构建后，从进入该项目输出目录的 DLL 中按文件名匹配，再执行复制或合并。
+`TaiwuModMergeDependency` 使用 ILRepack 以入口 DLL 为主程序集，将匹配到的依赖 DLL 并入该入口 DLL。
+游戏仍按 `Config.Lua` 中的插件入口契约发现和加载入口 DLL。游戏或运行时已经提供的 DLL 属于外部运行时依赖，不需要进入 Mod 包。
 
-需要随 Mod 部署的依赖，要先通过项目自身的 `ProjectReference`、`PackageReference` 等标准引用进入
-入口项目输出目录，再用 `TaiwuModMergeDependency` 或 `TaiwuModCopyDependency` 声明打包动作。
-游戏或运行时已经提供的 DLL 作为外部运行时依赖处理。
-
-被合并的依赖默认会内部化，但不会重命名类型。内部化用于收窄合并依赖的可见范围；类型重命名会破坏
-反射、序列化、IPC/RPC 和脚本等按完整类型名建立的契约。
-
-需要关闭内部化时，在项目中设置：
-
-```xml
-<PropertyGroup>
-  <InternalizeMergedDependencies>false</InternalizeMergedDependencies>
-</PropertyGroup>
-```
+声明合并依赖时，入口项目会在编译时启用 `AllowUnsafeBlocks`，用于承接被合并依赖中的 Publicizer
+`Unsafe` 运行时访问策略。
 
 前后端共同引用的内部共享项目如果要随入口一起部署，由前端和后端入口项目分别声明需要合并或复制的
 DLL。这样前后端各自生成自己的最终入口 DLL。

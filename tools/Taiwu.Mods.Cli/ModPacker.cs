@@ -88,7 +88,9 @@ internal sealed class ModPacker(
                         throw new InvalidOperationException($"项目声明了多个组包入口程序集：{projectPath}");
                     }
 
-                    assemblyInput = new PackAssemblyInput(CreateFile(output), CreateOptions(output));
+                    assemblyInput = new PackAssemblyInput(
+                        CreateFile(output),
+                        output.Metadata.GetValueOrDefault("KeyFile"));
                     break;
 
                 case "Merge":
@@ -126,7 +128,7 @@ internal sealed class ModPacker(
                     assemblyInput.Entry,
                     mergeDependencies,
                     [.. libraryPaths.Distinct(StringComparer.OrdinalIgnoreCase)],
-                    assemblyInput.Options));
+                    assemblyInput.KeyFile));
         }
 
         return builder.Build();
@@ -237,19 +239,9 @@ internal sealed class ModPacker(
             $"/out:{outputPath}",
         ];
 
-        if (assembly.Options.InternalizeMergedDependencies)
+        if (!string.IsNullOrEmpty(assembly.KeyFile))
         {
-            arguments.Add("/internalize");
-        }
-
-        if (assembly.Options.AllowDuplicateInternalizedResources)
-        {
-            arguments.Add("/allowduplicateresources");
-        }
-
-        if (!string.IsNullOrEmpty(assembly.Options.KeyFile))
-        {
-            arguments.Add($"/keyfile:{assembly.Options.KeyFile}");
+            arguments.Add($"/keyfile:{assembly.KeyFile}");
         }
 
         foreach (string libraryPath in assembly.LibraryPaths)
@@ -301,14 +293,6 @@ internal sealed class ModPacker(
         return new PackDirectory(
             output.SourcePath,
             NormalizePackagePath(output.PackagePath ?? string.Empty, output.SourcePath));
-    }
-
-    private static PackAssemblyOptions CreateOptions(PackOutput output)
-    {
-        return new PackAssemblyOptions(
-            bool.Parse(GetRequiredMetadata(output, "InternalizeMergedDependencies")),
-            bool.Parse(GetRequiredMetadata(output, "AllowDuplicateInternalizedResources")),
-            output.Metadata.GetValueOrDefault("KeyFile"));
     }
 
     private static string GetPackageDestinationPath(PackPlanOutput output, string packageRoot)
@@ -370,13 +354,6 @@ internal sealed class ModPacker(
         }
 
         return property.GetString() ?? string.Empty;
-    }
-
-    private static string GetRequiredMetadata(PackOutput output, string name)
-    {
-        return output.Metadata.TryGetValue(name, out string? value)
-            ? value
-            : throw new InvalidOperationException($"包产物缺少 '{name}'：{output.SourcePath}");
     }
 
     private static bool IsUnderDirectoryOrSame(string path, string directory)
@@ -446,11 +423,11 @@ internal sealed class ModPacker(
         PackFile Entry,
         IReadOnlyList<PackFile> MergeDependencies,
         IReadOnlyList<string> LibraryPaths,
-        PackAssemblyOptions Options);
+        string? KeyFile);
 
     private sealed record PackAssemblyInput(
         PackFile Entry,
-        PackAssemblyOptions Options);
+        string? KeyFile);
 
     private abstract record PackPlanOutput(
         string SourcePath,
@@ -466,8 +443,4 @@ internal sealed class ModPacker(
         string PackagePath)
         : PackPlanOutput(SourcePath, PackagePath);
 
-    private sealed record PackAssemblyOptions(
-        bool InternalizeMergedDependencies,
-        bool AllowDuplicateInternalizedResources,
-        string? KeyFile);
 }
