@@ -2,7 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <RoslynatorVersion>4.15.0</RoslynatorVersion>
-    <TaiwuModKitReferencesVersion>1.0.20</TaiwuModKitReferencesVersion>
+    <TaiwuModKitReferencesVersion>1.0.44</TaiwuModKitReferencesVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +18,7 @@
       Include="Roslynator.Formatting.Analyzers"
       Version="$(RoslynatorVersion)"
     />
-    <PackageVersion Include="Scriban" Version="7.2.4" />
+    <PackageVersion Include="Scriban" Version="7.2.5" />
     <PackageVersion Include="System.CommandLine" Version="2.0.9" />
     <PackageVersion
       Include="Taiwu.ModKit.References.Plugin"

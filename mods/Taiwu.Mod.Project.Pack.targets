@@ -2,16 +2,29 @@
   <PropertyGroup>
     <TaiwuModPackDependsOn Condition="'$(TaiwuModPackDependsOn)' == ''"
     >Build</TaiwuModPackDependsOn>
+    <_TaiwuSharedProjectPathPrefix
+    >$([System.String]::Copy('$(TaiwuModsSharedDir)').Replace('\',
+      '/').ToLowerInvariant())</_TaiwuSharedProjectPathPrefix>
   </PropertyGroup>
 
   <Target
     Name="EnablePublicizerUnsafeRuntimeAccess"
     BeforeTargets="CoreCompile"
-    Condition="'$(AllowUnsafeBlocks)' != 'true' And '@(TaiwuModMergeDependency)' != ''"
+    DependsOnTargets="ResolveReferences"
+    Condition="'$(AllowUnsafeBlocks)' != 'true'"
   >
     <!-- 合并依赖可能携带 Krafs.Publicizer 的 Unsafe 运行时访问策略。
          ILRepack 将这些依赖并入入口 DLL 后，入口项目也必须在编译时启用 unsafe。 -->
-    <PropertyGroup>
+    <ItemGroup>
+      <_TaiwuSharedReferenceCopyLocalPath
+        Include="@(ReferenceCopyLocalPaths)"
+        Condition="'@(TaiwuModPackEntry)' != '' And '%(ReferenceCopyLocalPaths.MSBuildSourceProjectFile)' != '' And $([System.String]::Copy('%(ReferenceCopyLocalPaths.MSBuildSourceProjectFile)').Replace('\', '/').ToLowerInvariant().StartsWith('$(_TaiwuSharedProjectPathPrefix)'))"
+      />
+    </ItemGroup>
+
+    <PropertyGroup
+      Condition="'@(TaiwuModMergeDependency)' != '' Or '@(_TaiwuSharedReferenceCopyLocalPath)' != ''"
+    >
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
   </Target>
@@ -57,6 +70,11 @@
         >%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</AssemblyFileName>
         <AssemblyFileNameKey
         >$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)').ToLowerInvariant())</AssemblyFileNameKey>
+        <SourceProjectFile
+        >%(ReferenceCopyLocalPaths.MSBuildSourceProjectFile)</SourceProjectFile>
+        <SourceProjectFileKey
+        >$([System.String]::Copy('%(ReferenceCopyLocalPaths.MSBuildSourceProjectFile)').Replace('\',
+          '/').ToLowerInvariant())</SourceProjectFileKey>
       </_TaiwuCopyLocalDll>
       <_TaiwuPackableDll
         Include="@(_TaiwuCopyLocalDll)"
@@ -66,16 +84,30 @@
         Include="@(_TaiwuPackableDll)"
         KeepDuplicates="false"
       />
-      <_TaiwuMergeRequest Include="@(TaiwuModMergeDependency)">
+      <_TaiwuExplicitMergeRequest Include="@(TaiwuModMergeDependency)">
         <AssemblyFileName>%(TaiwuModMergeDependency.Identity)</AssemblyFileName>
         <AssemblyFileNameKey
         >$([System.String]::Copy('%(TaiwuModMergeDependency.Identity)').ToLowerInvariant())</AssemblyFileNameKey>
-      </_TaiwuMergeRequest>
+      </_TaiwuExplicitMergeRequest>
+      <_TaiwuSharedMergeRequest
+        Include="@(_TaiwuUniquePackableDll)"
+        Condition="'@(TaiwuModPackEntry)' != '' And '%(_TaiwuUniquePackableDll.SourceProjectFileKey)' != '' And $([System.String]::Copy('%(_TaiwuUniquePackableDll.SourceProjectFileKey)').StartsWith('$(_TaiwuSharedProjectPathPrefix)'))"
+      >
+        <AssemblyFileName
+        >%(_TaiwuUniquePackableDll.AssemblyFileName)</AssemblyFileName>
+        <AssemblyFileNameKey
+        >%(_TaiwuUniquePackableDll.AssemblyFileNameKey)</AssemblyFileNameKey>
+      </_TaiwuSharedMergeRequest>
       <_TaiwuCopyRequest Include="@(TaiwuModCopyDependency)">
         <AssemblyFileName>%(TaiwuModCopyDependency.Identity)</AssemblyFileName>
         <AssemblyFileNameKey
         >$([System.String]::Copy('%(TaiwuModCopyDependency.Identity)').ToLowerInvariant())</AssemblyFileNameKey>
       </_TaiwuCopyRequest>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_TaiwuMergeRequest Include="@(_TaiwuExplicitMergeRequest)" />
+      <_TaiwuMergeRequest Include="@(_TaiwuSharedMergeRequest)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -84,11 +116,18 @@
         ';');</_TaiwuPackableDllKeys>
       <_TaiwuMergeRequestKeys>;@(_TaiwuMergeRequest->'%(AssemblyFileNameKey)',
         ';');</_TaiwuMergeRequestKeys>
+      <_TaiwuSharedMergeRequestKeys
+      >;@(_TaiwuSharedMergeRequest->'%(AssemblyFileNameKey)',
+        ';');</_TaiwuSharedMergeRequestKeys>
       <_TaiwuCopyRequestKeys>;@(_TaiwuCopyRequest->'%(AssemblyFileNameKey)',
         ';');</_TaiwuCopyRequestKeys>
     </PropertyGroup>
 
     <ItemGroup>
+      <_TaiwuRedundantSharedMergeDependency
+        Include="@(_TaiwuExplicitMergeRequest)"
+        Condition="$([System.String]::Copy('$(_TaiwuSharedMergeRequestKeys)').Contains(';%(_TaiwuExplicitMergeRequest.AssemblyFileNameKey);'))"
+      />
       <_TaiwuConflictingDependency
         Include="@(_TaiwuMergeRequest)"
         Condition="$([System.String]::Copy('$(_TaiwuCopyRequestKeys)').Contains(';%(_TaiwuMergeRequest.AssemblyFileNameKey);'))"
@@ -143,6 +182,10 @@
       />
     </ItemGroup>
 
+    <Error
+      Condition="'@(_TaiwuRedundantSharedMergeDependency)' != ''"
+      Text="shared 项目由 ProjectReference 自动合并，不要再声明 TaiwuModMergeDependency：@(_TaiwuRedundantSharedMergeDependency->'%(AssemblyFileName)', ', ')"
+    />
     <Error
       Condition="'@(_TaiwuConflictingDependency)' != ''"
       Text="同一个依赖不能同时合并到入口程序集又作为独立 DLL 复制：@(_TaiwuConflictingDependency->'%(AssemblyFileName)', ', ')"

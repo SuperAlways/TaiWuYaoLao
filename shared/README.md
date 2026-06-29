@@ -2,11 +2,12 @@
 
 内部共享项目目录。
 
-每个一级子目录是一个可被同一仓库内多个 Mod 引用的内部 C# 项目。共享项目为插件项目提供内部库；部署共享项目 DLL
-或其 runtime 依赖的动作，由引用它的前端或后端插件项目声明，具体 item 见 [`mods/README.md`](../mods/README.md)。
+每个一级子目录是一个可被同一仓库内多个 Mod 引用的内部 C# 项目。共享项目作为仓库内部库被插件项目复用；
+前端或后端入口项目通过标准 `ProjectReference` 引用后，`pack-mod` 会把该 shared 项目的构建输出自动合并进入口 DLL。
+具体组包规则见 [`mods/README.md`](../mods/README.md)。
 
-本目录 README 说明共享项目的共同边界。共享库自己的 API、运行时依赖、部署建议和维护入口由
-`shared/<ProjectName>/README.md` 维护；引用它的 Mod 负责决定是否合并、复制或不部署该 DLL。
+本目录 README 说明共享项目的共同边界。共享库自己的 API、额外运行时依赖、特殊端侧要求和维护入口由
+`shared/<ProjectName>/README.md` 维护；共享项目不作为独立 DLL 复制部署。
 
 ## 目录约定
 
@@ -24,7 +25,7 @@
 共享项目的构建检查服务于这条边界：公开成员需要能说明调用契约，源码引用需要反映真实依赖面。
 
 从模板创建出的仓库如果维护多个内部共享项目，可以在本节放置一级目录索引；索引只保留选择信息和稳定入口，共享库 API、
-运行时依赖和部署建议留在项目自己的 README 里。
+额外运行时依赖和特殊端侧要求留在项目自己的 README 里。
 
 ## 新建共享项目
 
@@ -41,8 +42,8 @@ dotnet run --project tools/Taiwu.Mods.Cli -- create-shared --name MyCompany.Taiw
 
 新建后，项目目录包含项目内 README 和一个 C# class library 项目。
 
-创建命令生成共享项目的初始骨架。项目创建后，目标框架、Taiwu 引用、Publicizer 和部署建议以项目自己的 `.csproj`、
-README，以及引用它的插件项目配置为准。
+创建命令生成共享项目的初始骨架。项目创建后，目标框架、Taiwu 引用、Publicizer 和特殊运行边界以项目自己的 `.csproj`、
+README，以及引用它的插件项目文件为准。
 
 ```text
 shared/MyCompany.Taiwu.Shared/
@@ -54,7 +55,7 @@ shared/MyCompany.Taiwu.Shared/
 和 `Frontend` 项目目标框架为 `netstandard2.1`，`Backend` 项目目标框架为 `net8.0`。纯共享抽象
 或通用实现可以保持为普通 C# class library。
 
-## 引用与部署边界
+## 引用与合并边界
 
 同一个共享项目如果会同时被前端和后端插件引用，并且依赖 `Taiwu.ModKit.References.*` 游戏引用包，
 需要同时产出前端和后端运行时目标框架，例如 `netstandard2.1;net8.0`。这样前端插件消费
@@ -63,11 +64,14 @@ shared/MyCompany.Taiwu.Shared/
 需要访问游戏 API 时，再按实际代码需要添加 `Taiwu.ModKit.References.Frontend` 或
 `Taiwu.ModKit.References.Backend` 等引用包。需要访问游戏 DLL 的非 public API 时，在项目自己的
 `.csproj` 中显式添加 `Krafs.Publicizer` 引用、启用 `UsePublicizer`，并声明具体 `Publicize` 项。
+启用 Publicizer 后，共享项目也会使用仓库公共 Publicizer 缓存清理规则；清理行为和跨项目复用边界见
+[`mods/README.md`](../mods/README.md#taiwu-引用和-publicizer)。
 
 `Taiwu.ModKit.References.*` 包的生成、分类和发布归组织内部
 [`taiwu-modkit`](https://github.com/Wanxiang-Sanctum/taiwu-modkit) 仓库的工具配置管理；共享项目通过稳定包 ID 和本仓库固定版本
 引用这些包，DLL 清单以该内部仓库的工具配置为准。
 
-共享项目不自动进入 Mod 可部署目录。需要随某个 Mod 部署时，由引用它的前端或后端插件项目通过
-`TaiwuModMergeDependency`、`TaiwuModCopyDependency` 或项目自己的发布目录声明具体动作；共享项目 README 可以说明建议，
-但不替引用方决定最终包内容。
+共享项目不作为独立 DLL 复制部署。需要随某个 Mod 入口进入包时，由引用它的前端或后端入口项目维护标准
+`ProjectReference`；组包时会自动合并对应 shared 输出。共享项目 README 只记录供引用方判断的特殊端侧要求或额外运行时依赖，
+不声明合并或复制动作。
+`TaiwuModCopyDependency` 用于入口项目的非 shared 独立运行时依赖，不用于 `shared/` 项目本身。

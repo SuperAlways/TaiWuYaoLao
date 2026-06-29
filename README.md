@@ -134,19 +134,19 @@ dotnet run --project tools/Taiwu.Mods.Cli -- remove-shared --name MyCompany.Taiw
 
 ## 阅读入口
 
-| 入口 | 何时阅读 |
-| --- | --- |
-| [`docs/development/README.md`](docs/development/README.md) | 维护模板仓库、文档、模板、工具和工作流。 |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | 提交 issue、讨论或 PR 前确认入口和检查项。 |
-| [`mods/README.md`](mods/README.md) | 维护实际 Mod 的目录约定、组包、插件入口、引用和依赖部署规则。 |
-| [`shared/README.md`](shared/README.md) | 维护内部共享项目边界、目标框架和项目级配置入口。 |
-| [`templates/README.md`](templates/README.md) | 维护模板目录、模板变量和渲染规则。 |
-| [`tools/README.md`](tools/README.md) | 维护仓库命令行工具实现。 |
-| [`docs/README.md`](docs/README.md) | 阅读跨具体 Mod 复用的太吾机制、平台机制、发布经验和跨项目判断。 |
+| 入口                                                       | 何时阅读                                                        |
+| ---------------------------------------------------------- | --------------------------------------------------------------- |
+| [`docs/development/README.md`](docs/development/README.md) | 维护模板仓库、文档、模板、工具和工作流。                        |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md)                       | 提交 issue、讨论或 PR 前确认入口和检查项。                      |
+| [`mods/README.md`](mods/README.md)                         | 维护实际 Mod 的目录约定、组包、插件入口、引用和依赖部署规则。   |
+| [`shared/README.md`](shared/README.md)                     | 维护内部共享项目边界、目标框架和项目级配置入口。                |
+| [`templates/README.md`](templates/README.md)               | 维护模板目录、模板变量和渲染规则。                              |
+| [`tools/README.md`](tools/README.md)                       | 维护仓库命令行工具实现。                                        |
+| [`docs/README.md`](docs/README.md)                         | 阅读跨具体 Mod 复用的太吾机制、平台机制、发布经验和跨项目判断。 |
 
 具体 Mod 面向使用者的说明由对应 `mods/<ModName>/README.md` 自己组织。源码模块、组包内容和内部设计见
-`mods/<ModName>/DEVELOPMENT.md`、`mods/<ModName>/docs/` 或源码子目录 README。内部共享项目自己的 API、运行时依赖和
-部署建议见 `shared/<ProjectName>/README.md`。
+`mods/<ModName>/DEVELOPMENT.md`、`mods/<ModName>/docs/` 或源码子目录 README。内部共享项目自己的 API、额外运行时依赖和
+特殊端侧要求见 `shared/<ProjectName>/README.md`。
 
 ## 外部依据
 

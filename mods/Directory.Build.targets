@@ -5,6 +5,10 @@
     Condition="'$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend'"
   />
 
+  <PropertyGroup Condition="'$(UsePublicizer)' == 'true'">
+    <PublicizerClearCacheOnClean>true</PublicizerClearCacheOnClean>
+  </PropertyGroup>
+
   <PropertyGroup
     Condition="'$(UsePublicizer)' == 'true' And '$(TaiwuModSide)' == 'Frontend'"
   >

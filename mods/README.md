@@ -67,14 +67,12 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 ## 组包声明
 
 每个 Mod 的 `Taiwu.Mod.Pack.proj` 是可部署目录的组包入口。它只描述最终目录由哪些文件、目录和
-项目组成，不给项目额外标记类型；太吾插件、共享 DLL、发布目录和普通静态文件都走同一条
-组合路径。
+项目组成，不给项目额外标记类型；太吾插件入口、额外依赖 DLL、发布目录和普通静态文件都走同一套
+组包流程。
 
 ```xml
 <Project>
-  <Import
-    Project="$([MSBuild]::GetPathOfFileAbove('Taiwu.Mods.Paths.props', '$(MSBuildThisFileDirectory)'))"
-  />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Taiwu.Mods.Paths.props', '$(MSBuildThisFileDirectory)'))" />
   <Import Project="$(TaiwuModsModsDir)Taiwu.Mod.Pack.targets" />
 
   <ItemGroup>
@@ -97,7 +95,10 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 
 ```xml
 <ItemGroup>
-  <TaiwuModPackFile Include="$(TargetDir)MyMod.Ipc.dll" PackagePath="Plugins/MyMod.Ipc.dll" />
+  <TaiwuModPackFile
+    Include="$(TargetDir)MyMod.Ipc.dll"
+    PackagePath="Plugins/MyMod.Ipc.dll"
+  />
 </ItemGroup>
 ```
 
@@ -164,6 +165,14 @@ dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name MyMod
 Krafs.Publicizer 的实现有关：它从公开化输出生成 `IgnoresAccessChecksToAttribute`，没有公开化输出时，该 attribute
 的程序集名会为空。
 
+仓库启用 Krafs.Publicizer 官方的 `PublicizerClearCacheOnClean`，所以 `dotnet clean` 会删除项目
+`$(IntermediateOutputPath)PublicizedAssemblies` 下的公开化缓存。同一项目的后续构建可以复用 Publicizer 已经生成的公开化程序集。
+如果构建在 Publicizer 写缓存时中断，先运行 `dotnet clean` 清理该项目缓存，再重新构建。
+
+Krafs.Publicizer 官方 targets 把公开化输出目录固定传给当前项目的
+`$(IntermediateOutputPath)PublicizedAssemblies`，没有提供稳定的跨项目共享缓存属性。本模板不重写官方
+`PublicizeAssemblies` target，因此不同插件项目公开化同一个游戏 DLL 时仍可能各自生成缓存。
+
 需要关闭默认 Publicizer 支持时，可以在 `Taiwu.Mod.props` 中设置：
 
 ```xml
@@ -179,8 +188,8 @@ Krafs.Publicizer 的实现有关：它从公开化输出生成 `IgnoresAccessChe
 游戏本体的普通插件依赖解析以 `Plugins/` 根目录为基准。
 
 前端和后端插件项目会自动把自身入口 DLL 声明为 `Plugins/<TargetFileName>`，并在 `Config.Lua` 中直接使用
-`<TargetFileName>`。额外依赖需要在插件项目旁的 `Taiwu.Mod.props` 或项目文件中显式声明。普通 `dotnet build`
-负责生成项目常规输出；`pack-mod` 在构建后读取项目包产物组装最终包。
+`<TargetFileName>`。普通 `dotnet build` 负责生成项目常规输出；`pack-mod`
+在构建后读取项目包产物组装最终包。插件依赖是否自动合并、显式合并或复制，由下面的依赖部署规则决定。
 
 只有 Mod 自己提供了子目录依赖解析能力时，才应把入口和复制依赖部署到 `Plugins/` 下的其他子目录。
 在插件项目旁的 `Taiwu.Mod.props` 中设置：
@@ -197,7 +206,12 @@ Krafs.Publicizer 的实现有关：它从公开化输出生成 `IgnoresAccessChe
 `Frontend/Tools/MyMod.Frontend.dll`。这个设置只改变包内路径；子目录依赖解析必须由 Mod 声明的
 前置加载器或运行时组件提供。
 
-插件入口项目的额外 DLL 依赖有两种部署动作。`Include` 只写 DLL 文件名；对应 DLL 必须先通过
+插件入口项目引用 `shared/` 下的内部共享项目时，`pack-mod` 会强制把对应 shared 输出合并进入口
+DLL。shared 是否进入入口 DLL 只由标准 `ProjectReference` 决定，不声明
+`TaiwuModMergeDependency` 或 `TaiwuModCopyDependency`；前者会被视为冗余配置，后者会按合并/复制冲突报错。
+前后端共同引用同一个 shared 项目时，两侧入口分别合并各自目标框架的输出，生成各自的最终入口 DLL。
+
+除 `shared/` 自动合并以外，插件入口项目的额外 DLL 依赖有两种部署动作。`Include` 只写 DLL 文件名；对应 DLL 必须先通过
 项目自身的 `ProjectReference`、`PackageReference` 等标准引用进入入口项目输出目录。`pack-mod`
 不读取 NuGet 缓存路径或任意项目输出路径，而是在本次构建输出中按文件名匹配。
 
@@ -209,7 +223,7 @@ Krafs.Publicizer 的实现有关：它从公开化输出生成 `IgnoresAccessChe
 </ItemGroup>
 ```
 
-需要合并到入口插件 DLL 时，声明：
+非 shared 依赖需要合并到入口插件 DLL 时，声明：
 
 ```xml
 <ItemGroup>
@@ -222,11 +236,9 @@ Krafs.Publicizer 的实现有关：它从公开化输出生成 `IgnoresAccessChe
 复制依赖跟随入口 DLL 的目录，因此同样要求 Mod 具备子目录依赖解析能力。这两个依赖声明只表达太吾
 插件入口的 DLL 处理方式；非插件项目的运行时依赖应放在项目自己的发布目录中。
 
-`TaiwuModMergeDependency` 使用 ILRepack 以入口 DLL 为主程序集，将匹配到的依赖 DLL 并入该入口 DLL。
-游戏仍按 `Config.Lua` 中的插件入口契约发现和加载入口 DLL。游戏或运行时已经提供的 DLL 属于外部运行时依赖，不需要进入 Mod 包。
+非 shared 显式合并和 shared 自动合并都使用 ILRepack 以入口 DLL 为主程序集，将匹配到的依赖 DLL
+并入该入口 DLL。游戏仍按 `Config.Lua` 中的插件入口契约发现和加载入口 DLL。游戏或运行时已经提供的 DLL
+属于外部运行时依赖，不需要进入 Mod 包。
 
-声明合并依赖时，入口项目会在编译时启用 `AllowUnsafeBlocks`，用于承接被合并依赖中的 Publicizer
-`Unsafe` 运行时访问策略。
-
-前后端共同引用的内部共享项目如果要随入口一起部署，由前端和后端入口项目分别声明需要合并或复制的
-DLL。这样前后端各自生成自己的最终入口 DLL。
+入口项目存在非 shared 显式合并依赖或引用 shared 项目时，会在编译时启用 `AllowUnsafeBlocks`，用于承接被合并依赖中的
+Publicizer `Unsafe` 运行时访问策略。`TaiwuModCopyDependency` 只用于非 shared 的独立运行时依赖。

@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Check out sources
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -47,7 +47,7 @@ jobs:
           global-json-file: global.json
 
       - name: Cache aqua tools
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/aquaproj-aqua
           key: aqua-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('aqua.yml', 'aqua-checksums.json') }}
@@ -55,9 +55,9 @@ jobs:
             aqua-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Set up aqua tools
-        uses: aquaproj/aqua-installer@v4.0.4
+        uses: aquaproj/aqua-installer@v4.0.5
         with:
-          aqua_version: v2.59.1
+          aqua_version: v2.60.1
 
       - name: Restore
         run: dotnet restore Taiwu.Mods.slnx --locked-mode

@@ -5,14 +5,14 @@
 
 ## 阅读路径
 
-| 任务 | 入口 |
-| --- | --- |
-| 维护检查、工具安装、生成项目与打包验证、发布流水线维护 | 本文 |
-| 维护所有 Mod 共同的组包、插件入口、依赖部署规则 | [`mods/README.md`](../../mods/README.md) |
-| 维护内部共享项目共同边界 | [`shared/README.md`](../../shared/README.md) |
-| 维护创建/移除命令实现或模板 | [`tools/README.md`](../../tools/README.md)、[`templates/README.md`](../../templates/README.md) |
-| 维护文档分层和同步规则 | [文档分层与维护](documentation.md) |
-| 维护跨 Mod 复用的机制参考或仓库经验 | [`docs/README.md`](../README.md) |
+| 任务                                                   | 入口                                                                                           |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| 维护检查、工具安装、生成项目与打包验证、发布流水线维护 | 本文                                                                                           |
+| 维护所有 Mod 共同的组包、插件入口、依赖部署规则        | [`mods/README.md`](../../mods/README.md)                                                       |
+| 维护内部共享项目共同边界                               | [`shared/README.md`](../../shared/README.md)                                                   |
+| 维护创建/移除命令实现或模板                            | [`tools/README.md`](../../tools/README.md)、[`templates/README.md`](../../templates/README.md) |
+| 维护文档分层和同步规则                                 | [文档分层与维护](documentation.md)                                                             |
+| 维护跨 Mod 复用的机制参考或仓库经验                    | [`docs/README.md`](../README.md)                                                               |
 
 生成的具体 Mod 应把 `README.md` 留给该 Mod 自己的使用者说明；源码模块、构建命令、组包细节和内部设计入口放在
 `DEVELOPMENT.md`、`docs/` 或源码子目录 README。
@@ -83,14 +83,14 @@ dotnet msbuild repo.proj -t:UpdateToolChecksums
 
 仓库目录职责和读者路由见根 [`README.md`](../../README.md) 的仓库结构与阅读入口；本节只保留维护者需要的就近入口。
 
-| 范围 | 维护入口 |
-| --- | --- |
-| Mod 目录约定、组包声明、插件入口和依赖部署 | [`mods/README.md`](../../mods/README.md) |
-| 内部共享项目边界、目标框架和引用边界 | [`shared/README.md`](../../shared/README.md) |
-| 仓库级文档、机制参考和仓库经验 | [`docs/README.md`](../README.md) |
-| 命令行工具实现 | [`tools/README.md`](../../tools/README.md) |
-| 模板目录、模板变量和输出文案边界 | [`templates/README.md`](../../templates/README.md) |
-| GitHub Actions 工作流 | `.github/workflows/` |
-| 仓库级检查目标 | `repo.proj` |
-| 仓库级 MSBuild 和 NuGet 配置 | `Taiwu.Mods.Paths.props`、`Directory.Build.props`、`Directory.Packages.props`、`NuGet.config` |
-| 可部署目录输出 | `artifacts/mods/`；手写源码从 `mods/`、`shared/` 和 `tools/` 进入。 |
+| 范围                                       | 维护入口                                                                                      |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| Mod 目录约定、组包声明、插件入口和依赖部署 | [`mods/README.md`](../../mods/README.md)                                                      |
+| 内部共享项目边界、目标框架和引用边界       | [`shared/README.md`](../../shared/README.md)                                                  |
+| 仓库级文档、机制参考和仓库经验             | [`docs/README.md`](../README.md)                                                              |
+| 命令行工具实现                             | [`tools/README.md`](../../tools/README.md)                                                    |
+| 模板目录、模板变量和输出文案边界           | [`templates/README.md`](../../templates/README.md)                                            |
+| GitHub Actions 工作流                      | `.github/workflows/`                                                                          |
+| 仓库级检查目标                             | `repo.proj`                                                                                   |
+| 仓库级 MSBuild 和 NuGet 配置               | `Taiwu.Mods.Paths.props`、`Directory.Build.props`、`Directory.Packages.props`、`NuGet.config` |
+| 可部署目录输出                             | `artifacts/mods/`；手写源码从 `mods/`、`shared/` 和 `tools/` 进入。                           |

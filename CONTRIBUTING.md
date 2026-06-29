@@ -7,15 +7,15 @@
 
 ## 先判断变更类型
 
-| 变更 | 先读 |
-| --- | --- |
-| 使用模板创建仓库、创建项目、构建、打包和发布 | [`README.md`](README.md) |
-| 维护模板仓库的构建、检查、模板、工具或工作流 | [`docs/development/README.md`](docs/development/README.md) |
-| 文档结构、受众分层、模板文档同步 | [`docs/development/documentation.md`](docs/development/documentation.md) |
-| Mod 目录约定、组包、插件入口、Taiwu 引用和依赖部署规则 | [`mods/README.md`](mods/README.md) |
-| 生成项目文案、文档模板和输出边界 | [`templates/README.md`](templates/README.md) |
-| 内部共享项目目录约定和共同边界 | [`shared/README.md`](shared/README.md) |
-| 创建/移除命令实现、模板变量和渲染规则 | [`tools/README.md`](tools/README.md)、[`templates/README.md`](templates/README.md) |
+| 变更                                                   | 先读                                                                               |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| 使用模板创建仓库、创建项目、构建、打包和发布           | [`README.md`](README.md)                                                           |
+| 维护模板仓库的构建、检查、模板、工具或工作流           | [`docs/development/README.md`](docs/development/README.md)                         |
+| 文档结构、受众分层、模板文档同步                       | [`docs/development/documentation.md`](docs/development/documentation.md)           |
+| Mod 目录约定、组包、插件入口、Taiwu 引用和依赖部署规则 | [`mods/README.md`](mods/README.md)                                                 |
+| 生成项目文案、文档模板和输出边界                       | [`templates/README.md`](templates/README.md)                                       |
+| 内部共享项目目录约定和共同边界                         | [`shared/README.md`](shared/README.md)                                             |
+| 创建/移除命令实现、模板变量和渲染规则                  | [`tools/README.md`](tools/README.md)、[`templates/README.md`](templates/README.md) |
 
 ## 提交前检查
 

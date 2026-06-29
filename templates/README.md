@@ -26,7 +26,8 @@ Scriban 渲染；需要渲染内容的文件以 `.scriban` 结尾，输出时会
 
 - `templates/mod/README.md.scriban` 生成面向 Mod 使用者的最小入口。
 - `templates/mod/DEVELOPMENT.md.scriban` 生成面向源码维护者的项目维护入口。
-- `templates/mod/Config.Lua.scriban` 生成游戏读取的配置字段占位；字段语义由机制参考维护，具体展示取值由具体 Mod 修改。
+- `templates/mod/Config.Lua.scriban` 生成游戏读取的配置字段占位，包含显式的 `Source = 0` 默认值；字段语义由机制参考维护，
+  具体展示取值由具体 Mod 修改。
 - `templates/shared/README.md.scriban` 生成内部共享项目维护入口，并承接 `shared/README.md` 的共享 API 约定。
 
 调整目录级规则时，同步复核对应模板，让新项目沿用当前文档关系。更细的同步规则见
