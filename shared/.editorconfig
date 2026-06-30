@@ -1,0 +1,3 @@
+[*.cs]
+# Imports in shared projects should reflect their API and dependency surface.
+dotnet_diagnostic.IDE0005.severity = warning

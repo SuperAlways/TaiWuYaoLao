@@ -1,0 +1,44 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <RoslynatorVersion>4.15.0</RoslynatorVersion>
+    <TaiwuModKitReferencesVersion>1.0.44</TaiwuModKitReferencesVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="CliWrap" Version="3.10.2" />
+    <PackageVersion Include="ILRepack" Version="2.0.45" />
+    <PackageVersion Include="Krafs.Publicizer" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+    <PackageVersion
+      Include="Roslynator.Analyzers"
+      Version="$(RoslynatorVersion)"
+    />
+    <PackageVersion
+      Include="Roslynator.Formatting.Analyzers"
+      Version="$(RoslynatorVersion)"
+    />
+    <PackageVersion Include="Scriban" Version="7.2.5" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.9" />
+    <PackageVersion
+      Include="Taiwu.ModKit.References.Plugin"
+      Version="$(TaiwuModKitReferencesVersion)"
+    />
+    <PackageVersion
+      Include="Taiwu.ModKit.References.Shared"
+      Version="$(TaiwuModKitReferencesVersion)"
+    />
+    <PackageVersion
+      Include="Taiwu.ModKit.References.Unity"
+      Version="$(TaiwuModKitReferencesVersion)"
+    />
+    <PackageVersion
+      Include="Taiwu.ModKit.References.Frontend"
+      Version="$(TaiwuModKitReferencesVersion)"
+    />
+    <PackageVersion
+      Include="Taiwu.ModKit.References.Backend"
+      Version="$(TaiwuModKitReferencesVersion)"
+    />
+  </ItemGroup>
+</Project>

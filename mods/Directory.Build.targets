@@ -1,0 +1,58 @@
+<Project>
+  <Import Project="$(TaiwuModsModsDir)Taiwu.Mod.Project.Pack.targets" />
+  <Import
+    Project="$(TaiwuModsModsDir)Taiwu.Mod.Plugin.Pack.targets"
+    Condition="'$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend'"
+  />
+
+  <PropertyGroup Condition="'$(UsePublicizer)' == 'true'">
+    <PublicizerClearCacheOnClean>true</PublicizerClearCacheOnClean>
+  </PropertyGroup>
+
+  <PropertyGroup
+    Condition="'$(UsePublicizer)' == 'true' And '$(TaiwuModSide)' == 'Frontend'"
+  >
+    <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>
+  </PropertyGroup>
+
+  <Target
+    Name="ResolveBackendPublicizerRuntimeStrategies"
+    BeforeTargets="PublicizeAssemblies"
+    Condition="'$(UsePublicizer)' == 'true' And '$(TaiwuModSide)' == 'Backend'"
+  >
+    <!-- Krafs.Publicizer emits IgnoresAccessChecksToAttribute from publicized
+         assemblies; without a publicized assembly, the attribute receives an
+         empty assembly name. -->
+    <PropertyGroup>
+      <_TaiwuPublicizeTargets>@(Publicize)</_TaiwuPublicizeTargets>
+      <PublicizerRuntimeStrategies
+        Condition="'$(PublicizeAll)' == 'true' Or '$(_TaiwuPublicizeTargets)' != ''"
+      >IgnoresAccessChecksTo</PublicizerRuntimeStrategies>
+      <PublicizerRuntimeStrategies
+        Condition="'$(PublicizeAll)' != 'true' And '$(_TaiwuPublicizeTargets)' == ''"
+      >Unsafe</PublicizerRuntimeStrategies>
+    </PropertyGroup>
+  </Target>
+
+  <Target
+    Name="DeduplicatePublicizerRuntimeSupport"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="ResolveReferences"
+    Condition="'$(UsePublicizer)' == 'true' And '$(TaiwuModSide)' == 'Backend'"
+  >
+    <ItemGroup>
+      <_PublicizerRuntimeSupportProvider
+        Include="@(ReferencePath)"
+        Condition="'%(ReferencePath.Filename)' == 'MonoMod.Utils'"
+      />
+      <_PublicizerRuntimeSupportSource
+        Include="@(Compile)"
+        Condition="'%(Compile.NuGetPackageId)' == 'Krafs.Publicizer' And '%(Compile.Filename)' == 'IgnoresAccessChecksToAttribute'"
+      />
+      <Compile
+        Remove="@(_PublicizerRuntimeSupportSource)"
+        Condition="'@(_PublicizerRuntimeSupportProvider)' != ''"
+      />
+    </ItemGroup>
+  </Target>
+</Project>

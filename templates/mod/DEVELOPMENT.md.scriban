@@ -1,0 +1,44 @@
+# {{ mod.name }} 维护入口
+
+本文面向维护 {{ mod.name }} 源码、组包内容和发布流程的人。使用者说明见 [README.md](README.md)。
+
+## 常用命令
+
+从仓库根目录构建插件项目：
+
+```powershell
+dotnet build mods/{{ mod.name }}/src/Frontend/{{ mod.name }}.Frontend.csproj
+dotnet build mods/{{ mod.name }}/src/Backend/{{ mod.name }}.Backend.csproj
+```
+
+打包可部署目录：
+
+```powershell
+dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name {{ mod.name }}
+```
+
+`pack-mod` 会运行 `Taiwu.Mod.Pack.proj`，把它声明的内容组装到仓库根目录的 `artifacts/mods/{{ mod.name }}/`。
+
+## 组包边界
+
+最终包内容由 `Taiwu.Mod.Pack.proj` 声明。新增静态文件、目录、额外项目或发布目录时，先按上一级
+[mods/README.md](../README.md) 选择组包 item，再更新组包入口或对应项目文件。
+
+插件项目的本地构建设置写在对应项目的 `Taiwu.Mod.props`。通过 `ProjectReference` 引用的 `shared/` 项目会由 `pack-mod`
+自动合并，不在 `Taiwu.Mod.props` 中声明合并或复制动作；非 shared 依赖需要合并或复制时，再通过
+`TaiwuModMergeDependency` 和 `TaiwuModCopyDependency` 声明。普通 `dotnet build` 保持项目常规输出。
+
+## 项目结构
+
+- `Config.Lua`：游戏读取的 Mod 配置；字段语义见仓库级文档
+  [太吾游戏 Mod 配置与 Steam 发布边界](../../docs/taiwu-mod-steam-publishing-boundary.md)。初始文件预置标题、
+  `Source = 0`、FileId 占位、Mod 版本、兼容游戏版本、作者/简介占位和插件入口；封面、标签、Workshop 依赖、设置项、风险标记和更新记录按实际发布需要再添加。
+- `Taiwu.Mod.Pack.proj`：最终可部署目录的组包声明。
+- `src/Frontend/`：前端插件项目，入口 DLL 默认部署到 `Plugins/`。
+- `src/Backend/`：后端插件项目，入口 DLL 默认部署到 `Plugins/`。
+
+## 同步清单
+
+- 公开配置或面向使用者的说明变化时，同步更新 [README.md](README.md)。
+- 包内容变化时，同步更新 `Taiwu.Mod.Pack.proj`、项目文件或项目旁 `Taiwu.Mod.props` 中拥有该声明的位置。
+- 非 shared 依赖合并、复制或 Publicizer 设置变化时，同步更新对应项目的 `Taiwu.Mod.props`。

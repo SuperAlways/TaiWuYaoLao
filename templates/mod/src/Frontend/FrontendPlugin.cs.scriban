@@ -1,0 +1,15 @@
+using TaiwuModdingLib.Core.Plugin;
+
+namespace {{ mod.name }}.Frontend;
+
+[PluginConfig("{{ mod.name }}.Frontend", "YourCreatorId", "{{ mod.version }}")]
+public sealed class FrontendPlugin : TaiwuRemakePlugin
+{
+    public override void Initialize()
+    {
+    }
+
+    public override void Dispose()
+    {
+    }
+}

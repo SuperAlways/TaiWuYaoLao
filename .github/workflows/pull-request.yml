@@ -1,0 +1,72 @@
+name: Pull Request
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_NOLOGO: "true"
+
+jobs:
+  verify:
+    name: Build and Check
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+          global-json-file: global.json
+
+      - name: Cache aqua tools
+        uses: actions/cache@v6
+        with:
+          path: ~/.local/share/aquaproj-aqua
+          key: aqua-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('aqua.yml', 'aqua-checksums.json') }}
+          restore-keys: |
+            aqua-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Set up aqua tools
+        uses: aquaproj/aqua-installer@v4.0.5
+        with:
+          aqua_version: v2.60.1
+
+      - name: Restore
+        run: dotnet restore Taiwu.Mods.slnx --locked-mode
+        env:
+          TAIWU_MODKIT_GITHUB_TOKEN: ${{ secrets.TAIWU_MODKIT_GITHUB_TOKEN || github.token }}
+          TAIWU_MODKIT_GITHUB_USER: ${{ secrets.TAIWU_MODKIT_GITHUB_USER || github.actor }}
+
+      - name: Build
+        run: dotnet build Taiwu.Mods.slnx --no-restore
+
+      - name: Check
+        run: dotnet msbuild repo.proj -t:Check

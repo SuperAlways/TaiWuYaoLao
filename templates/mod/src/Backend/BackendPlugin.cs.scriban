@@ -1,0 +1,15 @@
+using TaiwuModdingLib.Core.Plugin;
+
+namespace {{ mod.name }}.Backend;
+
+[PluginConfig("{{ mod.name }}.Backend", "YourCreatorId", "{{ mod.version }}")]
+public sealed class BackendPlugin : TaiwuRemakePlugin
+{
+    public override void Initialize()
+    {
+    }
+
+    public override void Dispose()
+    {
+    }
+}
