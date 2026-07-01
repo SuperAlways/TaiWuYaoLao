@@ -27,7 +27,7 @@ public class StorageInterfaceContractTest
         ISoulStore store = new StubSoulStore();
         var profile = await store.LoadProfileAsync();
         profile.Should().NotBeNull();
-        profile.Summary.Should().BeEmpty();
+        profile.Playstyle.Should().BeEmpty();
     }
 
     [Fact]
