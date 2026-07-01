@@ -21,6 +21,7 @@
     <PackageVersion Include="Scriban" Version="7.2.5" />
     <PackageVersion Include="System.CommandLine" Version="2.0.9" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="YamlDotNet" Version="13.7.1" />
     <PackageVersion
       Include="Taiwu.ModKit.References.Plugin"
       Version="$(TaiwuModKitReferencesVersion)"
