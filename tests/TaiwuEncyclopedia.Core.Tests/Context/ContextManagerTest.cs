@@ -22,10 +22,10 @@ public class ContextManagerTest
         messages[0].Role.Should().Be("system");
         messages[0].Content.Should().Be("SYS");
         messages[1].Role.Should().Be("user");
-        messages[1].Content.Should().Be("old");
+        messages[1].Content.Should().Contain("PLAYER_SOUL");
+        messages[1].Content.Should().Contain("门派: 少林");
         messages[2].Role.Should().Be("user");
-        messages[2].Content.Should().Contain("PLAYER_SOUL");
-        messages[2].Content.Should().Contain("门派: 少林");
+        messages[2].Content.Should().Be("old");
         messages[3].Role.Should().Be("user");
         messages[3].Content.Should().Be("怎么打剑冢");
     }

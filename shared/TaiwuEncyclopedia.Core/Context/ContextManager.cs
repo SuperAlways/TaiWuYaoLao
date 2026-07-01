@@ -51,7 +51,6 @@ public sealed class ContextManager
         {
             new() { Role = "system", Content = systemPrompt },
         };
-        if (history != null) messages.AddRange(history);
         if (!string.IsNullOrEmpty(soulSummary))
         {
             messages.Add(new LlmMessage
@@ -60,6 +59,7 @@ public sealed class ContextManager
                 Content = $"【PLAYER_SOUL】\n{soulSummary}",
             });
         }
+        if (history != null) messages.AddRange(history);
         messages.Add(new LlmMessage { Role = "user", Content = userQuery });
         return messages;
     }
