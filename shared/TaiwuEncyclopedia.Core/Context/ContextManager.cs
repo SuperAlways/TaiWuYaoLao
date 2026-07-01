@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TaiwuEncyclopedia.Core.Llm;
+using TaiwuEncyclopedia.Core.Soul;
 using TaiwuEncyclopedia.Core.Util;
 
 namespace TaiwuEncyclopedia.Core.Context;
@@ -11,26 +12,30 @@ namespace TaiwuEncyclopedia.Core.Context;
 /// </summary>
 public sealed class ContextManager
 {
-    private readonly object? _soulManager; // Task 11 注入，本 Task 先用 object? 占位
+    private readonly SoulManager? _soulManager;
     private readonly OpenAiCompatibleClient? _llmClient;
+    private readonly LlmConfig? _llmConfig;
     private readonly int _maxHistoryRounds;
     private readonly int _collapseThreshold;
 
     /// <summary>
     /// 创建 ContextManager 实例。
     /// </summary>
-    /// <param name="soulManager">SoulManager 实例（Task 11 后使用，当前可为 null）</param>
-    /// <param name="llmClient">LLM 客户端（Task 11 后使用，当前可为 null）</param>
+    /// <param name="soulManager">SoulManager 实例</param>
+    /// <param name="llmClient">LLM 客户端</param>
+    /// <param name="llmConfig">LLM 配置</param>
     /// <param name="maxHistoryRounds">保留的最大历史轮数</param>
     /// <param name="collapseThresholdTokens">触发摘要的 token 阈值</param>
     public ContextManager(
-        object? soulManager = null,
+        SoulManager? soulManager = null,
         OpenAiCompatibleClient? llmClient = null,
+        LlmConfig? llmConfig = null,
         int maxHistoryRounds = 5,
         int collapseThresholdTokens = 40000)
     {
         _soulManager = soulManager;
         _llmClient = llmClient;
+        _llmConfig = llmConfig;
         _maxHistoryRounds = maxHistoryRounds;
         _collapseThreshold = collapseThresholdTokens;
     }
@@ -79,7 +84,7 @@ public sealed class ContextManager
         {
             return messages;
         }
-        if (_soulManager == null || _llmClient == null)
+        if (_soulManager == null || _llmClient == null || _llmConfig == null)
         {
             return messages;
         }
@@ -120,12 +125,22 @@ public sealed class ContextManager
         }
         var earlyText = string.Join("\n", earlyParts);
 
-        // TODO Task 11: 调 SoulManager.UpdateFromCompressAsync(worldId, earlyText, _llmClient)
-        // 当前 skeleton 阶段 soul_manager 类型未定，先跳过摘要逻辑
-        // Task 11 完成后替换为真实调用
+        var summary = await _soulManager.UpdateFromCompressAsync(worldId, earlyText, _llmClient, _llmConfig);
+        var soulSummary = await _soulManager.GetSoulSummaryAsync(worldId);
 
-        // skeleton 模式：不摘要，直接返回原 messages
-        return messages;
+        // 重建 messages: system + soul + [摘要 as system msg] + recent + user_query
+        var newMessages = new List<LlmMessage> { systemMsg };
+        if (!string.IsNullOrEmpty(soulSummary))
+        {
+            newMessages.Add(new LlmMessage { Role = "user", Content = $"【PLAYER_SOUL】\n{soulSummary}" });
+        }
+        if (!string.IsNullOrEmpty(summary))
+        {
+            newMessages.Add(new LlmMessage { Role = "system", Content = $"【历史摘要】\n{summary}" });
+        }
+        newMessages.AddRange(recent);
+        newMessages.Add(userQuery);
+        return newMessages;
     }
 
     /// <summary>

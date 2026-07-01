@@ -15,11 +15,11 @@ public class JsonSoulStoreTest
         var root = Path.Combine(Path.GetTempPath(), "yaolao-test-" + System.Guid.NewGuid().ToString("N"));
         var store = new JsonSoulStore(root);
 
-        var profile = new SoulProfile { Summary = "玩家偏好剑系" };
+        var profile = new SoulProfile { Playstyle = "玩家偏好剑系" };
         await store.SaveProfileAsync(profile);
 
         var loaded = await store.LoadProfileAsync();
-        loaded.Summary.Should().Be("玩家偏好剑系");
+        loaded.Playstyle.Should().Be("玩家偏好剑系");
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class JsonSoulStoreTest
         var store = new JsonSoulStore(root);
         var profile = await store.LoadProfileAsync();
         profile.Should().NotBeNull();
-        profile.Summary.Should().BeEmpty();
+        profile.Playstyle.Should().BeEmpty();
     }
 
     [Fact]
