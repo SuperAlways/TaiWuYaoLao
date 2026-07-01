@@ -6,7 +6,7 @@ namespace TaiwuEncyclopedia.Core.Tests;
 public class SmokeTest
 {
     [Fact]
-    public void Smoke_Test_Infrastructure_Works()
+    public void SmokeTestInfrastructureWorks()
     {
         const int expected = 42;
         const int actual = 6 * 7;
