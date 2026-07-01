@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TaiwuEncyclopedia.Core.Http;
 
 namespace TaiwuEncyclopedia.Core.Agent;
 
@@ -100,6 +101,22 @@ public sealed class FinalChunkEvent : AgentEvent
     /// 初始化 FinalChunkEvent。
     /// </summary>
     public FinalChunkEvent() { Type = "final_chunk"; }
+}
+
+/// <summary>
+/// 参考文献事件（循环结束前 yield，带跨轮累积去重后的 Top-5）。
+/// </summary>
+public sealed class ReferencesEvent : AgentEvent
+{
+    /// <summary>
+    /// 参考文献列表（按 hit_count desc 排序，最多 5 条）。
+    /// </summary>
+    public List<Reference> References { get; init; } = new();
+
+    /// <summary>
+    /// 初始化 ReferencesEvent。
+    /// </summary>
+    public ReferencesEvent() { Type = "references"; }
 }
 
 /// <summary>
