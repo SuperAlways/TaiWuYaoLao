@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TaiwuEncyclopedia.Core.Context;
+using TaiwuEncyclopedia.Core.Http;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Soul;
@@ -78,6 +81,7 @@ public sealed class AgentRunner
     {
         var stopwatch = Stopwatch.StartNew();
         history ??= new List<LlmMessage>();
+        var collectedRefs = new List<Reference>();
 
         // 1. 构建 messages
         var systemPrompt = _prompts.BuildSystemPrompt(personaId);
@@ -194,6 +198,45 @@ public sealed class AgentRunner
                 yield return new ToolResultEvent { Name = tc.Function.Name, Iteration = iteration };
             }
 
+            // 累积 retrieve_rag 工具返回的 references（跨轮去重，按 full_doc_id 合并 hit_count）
+            for (int i = 0; i < response.ToolCalls.Count; i++)
+            {
+                if (response.ToolCalls[i].Function.Name != "retrieve_rag") continue;
+                try
+                {
+                    var parsed = JsonConvert.DeserializeObject<Dictionary<string, object>>(results[i].Content);
+                    if (parsed == null || !parsed.TryGetValue("references", out var refsObj)) continue;
+
+                    // 处理 references 可能是 JArray 或已经是 List<Reference>
+                    List<Reference>? refs = null;
+                    if (refsObj is List<Reference> listRefs)
+                    {
+                        refs = listRefs;
+                    }
+                    else if (refsObj is JArray jArr)
+                    {
+                        refs = jArr.ToObject<List<Reference>>();
+                    }
+
+                    if (refs == null) continue;
+
+                    foreach (var r in refs)
+                    {
+                        var fullDocId = r.FullDocId ?? "";
+                        var existing = collectedRefs.Find(x => x.FullDocId == fullDocId);
+                        if (existing != null)
+                        {
+                            existing.HitCount += r.HitCount;
+                        }
+                        else
+                        {
+                            collectedRefs.Add(r);
+                        }
+                    }
+                }
+                catch { /* 解析失败忽略，不影响主流程 */ }
+            }
+
             prevToolCalls = response.ToolCalls;
             totalIterations = iteration + 1;
         }
@@ -214,15 +257,22 @@ public sealed class AgentRunner
             }
         }
 
-        // 6. 保存会话
+        // 6. 跨轮去重 Top-5 references → yield ReferencesEvent + 传给 SessionManager
+        var topRefs = collectedRefs
+            .OrderByDescending(r => r.HitCount)
+            .Take(5)
+            .ToList();
+        yield return new ReferencesEvent { References = topRefs };
+
+        // 7. 保存会话
         var finalAnswer = string.Join("", finalAnswerParts);
         try
         {
-            await _session.SaveConversationAsync(worldId, query, finalAnswer);
+            await _session.SaveConversationAsync(worldId, query, finalAnswer, topRefs);
         }
         catch { /* 保存失败不阻塞 */ }
 
-        // 7. yield EndEvent
+        // 8. yield EndEvent
         yield return new EndEvent
         {
             ThinkingTimeMs = (int)stopwatch.Elapsed.TotalMilliseconds,

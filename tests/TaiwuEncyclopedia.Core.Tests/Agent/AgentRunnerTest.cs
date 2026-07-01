@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -68,6 +69,61 @@ public class AgentRunnerTest
         endEvent!.TotalIterations.Should().BeGreaterThan(0);
     }
 
+    /// <summary>
+    /// ReAct 循环调 RetrieveRagTool 后，yield ReferencesEvent 且 references 被持久化到 SessionStore。
+    /// </summary>
+    [Fact]
+    public async Task RunAsyncYieldsReferencesEventAndPersistsReferences()
+    {
+        var root = PathRoot();
+        // LLM: 第 1 轮 THINKING 返回 tool_call(retrieve_rag)，第 2 轮 THINKING 直答（无 tool_calls），第 3 次是 ANSWER 流式
+        var llmHandler = new StubLlmHandlerWithToolCall(
+            thinking1: "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"retrieve_rag\",\"arguments\":\"{\\\"query\\\":\\\"太吾\\\"}\"}}]}}],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20}}",
+            thinking2: "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"根据资料回答\"}}],\"usage\":{\"prompt_tokens\":200,\"completion_tokens\":10}}",
+            stream: "data: {\"choices\":[{\"delta\":{\"content\":\"最终答案\"}}]}\n\ndata: {\"choices\":[],\"usage\":{\"prompt_tokens\":50,\"completion_tokens\":10}}\n\ndata: [DONE]\n\n");
+        var sm = MakeSkillManager();
+        var llmClient = new OpenAiCompatibleClient(llmHandler);
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+        // RAG stub 返回带 references 的响应
+        var ragHandler = new StubRagHandlerWithRefs();
+        var ragClient = new RagHttpClient(ragHandler, "http://taiwuasker");
+        var soulStore = new JsonSoulStore(root);
+        var sessionStore = new JsonSessionStore(root);
+
+        var registry = new ToolRegistry();
+        registry.Register(new RetrieveRagTool(ragClient));
+        registry.Register(new LoadBackgroundSkillTool(sm));
+        registry.Register(new LoadGuidanceSkillTool(sm));
+        var executor = new ToolExecutor(registry);
+        var soulManager = new SoulManager(soulStore);
+        var contextManager = new ContextManager(soulManager, llmClient, config);
+        var sessionManager = new SessionManager(sessionStore);
+        var promptBuilder = new PromptBuilder(sm, "ring-elder");
+
+        var runner = new AgentRunner(llmClient, config, registry, executor,
+            contextManager, soulManager, sessionManager, promptBuilder);
+
+        var events = new List<AgentEvent>();
+        await foreach (var ev in runner.RunAsync("太吾怎么玩", worldId: 1))
+        {
+            events.Add(ev);
+        }
+
+        // 应 yield ReferencesEvent
+        events.Should().Contain(e => e is ReferencesEvent);
+        var refsEvent = events.OfType<ReferencesEvent>().Single();
+        refsEvent.References.Should().HaveCount(1);
+        refsEvent.References[0].SourceUrl.Should().Be("https://wiki.example.com/a");
+
+        // references 应被持久化到 session store
+        var history = await sessionStore.LoadRecentAsync(1, 10);
+        history.Should().HaveCount(2); // user + assistant
+        history[1].Role.Should().Be("assistant");
+        history[1].References.Should().NotBeNull();
+        history[1].References!.Should().HaveCount(1);
+        history[1].References![0].SourceUrl.Should().Be("https://wiki.example.com/a");
+    }
+
     private static string PathRoot() =>
         Path.Combine(Path.GetTempPath(), "yaolao-runner-" + System.Guid.NewGuid().ToString("N"));
 
@@ -122,6 +178,57 @@ personas:
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
         {
             var content = new StringContent("{\"context\":\"\",\"chunks\":[]}", Encoding.UTF8, "application/json");
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+        }
+    }
+
+    /// <summary>支持 3 次调用的 LLM handler：thinking1(有 tool_calls) → thinking2(直答) → stream。</summary>
+    private sealed class StubLlmHandlerWithToolCall : HttpMessageHandler
+    {
+        private readonly string _thinking1;
+        private readonly string _thinking2;
+        private readonly string _stream;
+        private int _thinkingCount;
+
+        public StubLlmHandlerWithToolCall(string thinking1, string thinking2, string stream)
+        {
+            _thinking1 = thinking1;
+            _thinking2 = thinking2;
+            _stream = stream;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
+        {
+            var reqBody = req.Content!.ReadAsStringAsync(ct).Result;
+            var isStream = reqBody.Contains("\"stream\":true");
+            string body;
+            if (isStream)
+            {
+                body = _stream;
+            }
+            else
+            {
+                body = _thinkingCount == 0 ? _thinking1 : _thinking2;
+                _thinkingCount++;
+            }
+            var content = new StringContent(body, Encoding.UTF8,
+                isStream ? "text/event-stream" : "application/json");
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+        }
+    }
+
+    private sealed class StubRagHandlerWithRefs : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
+        {
+            var body = @"{""context"":""RAG 结果"",
+""references"":[
+  {""full_doc_id"":""doc-A"",""file_path"":""wiki/a.md"",
+   ""source_url"":""https://wiki.example.com/a"",""source_type"":""wiki"",
+   ""knowledge_type"":""机制"",""author"":""灰机"",
+   ""game_version"":""1.0"",""snippet"":""片段"",""hit_count"":1}
+]}";
+            var content = new StringContent(body, Encoding.UTF8, "application/json");
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
         }
     }
