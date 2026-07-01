@@ -83,6 +83,19 @@ public class OpenAiCompatibleClientTest
         handler.CallCount.Should().Be(2); // 第1次500，第2次200
     }
 
+    [Fact]
+    public async Task ChatRetriesOnNetworkException()
+    {
+        var handler = new ThrowingStubHandler();
+        var client = new OpenAiCompatibleClient(handler);
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+
+        var resp = await client.Chat(AgentLLMRole.Thinking, new List<LlmMessage>(), config, tools: null);
+
+        resp.Content.Should().Be("ok");
+        handler.CallCount.Should().Be(2);
+    }
+
     private sealed class StubHandler : HttpMessageHandler
     {
         private readonly string _response;
@@ -104,6 +117,32 @@ public class OpenAiCompatibleClientTest
             var body = _failFirstCall && CallCount == 1 ? "error" : _response;
             var content = new StringContent(body, Encoding.UTF8, _isStream ? "text/event-stream" : "application/json");
             return Task.FromResult(new HttpResponseMessage(sc) { Content = content });
+        }
+    }
+
+    private sealed class ThrowingStubHandler : HttpMessageHandler
+    {
+        public int CallCount;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            CallCount++;
+            if (CallCount == 1)
+            {
+                throw new HttpRequestException("Simulated network error");
+            }
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(@"{
+                    ""choices"": [{
+                        ""message"": {
+                            ""role"": ""assistant"",
+                            ""content"": ""ok""
+                        }
+                    }],
+                    ""usage"": {""prompt_tokens"": 10, ""completion_tokens"": 2}
+                }", Encoding.UTF8, "application/json")
+            });
         }
     }
 }

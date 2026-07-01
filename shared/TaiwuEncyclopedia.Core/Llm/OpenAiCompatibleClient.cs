@@ -139,7 +139,21 @@ public sealed class OpenAiCompatibleClient
             req.Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
             req.Headers.Add("Authorization", "Bearer " + config.ApiKey);
 
-            resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
+            try
+            {
+                resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
+            }
+            catch (HttpRequestException)
+            {
+                // 网络错误：第 0 次重试，第 1 次直接抛出
+                if (attempt == 1)
+                {
+                    throw;
+                }
+                // 指数退避（500ms）
+                await Task.Delay(500);
+                continue;
+            }
 
             // 4xx 不重试（配置错误/鉴权失败，重试无用）
             if ((int)resp.StatusCode >= 400 && (int)resp.StatusCode < 500)
