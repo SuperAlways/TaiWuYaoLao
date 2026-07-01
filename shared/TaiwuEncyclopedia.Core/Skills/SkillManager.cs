@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -82,7 +83,7 @@ public sealed class SkillManager
             var dir = Path.Combine(_skillsDir, entry.DetailDir);
             if (!Directory.Exists(dir)) return null;
             var parts = new List<string>();
-            foreach (var f in Directory.GetFiles(dir, "*.md"))
+            foreach (var f in Directory.GetFiles(dir, "*.md").OrderBy(f => f))
             {
                 parts.Add(File.ReadAllText(f));
             }
