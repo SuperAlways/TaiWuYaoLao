@@ -64,10 +64,50 @@ public class SoulManagerTest
         summary.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task ProtectedFieldsNotOverwrittenByUpdateFromCompress()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-soul-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSoulStore(root);
+        var sm = new SoulManager(store);
+
+        // 玩家主动设置 Playstyle 为 protected
+        await sm.SetPlayerFieldsAsync(new Dictionary<string, string> { ["Playstyle"] = "速通" });
+
+        // LLM 返回试图覆盖 Playstyle 的响应
+        var handler = new StubHandler(@"{
+            ""summary"": ""对话摘要"",
+            ""profile_fields"": { ""Playstyle"": ""苟道流"", ""TechnicalLevel"": ""老手"" },
+            ""world_fields"": { ""Sect"": ""少林"" }
+        }");
+        var llmClient = new OpenAiCompatibleClient(handler);
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+
+        await sm.UpdateFromCompressAsync(1, "some history", llmClient, config);
+
+        var profile = await store.LoadProfileAsync();
+        profile.Playstyle.Should().Be("速通"); // protected，不被覆盖
+    }
+
     private sealed class FailingHandler : System.Net.Http.HttpMessageHandler
     {
         protected override Task<System.Net.Http.HttpResponseMessage> SendAsync(
             System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken ct)
             => throw new System.Net.Http.HttpRequestException("connection failed");
+    }
+
+    private sealed class StubHandler : System.Net.Http.HttpMessageHandler
+    {
+        private readonly string _response;
+        public StubHandler(string response) { _response = response; }
+
+        protected override Task<System.Net.Http.HttpResponseMessage> SendAsync(
+            System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken ct)
+        {
+            return Task.FromResult(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new System.Net.Http.StringContent(_response, System.Text.Encoding.UTF8, "application/json")
+            });
+        }
     }
 }

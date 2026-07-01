@@ -157,7 +157,10 @@ public sealed class SoulManager
             if (System.Array.IndexOf(_profileFields, key) >= 0)
             {
                 typeof(SoulProfile).GetProperty(key)?.SetValue(profile, value);
-                profile.ProtectedFields.Add(key);
+                if (!profile.ProtectedFields.Contains(key))
+                {
+                    profile.ProtectedFields.Add(key);
+                }
             }
         }
         await _store.SaveProfileAsync(profile);
