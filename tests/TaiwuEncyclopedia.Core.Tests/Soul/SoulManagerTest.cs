@@ -74,12 +74,14 @@ public class SoulManagerTest
         // 玩家主动设置 Playstyle 为 protected
         await sm.SetPlayerFieldsAsync(new Dictionary<string, string> { ["Playstyle"] = "速通" });
 
-        // LLM 返回试图覆盖 Playstyle 的响应
-        var handler = new StubHandler(@"{
-            ""summary"": ""对话摘要"",
-            ""profile_fields"": { ""Playstyle"": ""苟道流"", ""TechnicalLevel"": ""老手"" },
-            ""world_fields"": { ""Sect"": ""少林"" }
-        }");
+        // LLM 返回试图覆盖 Playstyle 的响应（OpenAI chat completion 格式）
+        var extractionJson = @"{""summary"":""对话摘要"",""profile_fields"":{""Playstyle"":""苟道流"",""TechnicalLevel"":""老手""},""world_fields"":{""Sect"":""少林""}}";
+        var responseJson = Newtonsoft.Json.JsonConvert.SerializeObject(new
+        {
+            choices = new[] { new { message = new { role = "assistant", content = extractionJson } } },
+            usage = new { prompt_tokens = 10, completion_tokens = 5 }
+        });
+        var handler = new StubHandler(responseJson);
         var llmClient = new OpenAiCompatibleClient(handler);
         var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
 
@@ -87,6 +89,7 @@ public class SoulManagerTest
 
         var profile = await store.LoadProfileAsync();
         profile.Playstyle.Should().Be("速通"); // protected，不被覆盖
+        profile.TechnicalLevel.Should().Be("老手"); // 非 protected，被 LLM 更新
     }
 
     private sealed class FailingHandler : System.Net.Http.HttpMessageHandler
