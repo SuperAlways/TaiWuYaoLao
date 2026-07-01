@@ -31,7 +31,7 @@ public sealed class JsonKeyValueStore : IKeyValueStore
     public Task<string?> GetAsync(string key)
     {
         _cache.TryGetValue(key, out string? value);
-        return Task.FromResult(value);
+        return Task.FromResult<string?>(value);
     }
 
     /// <summary>

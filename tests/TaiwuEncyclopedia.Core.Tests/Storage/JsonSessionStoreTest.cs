@@ -10,7 +10,7 @@ namespace TaiwuEncyclopedia.Core.Tests.Storage;
 public class JsonSessionStoreTest
 {
     [Fact]
-    public async Task Append_And_Load_Roundtrip()
+    public async Task AppendAndLoadRoundtrip()
     {
         var root = Path.Combine(Path.GetTempPath(), "yaolao-test-" + System.Guid.NewGuid().ToString("N"));
         var store = new JsonSessionStore(root);
@@ -25,14 +25,14 @@ public class JsonSessionStoreTest
     }
 
     [Fact]
-    public async Task Load_Recent_Respects_Limit()
+    public async Task LoadRecentRespectsLimit()
     {
         var root = Path.Combine(Path.GetTempPath(), "yaolao-test-" + System.Guid.NewGuid().ToString("N"));
         var store = new JsonSessionStore(root);
 
         for (int i = 0; i < 5; i++)
         {
-            await store.AppendMessageAsync(1, new MessageRecord { Role = "user", Content = i.ToString() });
+            await store.AppendMessageAsync(1, new MessageRecord { Role = "user", Content = i.ToString(System.Globalization.CultureInfo.InvariantCulture) });
         }
 
         var messages = await store.LoadRecentAsync(1, 3);
@@ -42,7 +42,7 @@ public class JsonSessionStoreTest
     }
 
     [Fact]
-    public async Task Different_WorldId_Isolated()
+    public async Task DifferentWorldIdIsolated()
     {
         var root = Path.Combine(Path.GetTempPath(), "yaolao-test-" + System.Guid.NewGuid().ToString("N"));
         var store = new JsonSessionStore(root);
@@ -59,7 +59,7 @@ public class JsonSessionStoreTest
     }
 
     [Fact]
-    public async Task Corrupt_File_Returns_Empty()
+    public async Task CorruptFileReturnsEmpty()
     {
         var root = Path.Combine(Path.GetTempPath(), "yaolao-test-" + System.Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(root, "Sessions", "Worlds"));
@@ -71,7 +71,7 @@ public class JsonSessionStoreTest
     }
 
     [Fact]
-    public async Task Clear_Removes_Messages()
+    public async Task ClearRemovesMessages()
     {
         var root = Path.Combine(Path.GetTempPath(), "yaolao-test-" + System.Guid.NewGuid().ToString("N"));
         var store = new JsonSessionStore(root);

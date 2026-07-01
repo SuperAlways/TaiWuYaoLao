@@ -10,7 +10,7 @@ namespace TaiwuEncyclopedia.Core.Tests.Storage;
 public class JsonSoulStoreTest
 {
     [Fact]
-    public async Task Profile_Roundtrip()
+    public async Task ProfileRoundtrip()
     {
         var root = Path.Combine(Path.GetTempPath(), "yaolao-test-" + System.Guid.NewGuid().ToString("N"));
         var store = new JsonSoulStore(root);
@@ -23,7 +23,7 @@ public class JsonSoulStoreTest
     }
 
     [Fact]
-    public async Task World_Per_WorldId_Isolated()
+    public async Task WorldPerWorldIdIsolated()
     {
         var root = Path.Combine(Path.GetTempPath(), "yaolao-test-" + System.Guid.NewGuid().ToString("N"));
         var store = new JsonSoulStore(root);
@@ -38,7 +38,7 @@ public class JsonSoulStoreTest
     }
 
     [Fact]
-    public async Task Corrupt_Profile_Returns_Empty()
+    public async Task CorruptProfileReturnsEmpty()
     {
         var root = Path.Combine(Path.GetTempPath(), "yaolao-test-" + System.Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(root, "Soul"));
@@ -51,7 +51,7 @@ public class JsonSoulStoreTest
     }
 
     [Fact]
-    public async Task Missing_World_Returns_Empty()
+    public async Task MissingWorldReturnsEmpty()
     {
         var root = Path.Combine(Path.GetTempPath(), "yaolao-test-" + System.Guid.NewGuid().ToString("N"));
         var store = new JsonSoulStore(root);

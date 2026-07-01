@@ -9,7 +9,7 @@ namespace TaiwuEncyclopedia.Core.Tests.Storage;
 public class JsonKeyValueStoreTest
 {
     [Fact]
-    public async Task Set_Get_Roundtrip()
+    public async Task SetGetRoundtrip()
     {
         var path = Path.Combine(Path.GetTempPath(), "yaolao-kv-" + System.Guid.NewGuid().ToString("N") + ".json");
         var store = new JsonKeyValueStore(path);
@@ -23,7 +23,7 @@ public class JsonKeyValueStoreTest
     }
 
     [Fact]
-    public async Task Delete_Removes_Key()
+    public async Task DeleteRemovesKey()
     {
         var path = Path.Combine(Path.GetTempPath(), "yaolao-kv-" + System.Guid.NewGuid().ToString("N") + ".json");
         var store = new JsonKeyValueStore(path);
@@ -35,7 +35,7 @@ public class JsonKeyValueStoreTest
     }
 
     [Fact]
-    public async Task Persists_Across_Instances()
+    public async Task PersistsAcrossInstances()
     {
         var path = Path.Combine(Path.GetTempPath(), "yaolao-kv-" + System.Guid.NewGuid().ToString("N") + ".json");
         var store1 = new JsonKeyValueStore(path);
@@ -46,7 +46,7 @@ public class JsonKeyValueStoreTest
     }
 
     [Fact]
-    public async Task Corrupt_File_Returns_Empty()
+    public async Task CorruptFileReturnsEmpty()
     {
         var path = Path.Combine(Path.GetTempPath(), "yaolao-kv-" + System.Guid.NewGuid().ToString("N") + ".json");
         await File.WriteAllTextAsync(path, "{BROKEN");
