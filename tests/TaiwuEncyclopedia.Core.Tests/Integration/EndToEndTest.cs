@@ -81,6 +81,17 @@ public class EndToEndTest
         history.Should().HaveCount(2); // user + assistant
         history[0].Content.Should().Be("太吾怎么玩");
         history[1].Content.Should().Be("最终答案");
+
+        // 应 yield ReferencesEvent 且持久化 references
+        events.Should().Contain(e => e is ReferencesEvent);
+        var refsEvent = events.OfType<ReferencesEvent>().Single();
+        refsEvent.References.Should().HaveCount(1);
+        refsEvent.References[0].SourceUrl.Should().Be("https://wiki.example.com/a");
+
+        // session 持久化
+        history[1].References.Should().NotBeNull();
+        history[1].References!.Should().HaveCount(1);
+        history[1].References![0].SourceUrl.Should().Be("https://wiki.example.com/a");
     }
 
     /// <summary>
@@ -246,7 +257,7 @@ personas:
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
         {
-            var content = new StringContent("{\"context\":\"RAG结果\",\"chunks\":[]}", Encoding.UTF8, "application/json");
+            var content = new StringContent("{\"context\":\"RAG结果\",\"references\":[{\"full_doc_id\":\"doc-A\",\"file_path\":\"wiki/a.md\",\"source_url\":\"https://wiki.example.com/a\",\"source_type\":\"wiki\",\"knowledge_type\":\"机制\",\"author\":\"灰机\",\"game_version\":\"1.0\",\"snippet\":\"片段\",\"hit_count\":1}]}", Encoding.UTF8, "application/json");
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
         }
     }
