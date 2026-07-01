@@ -17,7 +17,7 @@ public sealed class RetrieveRagTool : ToolBase
     public RetrieveRagTool(RagHttpClient ragClient) : base(
         name: "retrieve_rag",
         description: "从太吾绘卷知识库中检索信息。返回实体、关系、原文片段。适用于需要查阅游戏机制、攻略、资料的场景。",
-        timeout: 30)
+        timeout: 60)
     {
         _ragClient = ragClient;
         SetParameters(new Dictionary<string, Dictionary<string, object>>
@@ -89,7 +89,7 @@ public sealed class RetrieveRagTool : ToolBase
         var hlKeywords = ToStringList(args.GetValueOrDefault("hl_keywords"));
         var llKeywords = ToStringList(args.GetValueOrDefault("ll_keywords"));
 
-        var context = await _ragClient.RetrieveAsync(new RagRetrieveRequest
+        var ragResult = await _ragClient.RetrieveAsync(new RagRetrieveRequest
         {
             Query = query,
             Mode = mode,
@@ -101,7 +101,8 @@ public sealed class RetrieveRagTool : ToolBase
 
         return new Dictionary<string, object>
         {
-            ["context"] = context,
+            ["context"] = ragResult.Context,
+            ["references"] = ragResult.References,
             ["retrieval_info"] = new Dictionary<string, object>
             {
                 ["mode"] = mode,
@@ -109,6 +110,7 @@ public sealed class RetrieveRagTool : ToolBase
                 ["top_k"] = topK,
                 ["chunk_top_k"] = chunkTopK,
             },
+            ["error"] = ragResult.Error,
         };
     }
 

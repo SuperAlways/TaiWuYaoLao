@@ -16,7 +16,7 @@ public class RetrieveRagToolTest
     [Fact]
     public async Task ReturnsContextOnSuccess()
     {
-        var handler = new StubHandler("{\"context\":\"攻略内容\",\"chunks\":[]}", HttpStatusCode.OK);
+        var handler = new StubHandler("{\"context\":\"攻略内容\",\"references\":[]}", HttpStatusCode.OK);
         var ragClient = new RagHttpClient(handler, "http://taiwuasker");
         var tool = new RetrieveRagTool(ragClient);
 
@@ -33,7 +33,7 @@ public class RetrieveRagToolTest
     [Fact]
     public async Task ClampsTopKToBounds()
     {
-        var handler = new StubHandler("{\"context\":\"\",\"chunks\":[]}", HttpStatusCode.OK);
+        var handler = new StubHandler("{\"context\":\"\",\"references\":[]}", HttpStatusCode.OK);
         var ragClient = new RagHttpClient(handler, "http://taiwuasker");
         var tool = new RetrieveRagTool(ragClient);
 
@@ -62,6 +62,32 @@ public class RetrieveRagToolTest
         });
 
         result["context"].ToString().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReturnsReferencesFromRagResult()
+    {
+        var body = @"{""context"":""攻略内容"",
+""references"":[
+  {""full_doc_id"":""doc-A"",""file_path"":""wiki/a.md"",
+   ""source_url"":""https://wiki.example.com/a"",""source_type"":""wiki"",
+   ""knowledge_type"":""机制"",""author"":""灰机"",
+   ""game_version"":""1.0"",""snippet"":""片段"",""hit_count"":2}
+]}";
+        var handler = new StubHandler(body, System.Net.HttpStatusCode.OK);
+        var ragClient = new RagHttpClient(handler, "http://taiwuasker");
+        var tool = new RetrieveRagTool(ragClient);
+
+        var result = await tool.ExecuteAsync(new Dictionary<string, object>
+        {
+            ["query"] = "太吾",
+        });
+
+        result.Should().ContainKey("references");
+        var refs = result["references"] as List<Reference>;
+        refs.Should().NotBeNull();
+        refs!.Should().HaveCount(1);
+        refs[0].SourceUrl.Should().Be("https://wiki.example.com/a");
     }
 
     private sealed class StubHandler : HttpMessageHandler
