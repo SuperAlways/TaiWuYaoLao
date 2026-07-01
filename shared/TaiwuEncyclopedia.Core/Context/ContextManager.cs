@@ -152,7 +152,7 @@ public sealed class ContextManager
     public List<LlmMessage> ForceCompress(List<LlmMessage> messages)
     {
         int longestIdx = -1;
-        int longestLen = 2000; // 只截断超过 2000 字的
+        int longestLen = 100000; // 只截断超过 100000 字的（≈30000 tokens，匹配 LightRAG max_total_tokens）
         for (int i = 0; i < messages.Count; i++)
         {
             if (messages[i].Role == "tool")
@@ -167,7 +167,7 @@ public sealed class ContextManager
         }
         if (longestIdx >= 0)
         {
-            messages[longestIdx].Content = (messages[longestIdx].Content ?? "")[..2000] + "\n... [已截断]";
+            messages[longestIdx].Content = (messages[longestIdx].Content ?? "")[..100000] + "\n... [已截断]";
         }
         return messages;
     }

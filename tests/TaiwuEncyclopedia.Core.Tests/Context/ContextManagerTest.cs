@@ -71,7 +71,7 @@ public class ContextManagerTest
     public void ForceCompressTruncatesLongestToolResult()
     {
         var cm = new ContextManager();
-        var longContent = new string('x', 5000);
+        var longContent = new string('x', 100001);
         var messages = new List<LlmMessage>
         {
             new() { Role = "user", Content = "q" },
@@ -79,9 +79,25 @@ public class ContextManagerTest
             new() { Role = "tool", ToolCallId = "2", Content = "short" },
         };
         var result = cm.ForceCompress(messages);
-        result[1].Content!.Length.Should().BeLessThan(5000);
+        result[1].Content!.Length.Should().BeLessThan(100011); // 100000 + "\n... [已截断]" (10 chars)
         result[1].Content.Should().Contain("已截断");
         result[2].Content.Should().Be("short"); // 短的不截
+    }
+
+    [Fact]
+    public void ForceCompressDoesNotTruncateBelowThreshold()
+    {
+        var cm = new ContextManager();
+        // 5000 chars: 旧阈值 2000 会截断，新阈值 100000 不截断
+        var content = new string('y', 5000);
+        var messages = new List<LlmMessage>
+        {
+            new() { Role = "user", Content = "q" },
+            new() { Role = "tool", ToolCallId = "1", Content = content },
+        };
+        var result = cm.ForceCompress(messages);
+        result[1].Content!.Should().Be(content);  // 原样返回，不截断
+        result[1].Content.Should().NotContain("已截断");
     }
 
     [Fact]
