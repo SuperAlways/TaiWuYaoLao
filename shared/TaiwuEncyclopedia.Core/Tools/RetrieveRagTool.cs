@@ -110,7 +110,7 @@ public sealed class RetrieveRagTool : ToolBase
                 ["top_k"] = topK,
                 ["chunk_top_k"] = chunkTopK,
             },
-            ["error"] = ragResult.Error,
+            ["error"] = ragResult.Error ?? string.Empty,
         };
     }
 

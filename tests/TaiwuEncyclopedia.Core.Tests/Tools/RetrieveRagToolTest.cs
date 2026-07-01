@@ -87,7 +87,7 @@ public class RetrieveRagToolTest
         var refs = result["references"] as List<Reference>;
         refs.Should().NotBeNull();
         refs!.Should().HaveCount(1);
-        refs[0].SourceUrl.Should().Be("https://wiki.example.com/a");
+        refs![0].SourceUrl.Should().Be("https://wiki.example.com/a");
     }
 
     private sealed class StubHandler : HttpMessageHandler
