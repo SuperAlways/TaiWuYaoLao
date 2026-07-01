@@ -21,7 +21,7 @@ public sealed class StartEvent : AgentEvent
     /// <summary>
     /// 世界 ID。
     /// </summary>
-    public int WorldId { get; set; }
+    public int WorldId { get; init; }
 
     /// <summary>
     /// 初始化 StartEvent。
@@ -37,22 +37,22 @@ public sealed class ToolCallEvent : AgentEvent
     /// <summary>
     /// 工具名称。
     /// </summary>
-    public string Name { get; set; } = "";
+    public string Name { get; init; } = "";
 
     /// <summary>
     /// 工具调用参数。
     /// </summary>
-    public Dictionary<string, object> Args { get; set; } = new();
+    public Dictionary<string, object> Args { get; init; } = new();
 
     /// <summary>
     /// 显示文本。
     /// </summary>
-    public string DisplayText { get; set; } = "";
+    public string DisplayText { get; init; } = "";
 
     /// <summary>
     /// 当前迭代次数。
     /// </summary>
-    public int Iteration { get; set; }
+    public int Iteration { get; init; }
 
     /// <summary>
     /// 初始化 ToolCallEvent。
@@ -68,12 +68,12 @@ public sealed class ToolResultEvent : AgentEvent
     /// <summary>
     /// 工具名称。
     /// </summary>
-    public string Name { get; set; } = "";
+    public string Name { get; init; } = "";
 
     /// <summary>
     /// 当前迭代次数。
     /// </summary>
-    public int Iteration { get; set; }
+    public int Iteration { get; init; }
 
     /// <summary>
     /// 初始化 ToolResultEvent。
@@ -89,12 +89,12 @@ public sealed class FinalChunkEvent : AgentEvent
     /// <summary>
     /// 答案内容块。
     /// </summary>
-    public string Content { get; set; } = "";
+    public string Content { get; init; } = "";
 
     /// <summary>
     /// 当前迭代次数。
     /// </summary>
-    public int Iteration { get; set; }
+    public int Iteration { get; init; }
 
     /// <summary>
     /// 初始化 FinalChunkEvent。
@@ -110,12 +110,12 @@ public sealed class EndEvent : AgentEvent
     /// <summary>
     /// 总思考时间（毫秒）。
     /// </summary>
-    public int ThinkingTimeMs { get; set; }
+    public int ThinkingTimeMs { get; init; }
 
     /// <summary>
     /// 总迭代次数。
     /// </summary>
-    public int TotalIterations { get; set; }
+    public int TotalIterations { get; init; }
 
     /// <summary>
     /// 初始化 EndEvent。
