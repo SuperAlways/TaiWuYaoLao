@@ -89,4 +89,30 @@ public class SessionManagerTest
         history.Should().HaveCount(4);
         history[0].Content.Should().Be("q3"); // 最早的是 q3（q0-q2 被截掉）
     }
+
+    [Fact]
+    public async Task SaveConversationAsyncPersistsReferences()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-sess-refs-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        var sm = new SessionManager(store);
+
+        var refs = new List<TaiwuEncyclopedia.Core.Http.Reference>
+        {
+            new() { FullDocId = "doc-A", SourceUrl = "https://wiki.example.com/a", HitCount = 3 },
+            new() { FullDocId = "doc-B", SourceUrl = "https://bbs.example.com/b", HitCount = 1 },
+        };
+
+        await sm.SaveConversationAsync(1, "问题", "答案", refs);
+        var records = await store.LoadRecentAsync(1, 10);
+
+        records.Should().HaveCount(2);
+        records[0].Role.Should().Be("user");
+        records[0].References.Should().BeNull(); // user 消息不带 references
+        records[1].Role.Should().Be("assistant");
+        records[1].References.Should().NotBeNull();
+        records[1].References!.Should().HaveCount(2);
+        records[1].References![0].SourceUrl.Should().Be("https://wiki.example.com/a");
+        records[1].References![0].HitCount.Should().Be(3);
+    }
 }

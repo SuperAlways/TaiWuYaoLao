@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TaiwuEncyclopedia.Core.Http;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Storage;
 
@@ -24,17 +25,24 @@ public sealed class SessionManager
         _store = store;
     }
 
-    /// <summary>循环结束后一次性保存 user_query + assistant_answer。</summary>
+    /// <summary>循环结束后一次性保存 user_query + assistant_answer（含可选 references）。</summary>
     /// <param name="worldId">世界ID</param>
     /// <param name="userQuery">用户查询内容</param>
     /// <param name="assistantAnswer">助手回答内容</param>
+    /// <param name="references">参考文献列表（可选，仅 assistant 消息携带）</param>
     public async Task SaveConversationAsync(
         int worldId,
         string userQuery,
-        string assistantAnswer)
+        string assistantAnswer,
+        List<Reference>? references = null)
     {
         await _store.AppendMessageAsync(worldId, new MessageRecord { Role = "user", Content = userQuery });
-        await _store.AppendMessageAsync(worldId, new MessageRecord { Role = "assistant", Content = assistantAnswer });
+        await _store.AppendMessageAsync(worldId, new MessageRecord
+        {
+            Role = "assistant",
+            Content = assistantAnswer,
+            References = references,
+        });
     }
 
     /// <summary>加载会话历史，格式可直接用于 build_initial_messages。</summary>

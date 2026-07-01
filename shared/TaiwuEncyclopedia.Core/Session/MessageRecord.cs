@@ -17,4 +17,7 @@ public sealed class MessageRecord
 
     /// <summary>时间戳。</summary>
     public System.DateTime Timestamp { get; set; } = System.DateTime.UtcNow;
+
+    /// <summary>参考文献列表（仅 assistant 消息携带，user 消息为 null）。</summary>
+    public System.Collections.Generic.List<TaiwuEncyclopedia.Core.Http.Reference>? References { get; set; }
 }
