@@ -11,6 +11,8 @@ namespace TaiwuEncyclopedia.Core.Util;
 /// </summary>
 public static class TokenEstimator
 {
+    /// <summary>估算文本的 token 数（中文 0.5/字，其他 0.15/字）。</summary>
+    /// <param name="text">文本</param>
     public static int EstimateTokens(string? text)
     {
         if (string.IsNullOrEmpty(text))
@@ -29,6 +31,8 @@ public static class TokenEstimator
         return (int)(chineseChars * 0.5 + otherChars * 0.15);
     }
 
+    /// <summary>估算消息列表的 token 总数（含每条 +4 元数据开销）。</summary>
+    /// <param name="messages">消息列表</param>
     public static int EstimateTokensForMessages(List<LlmMessage> messages)
     {
         var total = 0;
