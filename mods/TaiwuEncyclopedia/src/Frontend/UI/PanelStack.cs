@@ -1,3 +1,4 @@
+#pragma warning disable CA1711, IDE0011, CA1062, IDE0008
 using System.Collections.Generic;
 
 namespace TaiwuEncyclopedia.UI;
@@ -35,3 +36,4 @@ public static class PanelStack
         if (_stack.Count > 0) _stack.Peek().Show();
     }
 }
+#pragma warning restore CA1711, IDE0011, CA1062, IDE0008

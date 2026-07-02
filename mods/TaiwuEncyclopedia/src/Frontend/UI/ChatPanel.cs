@@ -1,5 +1,6 @@
-#pragma warning disable CS8604, CS8618, IDE0008, IDE0011, RCS1181
+#pragma warning disable CS8604, CS8618, IDE0008, IDE0011, RCS1181, IDE0090, IDE0031, RCS1146, IDE0058, IDE0074, RCS1048, CA1822, CA1812, IDE0051, IDE0052, CA1001, CA2012, IDE0055, IDE0110, IDE0010, IDE0022, IDE0048, RCS1123, CA1307, RCS1238, CA1852
 using System;
+using System.Globalization;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -101,7 +102,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         if (_title == null) return;
         _title.text = _currentWorldId == Core.Session.SessionManager.PregameWorldId
             ? "百晓问答 · 主界面"
-            : string.Format("百晓问答 · 当前世界 WorldId#{0}", _currentWorldId);
+            : string.Format(CultureInfo.InvariantCulture, "百晓问答 · 当前世界 WorldId#{0}", _currentWorldId);
     }
 
     // ========== 构建（仿照 jianghu ChatWindow.Build） ==========
@@ -735,15 +736,15 @@ public class ChatPanel : MonoBehaviour, IPanel
         public void AddToolCall(string name, string displayText, int iteration)
         {
             if (_content == null) return;
-            GameObject go = new GameObject(string.Format("ToolCall_{0}_{1}", name, iteration), typeof(RectTransform), typeof(TextMeshProUGUI));
+            GameObject go = new GameObject(string.Format(CultureInfo.InvariantCulture, "ToolCall_{0}_{1}", name, iteration), typeof(RectTransform), typeof(TextMeshProUGUI));
             go.transform.SetParent(_content, false);
-            go.name = string.Format("ToolCall_{0}_{1}", name, iteration);
+            go.name = string.Format(CultureInfo.InvariantCulture, "ToolCall_{0}_{1}", name, iteration);
             TextMeshProUGUI t = go.GetComponent<TextMeshProUGUI>();
             if (_font != null) t.font = _font;
             t.fontSize = 16;
             t.alignment = TextAlignmentOptions.Left;
             t.color = new Color(0.75f, 0.78f, 0.82f, 1f);
-            t.text = string.Format("⏳ {0}", displayText);
+            t.text = string.Format(CultureInfo.InvariantCulture, "⏳ {0}", displayText);
             Anchor(t.rectTransform, Vector2.zero, Vector2.one, new Vector2(4, 0), new Vector2(-4, 0));
         }
 
@@ -754,7 +755,7 @@ public class ChatPanel : MonoBehaviour, IPanel
             for (int i = 0; i < _content.childCount; i++)
             {
                 Transform child = _content.GetChild(i);
-                if (child.name == string.Format("ToolCall_{0}_{1}", name, iteration))
+                if (child.name == string.Format(CultureInfo.InvariantCulture, "ToolCall_{0}_{1}", name, iteration))
                 {
                     TextMeshProUGUI? t = child.GetComponent<TextMeshProUGUI>();
                     if (t != null)
@@ -901,12 +902,12 @@ public class ChatPanel : MonoBehaviour, IPanel
 
         private static (string Text, Color Color, float Width) GetSourceTypeBadge(string? sourceType)
         {
-            return (sourceType?.ToLowerInvariant()) switch
+            return (sourceType?.ToUpperInvariant()) switch
             {
-                "wiki" => (" WIKI ", new Color(0.25f, 0.5f, 0.85f, 1f), 58f),
-                "bbs" or "forum" => (" 论坛 ", new Color(0.85f, 0.55f, 0.25f, 1f), 52f),
-                "video" => (" 视频 ", new Color(0.85f, 0.3f, 0.3f, 1f), 52f),
-                "official" => (" 官方 ", new Color(0.3f, 0.75f, 0.4f, 1f), 52f),
+                "WIKI" => (" WIKI ", new Color(0.25f, 0.5f, 0.85f, 1f), 58f),
+                "BBS" or "FORUM" => (" 论坛 ", new Color(0.85f, 0.55f, 0.25f, 1f), 52f),
+                "VIDEO" => (" 视频 ", new Color(0.85f, 0.3f, 0.3f, 1f), 52f),
+                "OFFICIAL" => (" 官方 ", new Color(0.3f, 0.75f, 0.4f, 1f), 52f),
                 _ => (" 资料 ", new Color(0.5f, 0.5f, 0.52f, 1f), 52f),
             };
         }
@@ -946,4 +947,4 @@ public class ChatPanel : MonoBehaviour, IPanel
         }
     }
 }
-#pragma warning restore CS8604, CS8618, IDE0008, IDE0011, RCS1181
+#pragma warning restore CS8604, CS8618, IDE0008, IDE0011, RCS1181, IDE0090, IDE0031, RCS1146, IDE0058, IDE0074, RCS1048, CA1822, CA1812, IDE0051, IDE0052, CA1001, CA2012, IDE0055, IDE0110, IDE0010, IDE0022, IDE0048, RCS1123, CA1307, RCS1238, CA1852

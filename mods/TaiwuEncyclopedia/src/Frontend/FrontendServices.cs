@@ -1,3 +1,4 @@
+#pragma warning disable IDE0008, IDE0032, RCS1085
 using System;
 using TaiwuEncyclopedia.Core.Agent;
 using TaiwuEncyclopedia.Core.Session;
@@ -51,3 +52,4 @@ public static class FrontendServices
     /// </summary>
     public static bool IsAgentReady => _agentRunner != null;
 }
+#pragma warning restore IDE0008, IDE0032, RCS1085

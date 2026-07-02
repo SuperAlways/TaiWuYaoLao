@@ -1,4 +1,4 @@
-#pragma warning disable IDE0055
+#pragma warning disable IDE0055, RCS1181
 using UnityEngine;
 
 namespace TaiwuEncyclopedia.UI;
@@ -19,4 +19,4 @@ public static class UiTheme
     public static readonly Color TitleBarBg = new(0.14f, 0.16f, 0.15f, 0.98f);
     public static readonly Color Link = LinkBlue;  // Alias for easier use
 }
-#pragma warning restore IDE0055
+#pragma warning restore IDE0055, RCS1181

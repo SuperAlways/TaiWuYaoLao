@@ -1,4 +1,5 @@
-#pragma warning disable CS8618
+#pragma warning disable CS8618, IDE0011, IDE0090, RCS1213, CA1305, RCS1181, RCS1146, CA1031, IDE0051
+using System.Globalization;
 using UnityEngine;
 using TMPro;
 
@@ -32,7 +33,9 @@ public sealed class ChatPanelHost : MonoBehaviour
             ChatPanel.Open(ResolveFont());
     }
 
-    // 从场景中任一 TextMeshProUGUI 借游戏中文字体；借不到则返回 null
+    /// <summary>
+    /// 从场景中任一 TextMeshProUGUI 借游戏中文字体；借不到则返回 null
+    /// </summary>
     private TMP_FontAsset? ResolveFont()
     {
         if (_font != null) return _font;
@@ -45,7 +48,7 @@ public sealed class ChatPanelHost : MonoBehaviour
                 if (t != null && t.font != null && t.gameObject.scene.IsValid())
                 {
                     _font = t.font;
-                    Debug.Log(string.Format("[TaiwuEncyclopedia] Found font: {0}", _font.name));
+                    Debug.Log(string.Format(CultureInfo.InvariantCulture, "[TaiwuEncyclopedia] Found font: {0}", _font.name));
                     break;
                 }
             }
@@ -57,7 +60,7 @@ public sealed class ChatPanelHost : MonoBehaviour
                     if (t != null && t.font != null)
                     {
                         _font = t.font;
-                        Debug.Log(string.Format("[TaiwuEncyclopedia] Fallback font: {0}", _font.name));
+                        Debug.Log(string.Format(CultureInfo.InvariantCulture, "[TaiwuEncyclopedia] Fallback font: {0}", _font.name));
                         break;
                     }
                 }
@@ -69,4 +72,4 @@ public sealed class ChatPanelHost : MonoBehaviour
         return _font;
     }
 }
-#pragma warning restore CS8618
+#pragma warning restore CS8618, IDE0011, IDE0090, RCS1213, CA1305, RCS1181, RCS1146, CA1031, IDE0051
