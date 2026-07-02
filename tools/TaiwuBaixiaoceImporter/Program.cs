@@ -2,8 +2,8 @@ namespace TaiwuBaixiaoceImporter;
 
 internal static class Program
 {
-    public static void Main()
+    static void Main(string[] _)
     {
-        // Scaffold main method - implementation will come later
+        // Minimal entry point
     }
 }

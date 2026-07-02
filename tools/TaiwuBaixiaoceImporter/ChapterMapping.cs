@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace TaiwuBaixiaoceImporter;
 
 /// <summary>百晓册 10 章源目录→章节 ID 映射（spec 3.1 节）。</summary>
-internal sealed record ChapterMapping(string Id, string CnName, string SourceDir)
+public sealed record ChapterMapping(string Id, string CnName, string SourceDir)
 {
     /// <summary>全部 10 章映射。</summary>
     public static readonly IReadOnlyList<ChapterMapping> All = new[]
@@ -25,12 +25,9 @@ internal sealed record ChapterMapping(string Id, string CnName, string SourceDir
     /// <returns>映射条目，未找到返回 null。</returns>
     public static ChapterMapping? ResolveBySourceDir(string sourceDir)
     {
-        foreach (ChapterMapping m in All)
+        foreach (var m in All)
         {
-            if (m.SourceDir == sourceDir)
-            {
-                return m;
-            }
+            if (m.SourceDir == sourceDir) return m;
         }
         return null;
     }
