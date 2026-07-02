@@ -17,10 +17,11 @@ public sealed class PromptBuilder
     // 工具使用规范段（静态，搬 v0.5 system.md 的工具规范部分）
     private const string _toolSpec = @"
 ## 工具使用规范
-你有 3 个工具：retrieve_rag / load_background_skill / load_guidance_skill。
+你有 4 个工具：retrieve_rag / load_background_skill / load_guidance_skill / lookup_concept。
 - ReAct 循环最多 6 轮，每轮可选调工具或直接回答。
 - 检索策略：先判断需要哪类信息，再选合适工具。复杂问题可分多轮检索。
 - 不要重复检索相同内容。已检索到的资料直接用。
+- 正文中 [查:xxx] 标记处可调 lookup_concept 查询具体数值或相关章节。同一概念查一次即可。
 - 最终回答时以选中 persona 的口吻给出。";
 
     /// <summary>
@@ -72,24 +73,11 @@ public sealed class PromptBuilder
     }
 
     /// <summary>
-    /// 读百晓册总纲。v1.0 从 registry.yaml 第一个 background 章节的 overview 加载。
+    /// 读百晓册总纲。v1.0 从 background/overview.md 独立文件加载（spec 9.1）。
     /// </summary>
     private string LoadZongang()
     {
-        var chapters = _sm.GetChapterEnum();
-        if (chapters.Count == 0) return "（百晓册总纲未找到，请检查 Skills 目录配置。）";
-
-        // 总纲 = 所有章节概述的拼接（轻量版）
-        var parts = new StringBuilder();
-        foreach (var ch in chapters)
-        {
-            var overview = _sm.LoadChapterOverview(ch);
-            if (!string.IsNullOrEmpty(overview))
-            {
-                parts.AppendLine(overview);
-                parts.AppendLine();
-            }
-        }
-        return parts.ToString().Trim();
+        var overview = _sm.LoadOverview();
+        return overview ?? "（百晓册总纲未找到，请检查 Skills/background/overview.md 配置。）";
     }
 }
