@@ -1,4 +1,7 @@
-#pragma warning disable CS8604, CS8618, IDE0008, IDE0011, RCS1181, IDE0090, IDE0031, RCS1146, IDE0058, IDE0074, RCS1048, CA1822, CA1812, IDE0051, IDE0052, CA1031, CA1305, RCS1213, CA1508, IDE0055, IDE0040, IDE0032, RCS1124
+// Reflection + Unity UGUI patterns: nullable flow-analysis + instantiation via AddComponent + no crash guarantee + non-static members for Unity pattern.
+#pragma warning disable CS8604, CS8618, CA1812, CA1031, CA1822
+// IDE/RCS style preferences (per-file, matches Tasks 2-5 convention).
+#pragma warning disable IDE0008, IDE0011, IDE0090, IDE0031, IDE0032, IDE0040, IDE0051, IDE0052, IDE0055, IDE0058, IDE0074, RCS1048, RCS1124, RCS1146, RCS1181, RCS1213, RCS1222
 using System;
 using System.Collections;
 using System.Reflection;
@@ -337,4 +340,5 @@ public class EntryButtonInjector : MonoBehaviour
         }
     }
 }
-#pragma warning restore CS8604, CS8618, IDE0008, IDE0011, RCS1181, IDE0090, IDE0031, RCS1146, IDE0058, IDE0074, RCS1048, CA1822, CA1812, IDE0051, IDE0052, CA1031, CA1305, RCS1213, CA1508, IDE0055, IDE0040
+#pragma warning restore CS8604, CS8618, CA1812, CA1031, CA1822
+#pragma warning restore IDE0008, IDE0011, IDE0090, IDE0031, IDE0032, IDE0040, IDE0051, IDE0052, IDE0055, IDE0058, IDE0074, RCS1048, RCS1124, RCS1146, RCS1181, RCS1213, RCS1222
