@@ -30,11 +30,13 @@ public sealed class SessionManager
     /// <param name="userQuery">用户查询内容</param>
     /// <param name="assistantAnswer">助手回答内容</param>
     /// <param name="references">参考文献列表（可选，仅 assistant 消息携带）</param>
+    /// <param name="autoName">太吾名快照（可选，首次对话写入，之后不覆盖）</param>
     public async Task SaveConversationAsync(
         int worldId,
         string userQuery,
         string assistantAnswer,
-        List<Reference>? references = null)
+        List<Reference>? references = null,
+        string? autoName = null)
     {
         await _store.AppendMessageAsync(worldId, new MessageRecord { Role = "user", Content = userQuery });
         await _store.AppendMessageAsync(worldId, new MessageRecord
@@ -43,6 +45,12 @@ public sealed class SessionManager
             Content = assistantAnswer,
             References = references,
         });
+
+        // 首次对话写入太吾名快照（SetAutoNameAsync 自身是幂等 guard，仅当 AutoName 为空时写入）
+        if (!string.IsNullOrEmpty(autoName))
+        {
+            await _store.SetAutoNameAsync(worldId, autoName);
+        }
     }
 
     /// <summary>加载会话历史，格式可直接用于 build_initial_messages。</summary>
@@ -59,4 +67,12 @@ public sealed class SessionManager
         }
         return messages;
     }
+
+    /// <summary>列出所有会话的元数据（透传 ISessionStore.ListConversationsAsync）。</summary>
+    public Task<List<ConversationMeta>> ListConversationsAsync() => _store.ListConversationsAsync();
+
+    /// <summary>重命名指定 WorldId 的会话（透传 ISessionStore.RenameConversationAsync）。</summary>
+    /// <param name="worldId">世界 ID</param>
+    /// <param name="name">新名字（空串=清除自命名，回退到 AutoName）</param>
+    public Task RenameConversationAsync(int worldId, string name) => _store.RenameConversationAsync(worldId, name);
 }

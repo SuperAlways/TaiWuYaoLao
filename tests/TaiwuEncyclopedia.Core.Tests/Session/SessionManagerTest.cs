@@ -115,4 +115,47 @@ public class SessionManagerTest
         records[1].References![0].SourceUrl.Should().Be("https://wiki.example.com/a");
         records[1].References![0].HitCount.Should().Be(3);
     }
+
+    [Fact]
+    public async Task SaveConversationAsyncStoresAutoNameOnFirstCall()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-auto-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        var sm = new SessionManager(store);
+
+        await sm.SaveConversationAsync(1, "q", "a", autoName: "太吾·李");
+
+        var list = await sm.ListConversationsAsync();
+        list.Should().HaveCount(1);
+        list[0].AutoName.Should().Be("太吾·李");
+    }
+
+    [Fact]
+    public async Task SaveConversationAsyncDoesNotOverwriteAutoName()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-auto2-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        var sm = new SessionManager(store);
+
+        await sm.SaveConversationAsync(1, "q1", "a1", autoName: "太吾·李");
+        await sm.SaveConversationAsync(1, "q2", "a2", autoName: "太吾·王");
+
+        var list = await sm.ListConversationsAsync();
+        list[0].AutoName.Should().Be("太吾·李");
+    }
+
+    [Fact]
+    public async Task RenameConversationAsyncUpdatesName()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-rename2-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        var sm = new SessionManager(store);
+        await sm.SaveConversationAsync(1, "q", "a", autoName: "太吾·李");
+
+        await sm.RenameConversationAsync(1, "我的剑冢档");
+
+        var list = await sm.ListConversationsAsync();
+        list[0].Name.Should().Be("我的剑冢档");
+        list[0].AutoName.Should().Be("太吾·李");
+    }
 }

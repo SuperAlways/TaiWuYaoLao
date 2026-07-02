@@ -87,6 +87,11 @@ public class StorageInterfaceContractTest
         {
             return System.Threading.Tasks.Task.CompletedTask;
         }
+
+        public System.Threading.Tasks.Task SetAutoNameAsync(int worldId, string autoName)
+        {
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
     }
 
     private sealed class StubSoulStore : ISoulStore

@@ -134,4 +134,17 @@ public sealed class JsonSessionStore : ISessionStore
         meta.Name = name ?? "";
         await SaveIndexAsync(idx);
     }
+
+    /// <summary>设置指定 WorldId 的 AutoName（仅当当前为空时写入，首次对话太吾名快照）。</summary>
+    public async Task SetAutoNameAsync(int worldId, string autoName)
+    {
+        if (string.IsNullOrEmpty(autoName)) return;
+        var idx = await LoadIndexAsync();
+        var meta = EnsureEntry(idx, worldId);
+        if (string.IsNullOrEmpty(meta.AutoName))
+        {
+            meta.AutoName = autoName;
+            await SaveIndexAsync(idx);
+        }
+    }
 }

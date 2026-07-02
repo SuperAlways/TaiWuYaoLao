@@ -27,4 +27,9 @@ public interface ISessionStore
     /// <param name="worldId">世界 ID</param>
     /// <param name="name">新名字（空串=清除自命名，回退到 AutoName）</param>
     System.Threading.Tasks.Task RenameConversationAsync(int worldId, string name);
+
+    /// <summary>设置指定 WorldId 的 AutoName（仅当当前为空时写入，首次对话太吾名快照）。</summary>
+    /// <param name="worldId">世界 ID</param>
+    /// <param name="autoName">太吾名快照（非空才写入）</param>
+    System.Threading.Tasks.Task SetAutoNameAsync(int worldId, string autoName);
 }
