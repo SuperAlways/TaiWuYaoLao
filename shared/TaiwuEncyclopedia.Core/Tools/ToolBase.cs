@@ -25,6 +25,10 @@ public abstract class ToolBase
         Metadata.Parameters = parameters;
     }
 
+    /// <summary>此工具是否需要进档后才能用。默认 false。
+    /// v1.1 探针类工具 override 为 true，ToolExecutor 在主界面（PregameWorldId）拦截。</summary>
+    public virtual bool RequiresSaveGame => false;
+
     /// <summary>执行工具。</summary>
     /// <param name="args">工具调用参数。</param>
     /// <returns>工具执行结果字典。</returns>

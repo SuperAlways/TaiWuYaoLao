@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TaiwuEncyclopedia.Core.Llm;
+using TaiwuEncyclopedia.Core.Session;
 
 namespace TaiwuEncyclopedia.Core.Tools;
 
@@ -71,6 +72,20 @@ public sealed class ToolExecutor
                     CallId = tc.Id,
                     Content = JsonConvert.SerializeObject(new { error = $"工具 {toolName} 不存在" }),
                 };
+            }
+
+            // RequiresSaveGame 工具在主界面（PregameWorldId）不可用
+            if (tool != null && tool.RequiresSaveGame)
+            {
+                var worldId = contextParams.TryGetValue("world_id", out var w) ? (int)w : 0;
+                if (worldId == SessionManager.PregameWorldId)
+                {
+                    return new ToolResult
+                    {
+                        CallId = tc.Id,
+                        Content = JsonConvert.SerializeObject(new { error = "此工具需要进入存档后使用" }),
+                    };
+                }
             }
 
             // netstandard2.1 没有 Task.WaitAsync，用 Task.WhenAny + Task.Delay 实现超时

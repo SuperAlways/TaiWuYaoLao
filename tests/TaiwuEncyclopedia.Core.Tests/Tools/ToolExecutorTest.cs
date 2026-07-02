@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using TaiwuEncyclopedia.Core.Llm;
+using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Tools;
 using Xunit;
 
@@ -78,6 +79,60 @@ public class ToolExecutorTest
         obj["error"]!.ToString().Should().Contain("参数解析失败");
     }
 
+    [Fact]
+    public async Task PregameWorldIdRejectsRequiresSaveGameTool()
+    {
+        var registry = new ToolRegistry();
+        registry.Register(new SaveGameOnlyTool());
+        var executor = new ToolExecutor(registry);
+
+        var results = await executor.ExecuteAsync(
+            new List<ToolCall>
+            {
+                new() { Id = "1", Function = new ToolCallFunction { Name = "savegame-only", Arguments = "{}" } },
+            },
+            new Dictionary<string, object> { ["world_id"] = SessionManager.PregameWorldId });
+
+        var obj = JObject.Parse(results[0].Content);
+        obj["error"]!.ToString().Should().Contain("此工具需要进入存档后使用");
+    }
+
+    [Fact]
+    public async Task PregameWorldIdAllowsNonRequiresSaveGameTool()
+    {
+        var registry = new ToolRegistry();
+        registry.Register(new EchoTool("echo"));
+        var executor = new ToolExecutor(registry);
+
+        var results = await executor.ExecuteAsync(
+            new List<ToolCall>
+            {
+                new() { Id = "1", Function = new ToolCallFunction { Name = "echo", Arguments = "{}" } },
+            },
+            new Dictionary<string, object> { ["world_id"] = SessionManager.PregameWorldId });
+
+        var obj = JObject.Parse(results[0].Content);
+        obj["echo"]!.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task RealWorldIdAllowsRequiresSaveGameTool()
+    {
+        var registry = new ToolRegistry();
+        registry.Register(new SaveGameOnlyTool());
+        var executor = new ToolExecutor(registry);
+
+        var results = await executor.ExecuteAsync(
+            new List<ToolCall>
+            {
+                new() { Id = "1", Function = new ToolCallFunction { Name = "savegame-only", Arguments = "{}" } },
+            },
+            new Dictionary<string, object> { ["world_id"] = 1 });
+
+        var obj = JObject.Parse(results[0].Content);
+        obj["result"]!.ToString().Should().Be("ok");
+    }
+
     private sealed class EchoTool : ToolBase
     {
         public EchoTool(string name) : base(name, "echo") { }
@@ -90,5 +145,13 @@ public class ToolExecutorTest
         public ThrowingTool() : base("throwing", "throws") { }
         public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args)
             => throw new System.InvalidOperationException("boom");
+    }
+
+    private sealed class SaveGameOnlyTool : ToolBase
+    {
+        public SaveGameOnlyTool() : base("savegame-only", "requires save game") { }
+        public override bool RequiresSaveGame => true;
+        public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args)
+            => Task.FromResult(new Dictionary<string, object> { ["result"] = "ok" });
     }
 }
