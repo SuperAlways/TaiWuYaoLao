@@ -37,8 +37,8 @@ public static class MarkdownParser
         {
             var text = line.Substring(level + 1);
             var size = settings.HeadingSizes[level - 1];
-            return $"<size={size}><b>{text}</b></size>";
+            return $"<size={size}><b>{Renderers.InlineRenderer.Render(text)}</b></size>";
         }
-        return line;
+        return Renderers.InlineRenderer.Render(line);
     }
 }

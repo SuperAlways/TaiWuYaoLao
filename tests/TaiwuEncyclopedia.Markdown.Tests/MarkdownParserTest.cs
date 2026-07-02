@@ -33,4 +33,35 @@ public class MarkdownParserTest
     {
         MarkdownParser.Parse("").Should().Be("");
     }
+
+    [Fact]
+    public void ParseBoldWrapsInBTag()
+    {
+        MarkdownParser.Parse("这是 **加粗** 文本").Should().Be("这是 <b>加粗</b> 文本");
+    }
+
+    [Fact]
+    public void ParseItalicWrapsInITag()
+    {
+        MarkdownParser.Parse("这是 *斜体* 文本").Should().Be("这是 <i>斜体</i> 文本");
+    }
+
+    [Fact]
+    public void ParseInlineCodeWrapsInMarkTag()
+    {
+        MarkdownParser.Parse("用 `Console.WriteLine` 输出").Should().Contain("<mark>").And.Contain("Console.WriteLine").And.Contain("</mark>");
+    }
+
+    [Fact]
+    public void ParseLinkGeneratesLinkTag()
+    {
+        var result = MarkdownParser.Parse("[文本](https://example.com)");
+        result.Should().Contain("<link=\"https://example.com\">").And.Contain("文本").And.Contain("</link>");
+    }
+
+    [Fact]
+    public void ParseBoldItalicNested()
+    {
+        MarkdownParser.Parse("***加粗斜体***").Should().Contain("<b>").And.Contain("<i>");
+    }
 }
