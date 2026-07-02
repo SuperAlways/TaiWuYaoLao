@@ -93,7 +93,9 @@ public class ConfigPanel : MonoBehaviour, IPanel
     // ========== 构建 (参照 jianghu ConfigWindow) ==========
     private void Build()
     {
-        _root = gameObject;
+        try
+        {
+            _root = gameObject;
         _canvas = _root.GetComponent<Canvas>();
         _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         _canvas.sortingOrder = 30010; // 高于 ChatPanel (30000)
@@ -180,7 +182,14 @@ public class ConfigPanel : MonoBehaviour, IPanel
         // 底部按钮栏
         BuildBottomBar(panel.transform);
 
-        _root.SetActive(false);
+            _root.SetActive(false);
+        }
+        catch (Exception e)
+        {
+            UnityEngine.Debug.LogError($"[TaiwuEncyclopedia] ConfigPanel build failed: {e}");
+            // Leave panel in non-broken state if possible
+            if (_root != null) _root.SetActive(false);
+        }
     }
 
     private void BuildLlmSection(Transform parent)

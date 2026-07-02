@@ -1,4 +1,4 @@
-#pragma warning disable CS8604, CS8618, IDE0008, IDE0011, RCS1181, IDE0090, IDE0031, RCS1146, IDE0058, IDE0074, RCS1048, CA1822, CA1812, IDE0051, IDE0052, CA1001, CA2012, IDE0055, IDE0110, IDE0010, IDE0022, IDE0048, RCS1123, CA1307, RCS1238, CA1852
+#pragma warning disable CS8604, CS8618, IDE0008, IDE0011, RCS1181, IDE0090, IDE0031, RCS1146, IDE0058, IDE0074, RCS1048, CA1822, CA1812, IDE0051, IDE0052, CA1001, CA2012, IDE0055, IDE0110, IDE0010, IDE0022, IDE0048, RCS1123, CA1307, RCS1238, CA1852, CA1031
 using System;
 using System.Globalization;
 using System.Collections;
@@ -108,7 +108,9 @@ public class ChatPanel : MonoBehaviour, IPanel
     // ========== 构建（仿照 jianghu ChatWindow.Build） ==========
     private void Build()
     {
-        _root = gameObject;
+        try
+        {
+            _root = gameObject;
         _canvas = _root.GetComponent<Canvas>();
         _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         _canvas.sortingOrder = 30000;
@@ -221,7 +223,14 @@ public class ChatPanel : MonoBehaviour, IPanel
         _sendBtn = btn;
         btn.onClick.AddListener(OnSend);
 
-        _root.SetActive(false);
+            _root.SetActive(false);
+        }
+        catch (Exception e)
+        {
+            UnityEngine.Debug.LogError($"[TaiwuEncyclopedia] ChatPanel build failed: {e}");
+            // Leave panel in non-broken state if possible
+            if (_root != null) _root.SetActive(false);
+        }
     }
 
     // ========== 历史加载 ==========
