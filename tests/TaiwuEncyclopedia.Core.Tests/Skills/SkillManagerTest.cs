@@ -111,6 +111,53 @@ personas:
     }
 
     [Fact]
+    public void LookupConceptReturnsGlossaryContent()
+    {
+        var dir = MakeTempSkillsDir();
+        // 写 concept_index.json
+        File.WriteAllText(Path.Combine(dir, "concept_index.json"), @"{
+  ""易筋经"": { ""path"": ""glossary/功法/易筋经.md"", ""type"": ""glossary"" }
+}");
+        // 写对应的词条文件
+        Directory.CreateDirectory(Path.Combine(dir, "glossary", "功法"));
+        File.WriteAllText(Path.Combine(dir, "glossary", "功法", "易筋经.md"), "# 易筋经\n一品内功");
+        var sm = new SkillManager(dir);
+        var content = sm.LookupConcept("易筋经");
+        content.Should().Contain("一品内功");
+    }
+
+    [Fact]
+    public void LookupConceptReturnsSectionContent()
+    {
+        var dir = MakeTempSkillsDir();
+        File.WriteAllText(Path.Combine(dir, "concept_index.json"), @"{
+  ""门派支持"": { ""path"": ""background/menpai/detail/门派-门派概述-门派支持.md"", ""type"": ""section"" }
+}");
+        Directory.CreateDirectory(Path.Combine(dir, "background", "menpai", "detail"));
+        File.WriteAllText(Path.Combine(dir, "background", "menpai", "detail", "门派-门派概述-门派支持.md"), "# 门派支持\n支持度效果");
+        var sm = new SkillManager(dir);
+        var content = sm.LookupConcept("门派支持");
+        content.Should().Contain("支持度效果");
+    }
+
+    [Fact]
+    public void LookupConceptReturnsNullForMissingConcept()
+    {
+        var sm = new SkillManager(MakeTempSkillsDir());
+        var content = sm.LookupConcept("不存在的概念");
+        content.Should().BeNull();
+    }
+
+    [Fact]
+    public void LookupConceptReturnsNullWhenIndexMissing()
+    {
+        var sm = new SkillManager(MakeTempSkillsDir());
+        // concept_index.json 不存在
+        var content = sm.LookupConcept("易筋经");
+        content.Should().BeNull();
+    }
+
+    [Fact]
     public void MissingRegistryReturnsEmptyLists()
     {
         var dir = Path.Combine(Path.GetTempPath(), "yaolao-empty-" + System.Guid.NewGuid().ToString("N"));

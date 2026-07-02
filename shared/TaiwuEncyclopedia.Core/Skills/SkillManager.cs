@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -17,6 +18,7 @@ public sealed class SkillManager
     private readonly Dictionary<string, string> _chapterCn = new();
     private readonly Dictionary<string, string> _guidanceCn = new();
     private readonly Dictionary<string, string> _personaFile = new();
+    private readonly Dictionary<string, (string Path, string Type)> _conceptIndex = new();
 
     /// <summary>初始化 SkillManager 实例。</summary>
     /// <param name="skillsDir">技能文件根目录路径。</param>
@@ -27,6 +29,8 @@ public sealed class SkillManager
         foreach (var ch in _registry.Background) _chapterCn[ch.Id] = ch.CnName;
         foreach (var g in _registry.Guidance) _guidanceCn[g.Id] = g.CnName;
         foreach (var p in _registry.Personas) _personaFile[p.Id] = p.File;
+
+        LoadConceptIndex();
     }
 
     private static SkillRegistry LoadRegistry(string path)
@@ -120,5 +124,33 @@ public sealed class SkillManager
     {
         var path = Path.Combine(_skillsDir, "background", "overview.md");
         return File.Exists(path) ? File.ReadAllText(path) : null;
+    }
+
+    /// <summary>加载 concept_index.json 到内存字典。</summary>
+    private void LoadConceptIndex()
+    {
+        var indexPath = Path.Combine(_skillsDir, "concept_index.json");
+        if (!File.Exists(indexPath)) return;
+        var json = File.ReadAllText(indexPath);
+        var obj = JObject.Parse(json);
+        foreach (var prop in obj.Properties())
+        {
+            var path = prop.Value?["path"]?.ToString();
+            var type = prop.Value?["type"]?.ToString();
+            if (path != null && type != null)
+            {
+                _conceptIndex[prop.Name] = (path, type);
+            }
+        }
+    }
+
+    /// <summary>统一概念查询。查 concept_index 命中则返回文件全文。</summary>
+    /// <param name="name">概念名，支持 "分类/名" 消歧格式。</param>
+    /// <returns>概念对应 md 文件全文，未找到则返回 null。</returns>
+    public string? LookupConcept(string name)
+    {
+        if (!_conceptIndex.TryGetValue(name, out var entry)) return null;
+        var fullPath = Path.Combine(_skillsDir, entry.Path);
+        return File.Exists(fullPath) ? File.ReadAllText(fullPath) : null;
     }
 }
