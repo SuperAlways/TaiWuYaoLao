@@ -93,6 +93,24 @@ personas:
     }
 
     [Fact]
+    public void LoadOverviewReturnsTopLevelSurvey()
+    {
+        var dir = MakeTempSkillsDir();
+        File.WriteAllText(Path.Combine(dir, "background", "overview.md"), "# 百晓册总纲\n全书综述内容");
+        var sm = new SkillManager(dir);
+        var content = sm.LoadOverview();
+        content.Should().Contain("全书综述内容");
+    }
+
+    [Fact]
+    public void LoadOverviewReturnsNullWhenFileMissing()
+    {
+        var sm = new SkillManager(MakeTempSkillsDir());
+        var content = sm.LoadOverview();
+        content.Should().BeNull();
+    }
+
+    [Fact]
     public void MissingRegistryReturnsEmptyLists()
     {
         var dir = Path.Combine(Path.GetTempPath(), "yaolao-empty-" + System.Guid.NewGuid().ToString("N"));

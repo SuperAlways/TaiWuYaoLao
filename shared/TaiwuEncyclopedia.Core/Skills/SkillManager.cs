@@ -113,4 +113,12 @@ public sealed class SkillManager
         var path = Path.Combine(_skillsDir, file);
         return File.Exists(path) ? File.ReadAllText(path) : null;
     }
+
+    /// <summary>读百晓册总纲 overview.md（段1，常驻 system prompt 用）。</summary>
+    /// <returns>总纲内容，若文件不存在则返回 null。</returns>
+    public string? LoadOverview()
+    {
+        var path = Path.Combine(_skillsDir, "background", "overview.md");
+        return File.Exists(path) ? File.ReadAllText(path) : null;
+    }
 }
