@@ -42,5 +42,9 @@
       Include="Taiwu.ModKit.References.Backend"
       Version="$(TaiwuModKitReferencesVersion)"
     />
+    <PackageVersion Include="NuGet.Packaging" Version="6.11.1" />
+    <PackageVersion Include="NuGet.Frameworks" Version="6.11.1" />
+    <PackageVersion Include="NuGet.Versioning" Version="6.11.1" />
+    <PackageVersion Include="dotenv.net" Version="3.2.1" />
   </ItemGroup>
 </Project>

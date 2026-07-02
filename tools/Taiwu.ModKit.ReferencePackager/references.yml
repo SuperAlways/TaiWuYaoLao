@@ -1,0 +1,202 @@
+outputRoot: artifacts/reference-packages
+authors: Taiwu.ModKit
+repositoryUrl: https://github.com/Wanxiang-Sanctum/taiwu-modkit
+publish:
+  packageSource: https://nuget.pkg.github.com/Wanxiang-Sanctum/index.json
+packages:
+  # 分包原则：每个包对应一个清晰的 mod 开发面；共享程序集上移到基础包，
+  # 端侧包只保留端侧独有闭包。同一开发面在前后端分别有游戏目录来源时，
+  # 用 assetGroups 按消费项目 TFM 分派，避免用单侧 DLL 代表另一侧运行环境。
+
+  # 插件入口 API 与 Harmony 工具链作为入口项目基础面发布。
+  # netstandard2.1 取前端 Managed 目录；net8.0 取后端 Backend 目录。
+  # 不包含 GameData、Unity、Assembly-CSharp 或后端 GameData.dll。
+  - id: Taiwu.ModKit.References.Plugin
+    title: 太吾插件基础引用
+    description: 前端或后端插件入口项目的基础引用，包含 TaiwuRemakePlugin、插件元数据、生命周期回调和游戏内置 Harmony 工具链。
+    assetGroups:
+      - targetFramework: netstandard2.1
+        directory: The Scroll Of Taiwu_Data/Managed
+        followReferences: true
+        rootAssemblies:
+          - TaiwuModdingLib.dll
+          - 0Harmony.dll
+      - targetFramework: net8.0
+        directory: Backend
+        followReferences: true
+        rootAssemblies:
+          - TaiwuModdingLib.dll
+          - 0Harmony.dll
+
+  # 只包含前后端都能依赖的公共契约和共享支撑库。
+  # 前端取 Managed 目录，后端取 Backend 目录；即使部分 DLL 自身仍声明较低 TFM，
+  # 也按游戏分发目录区分资产组，方便多目标共享项目做条件编译。
+  # 前端专有 Assembly-CSharp、Unity 和后端专有 GameData.dll 都不属于这里。
+  - id: Taiwu.ModKit.References.Shared
+    title: 太吾共享游戏引用
+    description: 前后端复用内部库的引用包，提供公共 GameData 契约、序列化、工具和共享支撑程序集。
+    dependsOn:
+      - Taiwu.ModKit.References.Plugin
+    assetGroups:
+      - targetFramework: netstandard2.1
+        directory: The Scroll Of Taiwu_Data/Managed
+        followReferences: true
+        rootAssemblies:
+          - CompDevLib.Interpreter.dll
+          - GameData.ActionPlanning.dll
+          - GameData.Adventure.dll
+          - GameData.Combat.Animation.dll
+          - GameData.Combat.Cricket.dll
+          - GameData.Combat.Math.dll
+          - GameData.Common.dll
+          - GameData.Common.Algorithm.dll
+          - GameData.Serializer.dll
+          - GameData.Shared.dll
+          - GameData.Utilities.dll
+          - GameData.Utilities.Reflection.dll
+          - GameData.Utilities.Structure.dll
+          - Google.Protobuf.dll
+          - MoonSharp.Interpreter.dll
+          - Newtonsoft.Json.dll
+          - NLog.dll
+          - Redzen.dll
+          - SourceGenerator.Core.dll
+          - Steamworks.NET.dll
+        exclude:
+          - TaiwuModdingLib.dll
+      - targetFramework: net8.0
+        directory: Backend
+        followReferences: true
+        rootAssemblies:
+          - CompDevLib.Interpreter.dll
+          - GameData.ActionPlanning.dll
+          - GameData.Adventure.dll
+          - GameData.Combat.Animation.dll
+          - GameData.Combat.Cricket.dll
+          - GameData.Combat.Math.dll
+          - GameData.Common.dll
+          - GameData.Common.Algorithm.dll
+          - GameData.Serializer.dll
+          - GameData.Shared.dll
+          - GameData.Utilities.dll
+          - GameData.Utilities.Reflection.dll
+          - GameData.Utilities.Structure.dll
+          - Google.Protobuf.dll
+          - MoonSharp.Interpreter.dll
+          - Newtonsoft.Json.dll
+          - NLog.dll
+          - Redzen.dll
+          - SourceGenerator.Core.dll
+          - Steamworks.NET.dll
+        exclude:
+          - TaiwuModdingLib.dll
+
+  # 只包含客户端平台、渲染和 UI 生态闭包；
+  # 不包含 Assembly-CSharp，也不包含 GameData 契约。
+  - id: Taiwu.ModKit.References.Unity
+    title: 太吾 Unity 客户端引用
+    description: 前端插件调用 Unity、UGUI、TextMeshPro、DOTween、spine 等客户端渲染或 UI API 时引用。
+    assetGroups:
+      - targetFramework: netstandard2.1
+        directory: The Scroll Of Taiwu_Data/Managed
+        followReferences: true
+        rootAssemblies:
+          - UnityEngine.CoreModule.dll
+          - UnityEngine.UI.dll
+          - Unity.TextMeshPro.dll
+          - Unity.Mathematics.dll
+          - Unity.Collections.dll
+          - Coffee.SoftMaskForUGUI.dll
+          - Coffee.UIParticle.dll
+          - DOTween.dll
+          - DOTweenPro.dll
+          - spine-csharp.dll
+          - spine-unity.dll
+
+  # 只包含客户端内部 API 和客户端独有闭包。
+  # 公共 GameData、Unity 和插件基础面通过 dependsOn 表达，不在这里重复携带。
+  # GameData.Adventure.Editor.dll 属于客户端内部依赖，随 Frontend 归属。
+  - id: Taiwu.ModKit.References.Frontend
+    title: 太吾前端内部引用
+    description: 前端插件补丁或调用客户端 Assembly-CSharp 内部 API 时引用；如果只需要插件入口、公共数据或 Unity API，不要引用此包。
+    dependsOn:
+      - Taiwu.ModKit.References.Plugin
+      - Taiwu.ModKit.References.Shared
+      - Taiwu.ModKit.References.Unity
+    assetGroups:
+      - targetFramework: netstandard2.1
+        directory: The Scroll Of Taiwu_Data/Managed
+        followReferences: true
+        rootAssemblies:
+          - Assembly-CSharp.dll
+          - GameData.Adventure.Editor.dll
+        exclude:
+          - 0Harmony.dll
+          - Coffee.*.dll
+          - CompDevLib.Interpreter.dll
+          - DOTween*.dll
+          - GameData.ActionPlanning.dll
+          - GameData.Adventure.dll
+          - GameData.Combat.Animation.dll
+          - GameData.Combat.Cricket.dll
+          - GameData.Combat.Math.dll
+          - GameData.Common.dll
+          - GameData.Common.Algorithm.dll
+          - GameData.Serializer.dll
+          - GameData.Shared.dll
+          - GameData.Utilities.dll
+          - GameData.Utilities.Reflection.dll
+          - GameData.Utilities.Structure.dll
+          - Google.Protobuf.dll
+          - Mono.Cecil*.dll
+          - MonoMod.*.dll
+          - MoonSharp.Interpreter.dll
+          - Newtonsoft.Json.dll
+          - NLog.dll
+          - Redzen.dll
+          - SourceGenerator.Core.dll
+          - spine-*.dll
+          - Steamworks.NET.dll
+          - TaiwuModdingLib.dll
+          - Unity*.dll
+
+  # 只包含后端 GameData.dll 领域 API、后端专有数据和后端支撑闭包。
+  # 公共 GameData 契约和插件基础面通过 dependsOn 表达，不在这里重复携带。
+  - id: Taiwu.ModKit.References.Backend
+    title: 太吾后端内部引用
+    description: 后端插件调用 GameData.dll 领域逻辑、后端专有数据或后端事件包程序集时引用。
+    dependsOn:
+      - Taiwu.ModKit.References.Plugin
+      - Taiwu.ModKit.References.Shared
+    assetGroups:
+      - targetFramework: net8.0
+        directory: Backend
+        followReferences: true
+        rootAssemblies:
+          - GameData.ActionPlanning.ActionImpl.dll
+          - GameData.dll
+        exclude:
+          - 0Harmony.dll
+          - CompDevLib.Interpreter.dll
+          - GameData.ActionPlanning.dll
+          - GameData.Adventure.dll
+          - GameData.Combat.Animation.dll
+          - GameData.Combat.Cricket.dll
+          - GameData.Combat.Math.dll
+          - GameData.Common.dll
+          - GameData.Common.Algorithm.dll
+          - GameData.Serializer.dll
+          - GameData.Shared.dll
+          - GameData.Utilities.dll
+          - GameData.Utilities.Reflection.dll
+          - GameData.Utilities.Structure.dll
+          - Google.Protobuf.dll
+          - Mono.Cecil*.dll
+          - MonoMod.*.dll
+          - MoonSharp.Interpreter.dll
+          - Newtonsoft.Json.dll
+          - NLog.dll
+          - Redzen.dll
+          - SourceGenerator.Core.dll
+          - Steamworks.NET.dll
+          - TaiwuModdingLib.dll
