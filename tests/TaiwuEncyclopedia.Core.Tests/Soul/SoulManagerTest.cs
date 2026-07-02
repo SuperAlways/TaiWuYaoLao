@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using TaiwuEncyclopedia.Core.Llm;
+using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Soul;
 using TaiwuEncyclopedia.Core.Storage;
 using Xunit;
@@ -90,6 +91,36 @@ public class SoulManagerTest
         var profile = await store.LoadProfileAsync();
         profile.Playstyle.Should().Be("速通"); // protected，不被覆盖
         profile.TechnicalLevel.Should().Be("老手"); // 非 protected，被 LLM 更新
+    }
+
+    [Fact]
+    public async Task UpdateFromCompressPregameSkipsSoulWorld()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-pregame-soul-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSoulStore(root);
+        var sm = new SoulManager(store);
+
+        // LLM 返回 profile + world 字段
+        var extractionJson = @"{""summary"":""主界面对话摘要"",""profile_fields"":{""Playstyle"":""苟道流""},""world_fields"":{""Sect"":""少林""}}";
+        var responseJson = Newtonsoft.Json.JsonConvert.SerializeObject(new
+        {
+            choices = new[] { new { message = new { role = "assistant", content = extractionJson } } },
+            usage = new { prompt_tokens = 10, completion_tokens = 5 }
+        });
+        var handler = new StubHandler(responseJson);
+        var llmClient = new OpenAiCompatibleClient(handler);
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+
+        await sm.UpdateFromCompressAsync(SessionManager.PregameWorldId, "主界面对话历史", llmClient, config);
+
+        // Profile 应更新（主界面也写 Profile）
+        var profile = await store.LoadProfileAsync();
+        profile.Playstyle.Should().Be("苟道流");
+
+        // SoulWorld 不应被写入（World--1.json 不创建，LoadWorldAsync 返回默认空值）
+        var world = await store.LoadWorldAsync(SessionManager.PregameWorldId);
+        world.Sect.Should().BeNullOrEmpty();
+        world.Summary.Should().BeNullOrEmpty();
     }
 
     private sealed class FailingHandler : System.Net.Http.HttpMessageHandler

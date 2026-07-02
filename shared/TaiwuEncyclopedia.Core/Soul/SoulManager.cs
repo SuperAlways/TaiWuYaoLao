@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using TaiwuEncyclopedia.Core.Llm;
+using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Storage;
 
 namespace TaiwuEncyclopedia.Core.Soul;
@@ -124,15 +125,19 @@ public sealed class SoulManager
             }
 
             // 合并 world 字段（SoulWorld 无 protected，直接覆盖）
-            var worldFields = parsed["world_fields"] as JObject;
-            if (worldFields != null)
+            // 主界面（PregameWorldId）跳过 world 字段——无档内情境，不写 World--1.json
+            if (worldId != SessionManager.PregameWorldId)
             {
-                foreach (var field in _worldFields)
+                var worldFields = parsed["world_fields"] as JObject;
+                if (worldFields != null)
                 {
-                    var val = worldFields[field]?.ToString();
-                    if (!string.IsNullOrEmpty(val))
+                    foreach (var field in _worldFields)
                     {
-                        typeof(SoulWorld).GetProperty(field)?.SetValue(world, val);
+                        var val = worldFields[field]?.ToString();
+                        if (!string.IsNullOrEmpty(val))
+                        {
+                            typeof(SoulWorld).GetProperty(field)?.SetValue(world, val);
+                        }
                     }
                 }
             }
@@ -142,9 +147,12 @@ public sealed class SoulManager
             return ""; // LLM 失败，不更新 soul，返回空摘要
         }
 
-        world.Summary = summary;
         await _store.SaveProfileAsync(profile);
-        await _store.SaveWorldAsync(worldId, world);
+        if (worldId != SessionManager.PregameWorldId)
+        {
+            world.Summary = summary;
+            await _store.SaveWorldAsync(worldId, world);
+        }
         return summary;
     }
 
