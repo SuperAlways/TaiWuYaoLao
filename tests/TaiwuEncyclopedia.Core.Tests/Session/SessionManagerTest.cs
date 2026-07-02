@@ -158,4 +158,28 @@ public class SessionManagerTest
         list[0].Name.Should().Be("我的剑冢档");
         list[0].AutoName.Should().Be("太吾·李");
     }
+
+    [Fact]
+    public void PregameWorldIdConstantIsMinusOne()
+    {
+        SessionManager.PregameWorldId.Should().Be(-1);
+    }
+
+    [Fact]
+    public async Task SaveConversationPregameWorldIdStoresMainInterfaceAutoName()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-pregame-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        var sm = new SessionManager(store);
+
+        await sm.SaveConversationAsync(
+            SessionManager.PregameWorldId, "剑冢选哪个门派", "少林前期稳...",
+            autoName: "主界面对话");
+
+        var list = await sm.ListConversationsAsync();
+        list.Should().Contain(m => m.WorldId == SessionManager.PregameWorldId);
+        var pregame = list.Find(m => m.WorldId == SessionManager.PregameWorldId)!;
+        pregame.AutoName.Should().Be("主界面对话");
+        pregame.Count.Should().Be(2); // user + assistant = 2 messages
+    }
 }

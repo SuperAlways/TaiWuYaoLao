@@ -16,6 +16,9 @@ public sealed class SessionManager
 {
     private readonly ISessionStore _store;
 
+    /// <summary>主界面（建档前）对话的 WorldId。未进档时用这个值走完整 session 链路。</summary>
+    public const int PregameWorldId = -1;
+
     /// <summary>
     /// 初始化会话管理器
     /// </summary>
