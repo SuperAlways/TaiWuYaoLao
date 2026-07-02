@@ -1,0 +1,24 @@
+background:
+  - id: taiwu-wiki-qi-cheng
+    cn_name: 启程
+    overview_file: background/qi-cheng/overview.md
+    detail_dir: background/qi-cheng/detail
+  - id: taiwu-wiki-zhan-dou
+    cn_name: 战斗
+    overview_file: background/zhan-dou/overview.md
+    detail_dir: background/zhan-dou/detail
+  # ... 其余 9 章后续填充，结构相同
+
+guidance:
+  - id: combat-build
+    cn_name: 战斗 build 指引
+    file: guidance/combat-build.md
+    relevant_chapters: [taiwu-wiki-zhan-dou]
+
+personas:
+  - id: player-grudge
+    cn_name: 玩家怨念
+    file: personas/player-grudge.md
+  - id: ring-elder
+    cn_name: 戒指老爷爷
+    file: personas/ring-elder.md
