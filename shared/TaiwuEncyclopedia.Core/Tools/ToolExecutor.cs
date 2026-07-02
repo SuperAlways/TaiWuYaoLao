@@ -75,7 +75,7 @@ public sealed class ToolExecutor
             }
 
             // RequiresSaveGame 工具在主界面（PregameWorldId）不可用
-            if (tool != null && tool.RequiresSaveGame)
+            if (tool.RequiresSaveGame)
             {
                 var worldId = contextParams.TryGetValue("world_id", out var w) ? (int)w : 0;
                 if (worldId == SessionManager.PregameWorldId)

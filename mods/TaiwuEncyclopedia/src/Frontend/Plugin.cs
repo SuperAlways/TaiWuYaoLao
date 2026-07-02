@@ -16,15 +16,18 @@ public class Plugin : TaiwuRemakePlugin
         _harmony = new Harmony(GetGuid());
         _harmony.PatchAll(typeof(Plugin).Assembly);
 
-        // Task 4: Bootstrap + MainThreadDispatcher
+        // Bootstrap + MainThreadDispatcher
         Bootstrap.Run();
         Threading.MainThreadDispatcher.Ensure();
 
-        // Task 6: ChatPanelHost (F8 热键打开 ChatPanel)
+        // ChatPanelHost (F8)
         ChatPanelHost.Initialize();
 
-        // TODO(Task 7): ConfigHost.Initialize() - F9 打开 ConfigPanel
-        // TODO(Task 8): EntryButtonInjector/UiHost.Initialize() - 轮询注入「百晓问答」按钮
+        // ConfigPanelHost (F9)
+        ConfigPanelHost.Initialize();
+
+        // FrontendServices: 尝试从已有配置初始化 AgentRunner
+        FrontendServices.TryInitializeAgentRunner();
 
         Debug.Log("[TaiwuEncyclopedia] plugin initialized");
     }

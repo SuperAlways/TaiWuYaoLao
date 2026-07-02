@@ -632,8 +632,7 @@ public class ChatPanel : MonoBehaviour, IPanel
 
     private void OnClickSettings()
     {
-        // TODO(Task 7): ConfigPanel.Open(_font);
-        AddSysBubble("设置面板即将到来（Task 7）");
+        ConfigPanel.Open(_font);
     }
 
     // ========== 子组件：ThinkingArea ==========

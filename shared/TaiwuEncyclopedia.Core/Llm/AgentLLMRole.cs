@@ -14,4 +14,7 @@ public enum AgentLLMRole
 
     /// <summary>L2 摘要/soul 提取，非流式。</summary>
     Intent,
+
+    /// <summary>连接测试用，非流式，不带 tools。</summary>
+    Testing,
 }

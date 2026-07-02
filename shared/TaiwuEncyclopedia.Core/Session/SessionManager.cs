@@ -78,4 +78,7 @@ public sealed class SessionManager
     /// <param name="worldId">世界 ID</param>
     /// <param name="name">新名字（空串=清除自命名，回退到 AutoName）</param>
     public Task RenameConversationAsync(int worldId, string name) => _store.RenameConversationAsync(worldId, name);
+
+    /// <summary>清空指定 WorldId 的对话流（透传 ISessionStore.ClearAsync）。</summary>
+    public Task ClearAsync(int worldId) => _store.ClearAsync(worldId);
 }

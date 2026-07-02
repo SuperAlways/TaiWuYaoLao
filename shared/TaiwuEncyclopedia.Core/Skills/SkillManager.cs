@@ -11,7 +11,7 @@ namespace TaiwuEncyclopedia.Core.Skills;
 /// 百晓册 + 引导 skill + persona 的清单管理与名称映射。
 /// v0.5 硬编码 → v1.0 registry.yaml 动态注册（spec 第 218 行）。
 /// </summary>
-public sealed class SkillManager
+public class SkillManager
 {
     private readonly string _skillsDir;
     private readonly SkillRegistry _registry;
