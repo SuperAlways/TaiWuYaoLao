@@ -1,1 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>TaiwuEncyclopedia</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\shared\TaiwuEncyclopedia.Core\TaiwuEncyclopedia.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\shared\TaiwuEncyclopedia.Markdown\TaiwuEncyclopedia.Markdown.csproj" />
+  </ItemGroup>
+
+</Project>
