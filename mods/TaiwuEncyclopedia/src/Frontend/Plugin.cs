@@ -1,6 +1,7 @@
 #pragma warning disable CA1001, CA1724, IDE0161
 using HarmonyLib;
 using TaiwuModdingLib.Core.Plugin;
+using UnityEngine;
 
 namespace TaiwuEncyclopedia
 {
@@ -13,8 +14,15 @@ namespace TaiwuEncyclopedia
         {
             _harmony = new Harmony(GetGuid());
             _harmony.PatchAll(typeof(Plugin).Assembly);
-            // TODO(Task 4): Bootstrap.Run() + MainThreadDispatcher.Ensure()
-            // TODO(Task 7/8): ConfigHost/UiHost 启动
+
+            // Task 4: Bootstrap + MainThreadDispatcher
+            Bootstrap.Run();
+            Threading.MainThreadDispatcher.Ensure();
+
+            // TODO(Task 7): ConfigHost.Initialize() - F9 打开 ConfigPanel
+            // TODO(Task 8): EntryButtonInjector/UiHost.Initialize() - 轮询注入「百晓问答」按钮
+
+            Debug.Log("[TaiwuEncyclopedia] plugin initialized");
         }
 
         public override void Dispose()
