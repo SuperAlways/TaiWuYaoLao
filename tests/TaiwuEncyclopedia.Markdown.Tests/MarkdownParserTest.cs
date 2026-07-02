@@ -64,4 +64,39 @@ public class MarkdownParserTest
     {
         MarkdownParser.Parse("***加粗斜体***").Should().Contain("<b>").And.Contain("<i>");
     }
+
+    [Fact]
+    public void ParseUnorderedListPrefixesBullet()
+    {
+        var result = MarkdownParser.Parse("- 第一项\n- 第二项");
+        result.Should().Contain("• 第一项").And.Contain("• 第二项");
+    }
+
+    [Fact]
+    public void ParseOrderedListKeepsNumber()
+    {
+        var result = MarkdownParser.Parse("1. 第一\n2. 第二");
+        result.Should().Contain("1. 第一").And.Contain("2. 第二");
+    }
+
+    [Fact]
+    public void ParseCodeBlockWrapsInMark()
+    {
+        var result = MarkdownParser.Parse("```\nplain code\n```");
+        result.Should().Contain("<mark>").And.Contain("plain code").And.Contain("</mark>");
+    }
+
+    [Fact]
+    public void ParseQuotePrefixesIndent()
+    {
+        var result = MarkdownParser.Parse("> 引用文本");
+        result.Should().Contain("引用文本");
+    }
+
+    [Fact]
+    public void ParseThematicBreakGeneratesRule()
+    {
+        var result = MarkdownParser.Parse("---");
+        result.Should().Contain("<mark>————————————————</mark>");
+    }
 }
