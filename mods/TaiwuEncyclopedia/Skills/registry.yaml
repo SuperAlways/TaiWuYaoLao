@@ -1,19 +1,50 @@
 background:
-  - id: taiwu-wiki-qi-cheng
+  - id: qi-cheng
     cn_name: 启程
     overview_file: background/qi-cheng/overview.md
     detail_dir: background/qi-cheng/detail
-  - id: taiwu-wiki-zhan-dou
+  - id: shijie
+    cn_name: 世界
+    overview_file: background/shijie/overview.md
+    detail_dir: background/shijie/detail
+  - id: menpai
+    cn_name: 门派
+    overview_file: background/menpai/overview.md
+    detail_dir: background/menpai/detail
+  - id: renwu
+    cn_name: 人物
+    overview_file: background/renwu/overview.md
+    detail_dir: background/renwu/detail
+  - id: xiuxi
+    cn_name: 修习
+    overview_file: background/xiuxi/overview.md
+    detail_dir: background/xiuxi/detail
+  - id: zhandou
     cn_name: 战斗
-    overview_file: background/zhan-dou/overview.md
-    detail_dir: background/zhan-dou/detail
-  # ... 其余 9 章后续填充，结构相同
+    overview_file: background/zhandou/overview.md
+    detail_dir: background/zhandou/detail
+  - id: jiaohu
+    cn_name: 交互
+    overview_file: background/jiaohu/overview.md
+    detail_dir: background/jiaohu/detail
+  - id: chanye
+    cn_name: 产业
+    overview_file: background/chanye/overview.md
+    detail_dir: background/chanye/detail
+  - id: wupin
+    cn_name: 物品
+    overview_file: background/wupin/overview.md
+    detail_dir: background/wupin/detail
+  - id: youli
+    cn_name: 游历
+    overview_file: background/youli/overview.md
+    detail_dir: background/youli/detail
 
 guidance:
   - id: combat-build
     cn_name: 战斗 build 指引
     file: guidance/combat-build.md
-    relevant_chapters: [taiwu-wiki-zhan-dou]
+    relevant_chapters: [zhandou]
 
 personas:
   - id: player-grudge
