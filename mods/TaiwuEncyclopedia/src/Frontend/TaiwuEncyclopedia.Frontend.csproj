@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Taiwu.ModKit.References.Frontend" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\..\shared\TaiwuEncyclopedia.Core\TaiwuEncyclopedia.Core.csproj" />
     <ProjectReference Include="..\..\..\..\shared\TaiwuEncyclopedia.Markdown\TaiwuEncyclopedia.Markdown.csproj" />
   </ItemGroup>
