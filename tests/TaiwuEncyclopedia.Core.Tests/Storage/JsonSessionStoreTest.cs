@@ -82,4 +82,49 @@ public class JsonSessionStoreTest
         var messages = await store.LoadRecentAsync(1, 10);
         messages.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task ListConversationsAsyncReturnsAllWorldFiles()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-list-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "user", Content = "q1" });
+        await store.AppendMessageAsync(2, new MessageRecord { Role = "user", Content = "q2" });
+
+        var list = await store.ListConversationsAsync();
+
+        list.Should().HaveCount(2);
+        list.Should().Contain(m => m.WorldId == 1 && m.Count == 1);
+        list.Should().Contain(m => m.WorldId == 2 && m.Count == 1);
+    }
+
+    [Fact]
+    public async Task RenameConversationAsyncUpdatesNameOnly()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-rename-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "user", Content = "q" });
+
+        await store.RenameConversationAsync(1, "剑冢攻坚档");
+
+        var list = await store.ListConversationsAsync();
+        list[0].Name.Should().Be("剑冢攻坚档");
+        // 对话流不受影响
+        var msgs = await store.LoadRecentAsync(1, 10);
+        msgs.Should().HaveCount(1);
+        msgs[0].Content.Should().Be("q");
+    }
+
+    [Fact]
+    public async Task RenameConversationAsyncEmptyNameClearsName()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-clear-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "user", Content = "q" });
+        await store.RenameConversationAsync(1, "临时名");
+        await store.RenameConversationAsync(1, "");
+
+        var list = await store.ListConversationsAsync();
+        list[0].Name.Should().Be("");
+    }
 }

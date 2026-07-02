@@ -24,6 +24,29 @@ public sealed class JsonSessionStore : ISessionStore
 
     private string PathFor(int worldId) => Path.Combine(_root, "Sessions", "Worlds", $"world-{worldId}.json");
 
+    private string IndexPath => Path.Combine(_root, "Sessions", "Worlds", "index.json");
+
+    private async Task<Dictionary<int, ConversationMeta>> LoadIndexAsync()
+    {
+        var idx = await AtomicFile.ReadJsonAsync<Dictionary<int, ConversationMeta>>(IndexPath);
+        return idx ?? new Dictionary<int, ConversationMeta>();
+    }
+
+    private async Task SaveIndexAsync(Dictionary<int, ConversationMeta> idx)
+    {
+        await AtomicFile.WriteJsonAsync(IndexPath, idx);
+    }
+
+    private static ConversationMeta EnsureEntry(Dictionary<int, ConversationMeta> idx, int worldId)
+    {
+        if (!idx.TryGetValue(worldId, out var meta))
+        {
+            meta = new ConversationMeta { WorldId = worldId };
+            idx[worldId] = meta;
+        }
+        return meta;
+    }
+
     /// <summary>
     /// 追加一条消息到指定 WorldId 的对话流。
     /// </summary>
@@ -35,6 +58,12 @@ public sealed class JsonSessionStore : ISessionStore
         var messages = await LoadRecentAsync(worldId, int.MaxValue);
         messages.Add(message);
         await AtomicFile.WriteJsonAsync(path, messages);
+
+        // 更新 index.json 的 count
+        var idx = await LoadIndexAsync();
+        var meta = EnsureEntry(idx, worldId);
+        meta.Count = messages.Count;
+        await SaveIndexAsync(idx);
     }
 
     /// <summary>
@@ -69,5 +98,40 @@ public sealed class JsonSessionStore : ISessionStore
             File.Delete(path);
         }
         return Task.CompletedTask;
+    }
+
+    /// <summary>列出所有会话的元数据（扫描 world-*.json + index.json 合并）。</summary>
+    public async Task<List<ConversationMeta>> ListConversationsAsync()
+    {
+        var idx = await LoadIndexAsync();
+        var dir = Path.Combine(_root, "Sessions", "Worlds");
+        var result = new List<ConversationMeta>();
+        if (!Directory.Exists(dir)) return result;
+
+        foreach (var file in Directory.GetFiles(dir, "world-*.json"))
+        {
+            var name = Path.GetFileNameWithoutExtension(file);
+            if (!name.StartsWith("world-")) continue;
+            if (!int.TryParse(name.Substring("world-".Length), out var worldId)) continue;
+
+            var meta = idx.TryGetValue(worldId, out var m)
+                ? m
+                : new ConversationMeta { WorldId = worldId };
+            // count 以实际文件为准（index 可能过时）
+            var msgs = await LoadRecentAsync(worldId, int.MaxValue);
+            meta.Count = msgs.Count;
+            result.Add(meta);
+        }
+        result.Sort((a, b) => b.WorldId.CompareTo(a.WorldId));
+        return result;
+    }
+
+    /// <summary>重命名指定 WorldId 的会话（只改 index.json 的 Name，不动对话流）。</summary>
+    public async Task RenameConversationAsync(int worldId, string name)
+    {
+        var idx = await LoadIndexAsync();
+        var meta = EnsureEntry(idx, worldId);
+        meta.Name = name ?? "";
+        await SaveIndexAsync(idx);
     }
 }

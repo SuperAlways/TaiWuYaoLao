@@ -68,6 +68,25 @@ public class StorageInterfaceContractTest
             _storage.Remove(worldId);
             return System.Threading.Tasks.Task.CompletedTask;
         }
+
+        public System.Threading.Tasks.Task<System.Collections.Generic.List<Core.Session.ConversationMeta>> ListConversationsAsync()
+        {
+            var list = new System.Collections.Generic.List<Core.Session.ConversationMeta>();
+            foreach (var kvp in _storage)
+            {
+                list.Add(new Core.Session.ConversationMeta
+                {
+                    WorldId = kvp.Key,
+                    Count = kvp.Value.Count
+                });
+            }
+            return System.Threading.Tasks.Task.FromResult(list);
+        }
+
+        public System.Threading.Tasks.Task RenameConversationAsync(int worldId, string name)
+        {
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
     }
 
     private sealed class StubSoulStore : ISoulStore

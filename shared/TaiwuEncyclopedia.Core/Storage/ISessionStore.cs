@@ -19,4 +19,12 @@ public interface ISessionStore
     /// <summary>清空指定 WorldId 的对话流（玩家重置用）。</summary>
     /// <param name="worldId">世界 ID</param>
     System.Threading.Tasks.Task ClearAsync(int worldId);
+
+    /// <summary>列出所有会话的元数据（扫描 world-*.json + index.json 合并）。</summary>
+    System.Threading.Tasks.Task<System.Collections.Generic.List<Session.ConversationMeta>> ListConversationsAsync();
+
+    /// <summary>重命名指定 WorldId 的会话（只改 index.json 的 Name，不动对话流）。</summary>
+    /// <param name="worldId">世界 ID</param>
+    /// <param name="name">新名字（空串=清除自命名，回退到 AutoName）</param>
+    System.Threading.Tasks.Task RenameConversationAsync(int worldId, string name);
 }
