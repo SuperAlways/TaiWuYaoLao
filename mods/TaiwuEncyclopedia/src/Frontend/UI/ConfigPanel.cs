@@ -297,7 +297,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         Anchor(itemText.rectTransform, Vector2.zero, Vector2.one, new Vector2(10, 0), new Vector2(-10, 0));
         _personaDropdown.itemText = itemText;
 
-        _personaDropdown.onValueChanged.AddListener(delegate(int idx) { OnPersonaChanged(idx); OnConfigChanged(); });
+        _personaDropdown.onValueChanged.AddListener(delegate(int idx) { OnPersonaChanged(idx); OnConfigChanged(invalidateTest: false); });
 
         // 预览区
         GameObject previewBox = new GameObject("PreviewBox", typeof(RectTransform), typeof(Image));
@@ -610,6 +610,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         RefreshSoulProfile();
         RefreshSoulWorld();
         _hasUnsavedChanges = false;
+        _testingConnection = false;
         _testState = TestState.NotTested;
         if (_testStatusText != null) _testStatusText.text = "";
         ValidateFieldsInline();
@@ -824,11 +825,11 @@ public class ConfigPanel : MonoBehaviour, IPanel
     }
 
     // ========== 事件处理 ==========
-    private void OnConfigChanged()
+    private void OnConfigChanged(bool invalidateTest = true)
     {
         _hasUnsavedChanges = true;
         // 已通过测试 → 修改任一字段则失效
-        if (_testState == TestState.Passed)
+        if (invalidateTest && _testState == TestState.Passed)
         {
             _testState = TestState.Invalidated;
             if (_testStatusText != null)
