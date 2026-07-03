@@ -4,8 +4,8 @@ using TaiwuEncyclopedia.Core.Skills;
 namespace TaiwuEncyclopedia.Core.Agent;
 
 /// <summary>
-/// 构建静态 system prompt（三段：百晓册总纲 + persona + 工具规范，spec 第 214 行）。
-/// 搬 v0.5 AgentPromptLoader。结果缓存（多次调用返回同一字符串，DeepSeek prefix caching 友好）。
+/// 构建静态 system prompt（五段：百晓册总纲 + 通用回答规则 + 回答格式 + 工具规范 + persona）。
+/// 结果缓存（按 personaId，DeepSeek prefix caching 友好）。
 /// </summary>
 public sealed class PromptBuilder
 {
@@ -14,7 +14,7 @@ public sealed class PromptBuilder
     private string? _cached;
     private string _cachedPersonaId = "";
 
-    // 工具使用规范段（静态，搬 v0.5 system.md 的工具规范部分）
+    // 工具使用规范段（静态）
     private const string _toolSpec = @"
 ## 工具使用规范
 你有 4 个工具：retrieve_rag / load_background_skill / load_guidance_skill / lookup_concept。
@@ -29,7 +29,7 @@ public sealed class PromptBuilder
     /// </summary>
     /// <param name="skillManager">技能管理器。</param>
     /// <param name="defaultPersonaId">默认 persona ID。</param>
-    public PromptBuilder(SkillManager skillManager, string defaultPersonaId = "ring-elder")
+    public PromptBuilder(SkillManager skillManager, string defaultPersonaId = "sword-will")
     {
         _sm = skillManager;
         _defaultPersonaId = defaultPersonaId;
@@ -43,41 +43,39 @@ public sealed class PromptBuilder
     public string BuildSystemPrompt(string? personaId = null)
     {
         var pid = string.IsNullOrEmpty(personaId) ? _defaultPersonaId : personaId;
-        // 缓存只对同一 personaId 生效
         if (_cached != null && _cachedPersonaId == pid) return _cached;
 
         var parts = new StringBuilder();
 
-        // 1. 百晓册总纲（第一段，常驻世界背景知识）
-        var zongang = LoadZongang();
-        parts.AppendLine("## 百晓册总纲（全文常驻）");
-        parts.AppendLine(zongang);
+        // 1. 百晓册总纲
+        var overview = _sm.LoadOverview();
+        parts.AppendLine(overview ?? "## 百晓册总纲\n（总纲未就绪）");
 
         parts.AppendLine("\n---\n");
 
-        // 2. persona（第二段，当前选中的对话风格）
-        var persona = _sm.LoadPersona(pid);
-        if (!string.IsNullOrEmpty(persona))
-        {
-            parts.AppendLine(persona);
-        }
+        // 2. 通用回答规则
+        var rules = _sm.LoadAnswerRules();
+        if (!string.IsNullOrEmpty(rules)) parts.AppendLine(rules);
 
         parts.AppendLine("\n---\n");
 
-        // 3. 工具使用规范（第三段）
+        // 3. 回答格式
+        var style = _sm.LoadOutputStyle();
+        if (!string.IsNullOrEmpty(style)) parts.AppendLine(style);
+
+        parts.AppendLine("\n---\n");
+
+        // 4. 工具使用规范
         parts.AppendLine(_toolSpec);
+
+        parts.AppendLine("\n---\n");
+
+        // 5. persona
+        var persona = _sm.LoadPersona(pid);
+        if (!string.IsNullOrEmpty(persona)) parts.AppendLine(persona);
 
         _cached = parts.ToString();
         _cachedPersonaId = pid;
         return _cached;
-    }
-
-    /// <summary>
-    /// 读百晓册总纲。v1.0 从 background/overview.md 独立文件加载（spec 9.1）。
-    /// </summary>
-    private string LoadZongang()
-    {
-        var overview = _sm.LoadOverview();
-        return overview ?? "（百晓册总纲未找到，请检查 Skills/background/overview.md 配置。）";
     }
 }

@@ -181,7 +181,7 @@ public class EndToEndTest
         var soulManager = new SoulManager(soulStore);
         var contextManager = new ContextManager(soulManager, llmClient, config);
         var sessionManager = new SessionManager(sessionStore);
-        var promptBuilder = new PromptBuilder(sm, "ring-elder");
+        var promptBuilder = new PromptBuilder(sm, "sword-will");
         return new AgentRunner(llmClient, config, registry, executor,
             contextManager, soulManager, sessionManager, promptBuilder, maxIter);
     }
@@ -200,14 +200,14 @@ background:
     overview_file: background/zhan-dou/overview.md
     detail_dir: background/zhan-dou/detail
 personas:
-  - id: ring-elder
-    cn_name: 戒指老爷爷
-    file: personas/ring-elder.md
+  - id: sword-will
+    cn_name: 剑中虚影
+    file: personas/sword-will.md
 ");
         Directory.CreateDirectory(Path.Combine(dir, "background", "zhan-dou", "detail"));
         File.WriteAllText(Path.Combine(dir, "background", "zhan-dou", "overview.md"), "# 战斗\n概述");
         Directory.CreateDirectory(Path.Combine(dir, "personas"));
-        File.WriteAllText(Path.Combine(dir, "personas", "ring-elder.md"), "# 戒指老爷爷\n你是隐士");
+        File.WriteAllText(Path.Combine(dir, "personas", "sword-will.md"), "# 剑中虚影\n你是隐士");
         return new SkillManager(dir);
     }
 
