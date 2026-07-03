@@ -95,6 +95,20 @@ personas:
     }
 
     [Fact]
+    public void PersonaCnNameReturnsCnName()
+    {
+        var sm = new SkillManager(MakeTempSkillsDir());
+        sm.PersonaCnName("sword-will").Should().Be("剑中虚影");
+    }
+
+    [Fact]
+    public void PersonaCnNameReturnsIdForUnregistered()
+    {
+        var sm = new SkillManager(MakeTempSkillsDir());
+        sm.PersonaCnName("unknown-id").Should().Be("unknown-id");
+    }
+
+    [Fact]
     public void LoadOverviewReturnsTopLevelSurvey()
     {
         var dir = MakeTempSkillsDir();

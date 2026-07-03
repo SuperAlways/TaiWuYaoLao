@@ -18,6 +18,7 @@ public class SkillManager
     private readonly Dictionary<string, string> _chapterCn = new();
     private readonly Dictionary<string, string> _guidanceCn = new();
     private readonly Dictionary<string, string> _personaFile = new();
+    private readonly Dictionary<string, string> _personaCn = new();
     private readonly Dictionary<string, (string Path, string Type)> _conceptIndex = new();
 
     /// <summary>初始化 SkillManager 实例。</summary>
@@ -28,7 +29,11 @@ public class SkillManager
         _registry = LoadRegistry(Path.Combine(skillsDir, "registry.yaml"));
         foreach (var ch in _registry.Background) _chapterCn[ch.Id] = ch.CnName;
         foreach (var g in _registry.Guidance) _guidanceCn[g.Id] = g.CnName;
-        foreach (var p in _registry.Personas) _personaFile[p.Id] = p.File;
+        foreach (var p in _registry.Personas)
+        {
+            _personaFile[p.Id] = p.File;
+            _personaCn[p.Id] = p.CnName;
+        }
 
         LoadConceptIndex();
     }
@@ -61,6 +66,11 @@ public class SkillManager
     /// <param name="skill">引导 skill ID。</param>
     /// <returns>引导 skill 中文名称，若未注册则返回原 ID。</returns>
     public string GuidanceCnName(string skill) => _guidanceCn.GetValueOrDefault(skill, skill);
+
+    /// <summary>获取 persona 中文名称。</summary>
+    /// <param name="personaId">persona ID。</param>
+    /// <returns>persona 中文名称，若未注册则返回原 ID。</returns>
+    public string PersonaCnName(string personaId) => _personaCn.GetValueOrDefault(personaId, personaId);
 
     /// <summary>读百晓册章节概览 md（二段式第一段）。</summary>
     /// <param name="chapterId">章节 ID。</param>
