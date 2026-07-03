@@ -77,6 +77,15 @@ public class ConfigPanel : MonoBehaviour, IPanel
     // 状态
     private bool _hasUnsavedChanges;
 
+    // 测试验证状态
+    private enum TestState { NotTested, Testing, Passed, Invalidated }
+    private TestState _testState = TestState.NotTested;
+
+    // 行内字段错误标签
+    private TextMeshProUGUI? _baseUrlError;
+    private TextMeshProUGUI? _apiKeyError;
+    private TextMeshProUGUI? _modelError;
+
     // ========== IPanel 实现 ==========
     public void Show()
     {
@@ -198,15 +207,15 @@ public class ConfigPanel : MonoBehaviour, IPanel
         Transform content = section.transform.Find("Content")!;
 
         // Base URL
-        _baseUrlInput = BuildLabeledInput(content, "Base URL", "https://api.deepseek.com", password: false);
+        _baseUrlInput = BuildLabeledInput(content, "Base URL", "https://api.deepseek.com", password: false, out _baseUrlError);
         _baseUrlInput.onValueChanged.AddListener(delegate { OnConfigChanged(); });
 
         // API Key
-        _apiKeyInput = BuildLabeledInput(content, "API Key", "", password: true);
+        _apiKeyInput = BuildLabeledInput(content, "API Key", "", password: true, out _apiKeyError);
         _apiKeyInput.onValueChanged.AddListener(delegate { OnConfigChanged(); });
 
         // Model
-        _modelInput = BuildLabeledInput(content, "Model", "deepseek-chat", password: false);
+        _modelInput = BuildLabeledInput(content, "Model", "deepseek-chat", password: false, out _modelError);
         _modelInput.onValueChanged.AddListener(delegate { OnConfigChanged(); });
 
         // 测试按钮 + 状态
@@ -543,7 +552,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         return section;
     }
 
-    private TMP_InputField BuildLabeledInput(Transform parent, string labelText, string placeholder, bool password)
+    private TMP_InputField BuildLabeledInput(Transform parent, string labelText, string placeholder, bool password, out TextMeshProUGUI errorLabel)
     {
         // 标签
         TextMeshProUGUI label = NewText("Label_" + labelText, parent, 17, TextAlignmentOptions.Left);
@@ -582,6 +591,11 @@ public class ConfigPanel : MonoBehaviour, IPanel
         ph.raycastTarget = false;
         input.placeholder = ph;
 
+        // 行内错误提示
+        errorLabel = NewText("Error_" + labelText, parent, 14, TextAlignmentOptions.Left);
+        errorLabel.color = UiTheme.ErrorText;
+        errorLabel.text = "";
+
         return input;
     }
 
@@ -596,7 +610,9 @@ public class ConfigPanel : MonoBehaviour, IPanel
         RefreshSoulProfile();
         RefreshSoulWorld();
         _hasUnsavedChanges = false;
-        UpdateValidation();
+        _testState = TestState.NotTested;
+        if (_testStatusText != null) _testStatusText.text = "";
+        ValidateFieldsInline();
     }
 
     private void RefreshLlmInputs()
@@ -811,7 +827,20 @@ public class ConfigPanel : MonoBehaviour, IPanel
     private void OnConfigChanged()
     {
         _hasUnsavedChanges = true;
-        UpdateValidation();
+        // 已通过测试 → 修改任一字段则失效
+        if (_testState == TestState.Passed)
+        {
+            _testState = TestState.Invalidated;
+            if (_testStatusText != null)
+            {
+                _testStatusText.text = "⚠ 配置已修改，请重新测试";
+                _testStatusText.color = new Color(0.85f, 0.75f, 0.45f, 1f);
+            }
+        }
+        // 清除旧的保存汇总提示
+        if (_validationText != null) _validationText.text = "";
+        // 实时校验所有字段
+        ValidateFieldsInline();
     }
 
     private void OnPersonaChanged(int idx)
@@ -846,21 +875,24 @@ public class ConfigPanel : MonoBehaviour, IPanel
 
     private void OnTestConnection()
     {
-        if (_testingConnection) return;
+        if (_testState == TestState.Testing) return;
 
-        // 收集当前输入值 (未保存也可以测试)
         string baseUrl = (_baseUrlInput?.text ?? "").Trim();
         string apiKey = (_apiKeyInput?.text ?? "").Trim();
         string model = (_modelInput?.text ?? "").Trim();
 
-        // 就地验证
-        var (valid, error) = ValidateConfig(baseUrl, apiKey, model, "dummy");
-        if (!valid)
+        // 字段校验
+        ValidateFieldsInline();
+        var (bValid, _) = ValidateBaseUrl(baseUrl);
+        var (aValid, _) = ValidateApiKey(apiKey);
+        var (mValid, _) = ValidateModel(model);
+        if (!bValid || !aValid || !mValid)
         {
-            SetTestStatus(error!, isError: true);
+            SetTestStatus("请先修正字段错误", isError: true);
             return;
         }
 
+        _testState = TestState.Testing;
         _testingConnection = true;
         if (_testBtn != null) _testBtn.interactable = false;
         SetTestStatus("测试中…", isError: false);
@@ -908,14 +940,17 @@ public class ConfigPanel : MonoBehaviour, IPanel
 
         if (fault != null)
         {
+            _testState = TestState.NotTested;
             SetTestStatus($"✗ 连接失败 ({sw.ElapsedMilliseconds}ms): {fault.Message}", isError: true);
         }
         else if (task != null && task.Result != null)
         {
+            _testState = TestState.Passed;
             SetTestStatus($"✓ 连接正常 ({sw.ElapsedMilliseconds}ms)", isError: false);
         }
         else
         {
+            _testState = TestState.NotTested;
             SetTestStatus("✗ 未知错误", isError: true);
         }
 
@@ -1012,53 +1047,42 @@ public class ConfigPanel : MonoBehaviour, IPanel
     }
 
     // ========== 保存与验证 ==========
-    private (bool Valid, string? Error) ValidateConfig(string baseUrl, string apiKey, string model, string personaId)
+    private static (bool Valid, string Error) ValidateBaseUrl(string v)
     {
-        if (string.IsNullOrWhiteSpace(baseUrl))
-            return (false, "Base URL 不能为空");
-
-        if (!baseUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-            !baseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(v)) return (false, "Base URL 不能为空");
+        if (!v.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+            !v.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             return (false, "Base URL 必须以 http:// 或 https:// 开头");
-
-        if (string.IsNullOrWhiteSpace(apiKey))
-            return (false, "API Key 不能为空");
-
-        if (string.IsNullOrWhiteSpace(model))
-            return (false, "Model 不能为空");
-
-        if (string.IsNullOrWhiteSpace(personaId))
-            return (false, "请选择对话风格");
-
-        // 验证 persona 存在
-        if (_personaIdList != null && _personaIdList.Count > 0 && !_personaIdList.Contains(personaId))
-            return (false, "选择的对话风格无效");
-
-        return (true, null);
+        return (true, "");
     }
 
-    private void UpdateValidation()
+    private static (bool Valid, string Error) ValidateApiKey(string v)
+    {
+        if (string.IsNullOrWhiteSpace(v)) return (false, "API Key 不能为空");
+        return (true, "");
+    }
+
+    private static (bool Valid, string Error) ValidateModel(string v)
+    {
+        if (string.IsNullOrWhiteSpace(v)) return (false, "Model 不能为空");
+        return (true, "");
+    }
+
+    private void ValidateFieldsInline()
     {
         string baseUrl = (_baseUrlInput?.text ?? "").Trim();
         string apiKey = (_apiKeyInput?.text ?? "").Trim();
         string model = (_modelInput?.text ?? "").Trim();
-        string personaId = (_personaIdList != null && _personaDropdown != null &&
-            _personaDropdown.value >= 0 && _personaDropdown.value < _personaIdList.Count)
-            ? _personaIdList[_personaDropdown.value]
-            : "";
 
-        var (valid, error) = ValidateConfig(baseUrl, apiKey, model, personaId);
+        var (bValid, bError) = ValidateBaseUrl(baseUrl);
+        var (aValid, aError) = ValidateApiKey(apiKey);
+        var (mValid, mError) = ValidateModel(model);
 
-        if (_validationText != null)
-        {
-            _validationText.text = valid ? "" : error;
-        }
-
-        if (_saveBtn != null)
-        {
-            _saveBtn.interactable = valid;
-        }
+        if (_baseUrlError != null) _baseUrlError.text = bValid ? "" : bError;
+        if (_apiKeyError != null) _apiKeyError.text = aValid ? "" : aError;
+        if (_modelError != null) _modelError.text = mValid ? "" : mError;
     }
+
 
     private void OnSaveAndClose()
     {
@@ -1070,12 +1094,33 @@ public class ConfigPanel : MonoBehaviour, IPanel
             ? _personaIdList[_personaDropdown.value]
             : "";
 
-        var (valid, error) = ValidateConfig(baseUrl, apiKey, model, personaId);
-        if (!valid)
+        // 字段校验
+        var errors = new List<string>();
+        var (bValid, bError) = ValidateBaseUrl(baseUrl);
+        if (!bValid) errors.Add(bError);
+        var (aValid, aError) = ValidateApiKey(apiKey);
+        if (!aValid) errors.Add(aError);
+        var (mValid, mError) = ValidateModel(model);
+        if (!mValid) errors.Add(mError);
+
+        if (errors.Count > 0)
         {
-            if (_validationText != null) _validationText.text = error;
+            if (_validationText != null)
+                _validationText.text = "请修正以下问题：" + string.Join("；", errors);
+            ValidateFieldsInline();
             return;
         }
+
+        // 测试 gate
+        if (_testState != TestState.Passed)
+        {
+            if (_validationText != null) _validationText.text = "请先测试连接";
+            return;
+        }
+
+        // persona 默认值兜底
+        if (string.IsNullOrWhiteSpace(personaId) && _personaIdList != null && _personaIdList.Contains("sword-will"))
+            personaId = "sword-will";
 
         // 保存配置
         FrontendServices.SaveLlmConfig(baseUrl, apiKey, model, personaId);
