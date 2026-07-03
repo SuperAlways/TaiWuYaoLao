@@ -10,6 +10,8 @@ public static class RegistryGenerator
     public static string Generate()
     {
         var sb = new StringBuilder();
+        sb.AppendLine("answer_rules_file: answer-rules.md");
+        sb.AppendLine("output_style_file: output-style.md");
         sb.AppendLine("background:");
         foreach (var ch in ChapterMapping.All)
         {
@@ -29,9 +31,9 @@ public static class RegistryGenerator
         sb.AppendLine("  - id: player-grudge");
         sb.AppendLine("    cn_name: 玩家怨念");
         sb.AppendLine("    file: personas/player-grudge.md");
-        sb.AppendLine("  - id: ring-elder");
-        sb.AppendLine("    cn_name: 戒指老爷爷");
-        sb.AppendLine("    file: personas/ring-elder.md");
+        sb.AppendLine("  - id: sword-will");
+        sb.AppendLine("    cn_name: 剑中虚影");
+        sb.AppendLine("    file: personas/sword-will.md");
         return sb.ToString();
     }
 }

@@ -1,3 +1,5 @@
+answer_rules_file: answer-rules.md
+output_style_file: output-style.md
 background:
   - id: qi-cheng
     cn_name: 启程
@@ -50,6 +52,6 @@ personas:
   - id: player-grudge
     cn_name: 玩家怨念
     file: personas/player-grudge.md
-  - id: ring-elder
-    cn_name: 戒指老爷爷
-    file: personas/ring-elder.md
+  - id: sword-will
+    cn_name: 剑中虚影
+    file: personas/sword-will.md
