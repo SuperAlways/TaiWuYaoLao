@@ -126,6 +126,26 @@ public class SkillManager
         return File.Exists(path) ? File.ReadAllText(path) : null;
     }
 
+    /// <summary>读通用回答规则 md。</summary>
+    /// <returns>规则内容，若未配置或文件不存在则返回 null。</returns>
+    public string? LoadAnswerRules()
+    {
+        var file = _registry.AnswerRulesFile;
+        if (string.IsNullOrEmpty(file)) return null;
+        var path = Path.Combine(_skillsDir, file);
+        return File.Exists(path) ? File.ReadAllText(path) : null;
+    }
+
+    /// <summary>读回答格式 md。</summary>
+    /// <returns>格式内容，若未配置或文件不存在则返回 null。</returns>
+    public string? LoadOutputStyle()
+    {
+        var file = _registry.OutputStyleFile;
+        if (string.IsNullOrEmpty(file)) return null;
+        var path = Path.Combine(_skillsDir, file);
+        return File.Exists(path) ? File.ReadAllText(path) : null;
+    }
+
     /// <summary>加载 concept_index.json 到内存字典。</summary>
     private void LoadConceptIndex()
     {

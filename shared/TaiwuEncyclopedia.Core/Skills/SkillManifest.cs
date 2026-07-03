@@ -59,4 +59,10 @@ public sealed class SkillRegistry
 
     /// <summary>persona 列表。</summary>
     [YamlMember(Alias = "personas")] public List<PersonaManifest> Personas { get; set; } = new();
+
+    /// <summary>通用回答规则文件相对路径。</summary>
+    [YamlMember(Alias = "answer_rules_file")] public string? AnswerRulesFile { get; set; }
+
+    /// <summary>回答格式文件相对路径。</summary>
+    [YamlMember(Alias = "output_style_file")] public string? OutputStyleFile { get; set; }
 }
