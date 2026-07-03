@@ -48,7 +48,7 @@ public static class FrontendServices
         get
         {
             if (_selectedPersonaId == null) LoadConfigFromDisk();
-            return _selectedPersonaId ?? "ring-elder";
+            return _selectedPersonaId ?? "sword-will";
         }
     }
 
@@ -168,7 +168,7 @@ public static class FrontendServices
                         ApiKey = saved.ApiKey ?? "",
                         Model = saved.Model ?? ""
                     };
-                    _selectedPersonaId = saved.PersonaId ?? "ring-elder";
+                    _selectedPersonaId = saved.PersonaId ?? "sword-will";
                     Debug.Log("[TaiwuEncyclopedia] Config loaded from disk");
                     return;
                 }
@@ -181,7 +181,7 @@ public static class FrontendServices
 
         // 回退到默认
         _loadedLlmConfig = new LlmConfig();
-        _selectedPersonaId = "ring-elder";
+        _selectedPersonaId = "sword-will";
     }
 
     /// <summary>
@@ -292,8 +292,8 @@ public static class FrontendServices
 
             // 7. PromptBuilder
             _promptBuilder = sm != null
-                ? new PromptBuilder(sm, _selectedPersonaId ?? "ring-elder")
-                : new PromptBuilder(new FallbackSkillManager(), _selectedPersonaId ?? "ring-elder");
+                ? new PromptBuilder(sm, _selectedPersonaId ?? "sword-will")
+                : new PromptBuilder(new FallbackSkillManager(), _selectedPersonaId ?? "sword-will");
 
             // 8. AgentRunner
             _agentRunner = new AgentRunner(
@@ -342,19 +342,28 @@ public static class FrontendServices
 background: []
 guidance: []
 personas:
-  - id: ring-elder
-    cn_name: 戒指老爷爷
-    file: personas/ring-elder.md
+  - id: sword-will
+    cn_name: 剑中虚影
+    file: personas/sword-will.md
 ");
                 string personaDir = Path.Combine(temp, "personas");
                 Directory.CreateDirectory(personaDir);
-                string personaFile = Path.Combine(personaDir, "ring-elder.md");
+                string personaFile = Path.Combine(personaDir, "sword-will.md");
                 if (!File.Exists(personaFile))
                 {
                     File.WriteAllText(personaFile, @"
-身份：隐居太吾世界的名宿残魂
-说话方式：自称本座，称呼传人为太吾小友
-剧透策略：尽量不剧透
+# 剑中虚影
+
+## 外在形象与口吻
+- 形象：太吾剑柄中凝出的半透明虚影，沧桑老者模样
+- 自称：本座
+- 称呼玩家：太吾
+- 语气：沉稳沧桑
+- 用词倾向：融入太吾世界观词汇
+
+## 剧透策略
+- 机制类问题可以详讲
+- 剧情类问题留白
 ");
                 }
             }
