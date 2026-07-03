@@ -24,10 +24,24 @@ public static class Bootstrap
         // RuntimeRoot: persistentDataPath 下的 TaiwuEncyclopedia 目录
         RuntimeRoot = Path.Combine(Application.persistentDataPath, "TaiwuEncyclopedia");
 
-        // SkillsRoot: 尝试定位 mod 自带的 Skills 目录
-        // TODO(Task0 实测): 确认 TaiwuModdingLib 提供的 mod 目录访问 API
-        // 目前策略: 先尝试基于 AppDomain.BaseDirectory 的路径，后续根据实测调整
-        SkillsRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Mods", "TaiwuEncyclopedia", "Skills");
+        // SkillsRoot: 基于 Bootstrap 程序集自身的部署位置定位 mod 根目录。
+        // dll 部署在 <mod根>/Plugins/TaiwuEncyclopedia.Frontend.dll,反推两级得 mod 根,
+        // 再拼 Skills。这样随游戏实际 mod 目录名(Mod/Mods 等)自适应,不硬编码。
+        // 见 docs/mod-build-deploy-runbook.md「已知坑」关于 Mod vs Mods 的说明。
+        var dllPath = typeof(Bootstrap).Assembly.Location;
+        string modRoot;
+        if (!string.IsNullOrEmpty(dllPath))
+        {
+            // <mod根>/Plugins/X.dll → <mod根>/Plugins → <mod根>
+            var pluginsDir = Path.GetDirectoryName(dllPath);
+            modRoot = Path.GetDirectoryName(pluginsDir) ?? "";
+        }
+        else
+        {
+            // 回退: 游戏可执行目录下的 Mod/TaiwuEncyclopedia (游戏实际用单数 Mod)
+            modRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Mod", "TaiwuEncyclopedia");
+        }
+        SkillsRoot = Path.Combine(modRoot, "Skills");
 
         // 如果上述路径不存在，回退到一个标记路径并记录警告
         if (!Directory.Exists(SkillsRoot))

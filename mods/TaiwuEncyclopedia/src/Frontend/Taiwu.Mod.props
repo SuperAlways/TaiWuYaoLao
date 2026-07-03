@@ -14,10 +14,9 @@
   -->
 
   <!-- shared 项目只写 ProjectReference；下面仅用于非 shared 依赖，且 Include 只写来自本项目构建输出的 DLL 文件名。 -->
-  <!--
   <ItemGroup>
-    <TaiwuModMergeDependency Include="Your.Assembly.dll" />
-    <TaiwuModCopyDependency Include="Other.Assembly.dll" />
+    <!-- YamlDotNet: Core 在运行时用它解析 registry.yaml,游戏不自带,需合并入入口 dll。
+         Frontend csproj 已开 CopyLocalLockFileAssemblies 让它进 copy-local。 -->
+    <TaiwuModMergeDependency Include="YamlDotNet.dll" />
   </ItemGroup>
-  -->
 </Project>

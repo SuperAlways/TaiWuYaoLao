@@ -53,5 +53,6 @@ personas:
     cn_name: 玩家怨念
     file: personas/player-grudge.md
   - id: sword-will
-    cn_name: 剑中虚影
+    cn_name: 天道残魂
+    description: "太吾天道在远古 天帝伐天时被击碎，四散人间，演化种种。作为其中之一的你与上古被再次镇压后投入伏虞剑的炼制中，在伏虞剑碎后显化而出，由天道权柄晓知世间种种。"
     file: personas/sword-will.md

@@ -19,6 +19,7 @@ public class SkillManager
     private readonly Dictionary<string, string> _guidanceCn = new();
     private readonly Dictionary<string, string> _personaFile = new();
     private readonly Dictionary<string, string> _personaCn = new();
+    private readonly Dictionary<string, string> _personaDesc = new();
     private readonly Dictionary<string, (string Path, string Type)> _conceptIndex = new();
 
     /// <summary>初始化 SkillManager 实例。</summary>
@@ -33,6 +34,7 @@ public class SkillManager
         {
             _personaFile[p.Id] = p.File;
             _personaCn[p.Id] = p.CnName;
+            _personaDesc[p.Id] = p.Description ?? "";
         }
 
         LoadConceptIndex();
@@ -71,6 +73,9 @@ public class SkillManager
     /// <param name="personaId">persona ID。</param>
     /// <returns>persona 中文名称，若未注册则返回原 ID。</returns>
     public string PersonaCnName(string personaId) => _personaCn.GetValueOrDefault(personaId, personaId);
+
+    /// <summary>persona 前端简介(来自 registry description 字段,空则返回空串由调用方回退)。</summary>
+    public string PersonaDescription(string personaId) => _personaDesc.GetValueOrDefault(personaId, "");
 
     /// <summary>读百晓册章节概览 md（二段式第一段）。</summary>
     /// <param name="chapterId">章节 ID。</param>

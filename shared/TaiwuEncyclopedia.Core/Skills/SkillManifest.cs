@@ -44,6 +44,9 @@ public sealed class PersonaManifest
     /// <summary>persona 中文名称。</summary>
     [YamlMember(Alias = "cn_name")] public string CnName { get; set; } = "";
 
+    /// <summary>前端切换时的简介(独立于 file 指向的系统提示词全文)。</summary>
+    [YamlMember(Alias = "description")] public string Description { get; set; } = "";
+
     /// <summary>persona 文件相对路径。</summary>
     [YamlMember(Alias = "file")] public string File { get; set; } = "";
 }

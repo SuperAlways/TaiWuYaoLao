@@ -80,6 +80,7 @@ public class ChatPanel : MonoBehaviour, IPanel
     // ========== IPanel 实现 ==========
     public void Show()
     {
+        Debug.Log("[ChatPanel] Show called, busy=" + _busy);
         if (_root == null) return;
         _root.SetActive(true);
 
@@ -93,6 +94,7 @@ public class ChatPanel : MonoBehaviour, IPanel
 
     public void Hide()
     {
+        Debug.Log("[ChatPanel] Hide called, busy=" + _busy);
         if (_root != null) _root.SetActive(false);
         Interrupt();
     }
@@ -100,9 +102,27 @@ public class ChatPanel : MonoBehaviour, IPanel
     private void UpdateTitle()
     {
         if (_title == null) return;
-        _title.text = _currentWorldId == Core.Session.SessionManager.PregameWorldId
-            ? "百晓问答 · 主界面"
-            : string.Format(CultureInfo.InvariantCulture, "百晓问答 · 当前世界 WorldId#{0}", _currentWorldId);
+        if (_currentWorldId == Core.Session.SessionManager.PregameWorldId)
+        {
+            _title.text = "百晓问答 · 主界面";
+            return;
+        }
+        // 先显示 WorldId 占位,再异步加载对话名(自定义名 > 自动名)替换。
+        _title.text = string.Format(CultureInfo.InvariantCulture, "百晓问答 · 当前世界 WorldId#{0}", _currentWorldId);
+        StartCoroutine(UpdateTitleFromMetaCoroutine());
+    }
+
+    private IEnumerator UpdateTitleFromMetaCoroutine()
+    {
+        var task = FrontendServices.SessionManager.ListConversationsAsync();
+        yield return new WaitUntil(() => task.IsCompleted);
+        if (task.IsFaulted || task.IsCanceled || task.Result == null) yield break;
+        var meta = task.Result.Find(m => m.WorldId == _currentWorldId);
+        if (meta == null || _title == null) yield break;
+        string displayName = !string.IsNullOrEmpty(meta.Name) ? meta.Name
+            : !string.IsNullOrEmpty(meta.AutoName) ? meta.AutoName
+            : string.Format(CultureInfo.InvariantCulture, "WorldId#{0}", _currentWorldId);
+        _title.text = "百晓问答 · " + displayName;
     }
 
     // ========== 构建（仿照 jianghu ChatWindow.Build） ==========
@@ -236,7 +256,9 @@ public class ChatPanel : MonoBehaviour, IPanel
     // ========== 历史加载 ==========
     private IEnumerator LoadHistoryCoroutine()
     {
+        int beforeClear = _content != null ? _content.childCount : -1;
         ClearLog();
+        Debug.Log("[ChatPanel] LoadHistory: beforeClear=" + beforeClear + " worldId=" + _currentWorldId);
         var task = FrontendServices.SessionManager.LoadHistoryAsync(_currentWorldId, limit: 20);
         yield return new WaitUntil(() => task.IsCompleted);
 
@@ -247,6 +269,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         }
 
         List<LlmMessage> messages = task.Result;
+        Debug.Log("[ChatPanel] LoadHistory: loadedCount=" + (messages?.Count ?? 0));
         if (messages == null || messages.Count == 0) yield break;
 
         // 从旧到新显示：user/assistant 交替
@@ -269,6 +292,7 @@ public class ChatPanel : MonoBehaviour, IPanel
     // ========== 发送/中断 ==========
     private void OnSend()
     {
+        Debug.Log("[ChatPanel] OnSend entry: busy=" + _busy);
         if (_busy) return;
         string text = _input?.text?.Trim() ?? "";
         if (string.IsNullOrEmpty(text)) return;
@@ -297,7 +321,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         else
         {
             TaiwuNameReader.CurrentTaiwuName(delegate(string name) {
-                _pendingAutoName = name;
+                _pendingAutoName = string.IsNullOrEmpty(name) ? name : name + "的存档";
             });
         }
 
@@ -406,6 +430,7 @@ public class ChatPanel : MonoBehaviour, IPanel
             string finalAnswer = fullAnswer.ToString();
             string? autoName = _pendingAutoName;
             List<Reference>? refs = _collectedRefs;
+            Debug.Log("[ChatPanel] SaveConversationAsync: worldId=" + _currentWorldId + " queryLen=" + query.Length + " answerLen=" + finalAnswer.Length);
             _ = FrontendServices.SessionManager.SaveConversationAsync(
                 _currentWorldId, query, finalAnswer, refs, autoName);
         }
@@ -440,6 +465,7 @@ public class ChatPanel : MonoBehaviour, IPanel
                 }
                 _answerBuffer?.Append(fc.Content);
                 fullAnswer.Append(fc.Content);
+                Debug.Log("[ChatPanel] FinalChunk: chunkLen=" + (fc.Content?.Length ?? 0) + " bufferLen=" + (_answerBuffer?.Length ?? -1));
                 // 节流重解析（100ms）
                 if (Time.realtimeSinceStartup - _lastRebindTime > 0.1f)
                 {
@@ -484,6 +510,7 @@ public class ChatPanel : MonoBehaviour, IPanel
 
     private void AddPlayerBubble(string text)
     {
+        Debug.Log("[ChatPanel] AddPlayerBubble: text='" + (text ?? "") + "'");
         if (_content == null) return;
 
         GameObject row = new GameObject("Row", typeof(RectTransform), typeof(HorizontalLayoutGroup));
@@ -523,6 +550,7 @@ public class ChatPanel : MonoBehaviour, IPanel
 
     private (TextMeshProUGUI Text, MarkdownBinder Binder) AddAgentText(string? initialText = null)
     {
+        Debug.Log("[ChatPanel] AddAgentText (new agent bubble)");
         TextMeshProUGUI t = NewText("AgentText", _content, 20, TextAlignmentOptions.TopLeft);
         t.enableWordWrapping = true;
         t.raycastTarget = false;

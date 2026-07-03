@@ -54,7 +54,9 @@ public class ConfigPanel : MonoBehaviour, IPanel
     private bool _testingConnection;
 
     // 区域2: 对话风格
-    private TMP_Dropdown? _personaDropdown;
+    private Button? _personaButton;
+    private TextMeshProUGUI? _personaBtnLabel;
+    private int _currentPersonaIdx;
     private TextMeshProUGUI? _personaPreviewText;
     private List<string>? _personaIdList;
 
@@ -248,7 +250,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         GameObject section = CreateSection(parent, "对话风格 (Persona)");
         Transform content = section.transform.Find("Content")!;
 
-        // Dropdown 行
+        // 风格选择行 (循环按钮:点一下切到下一个 persona,规避程序化 TMP_Dropdown 模板的脆弱性)
         GameObject dropRow = new GameObject("DropRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
         dropRow.transform.SetParent(content, false);
         HorizontalLayoutGroup hlg = dropRow.GetComponent<HorizontalLayoutGroup>();
@@ -263,41 +265,17 @@ public class ConfigPanel : MonoBehaviour, IPanel
         label.text = "选择风格：";
         label.color = new Color(0.80f, 0.78f, 0.70f, 1f);
         LayoutElement lle = label.gameObject.AddComponent<LayoutElement>();
-        lle.preferredWidth = 80;
+        lle.preferredWidth = 100;
         lle.preferredHeight = 36;
 
-        // Dropdown (需要 Image 背景 + TextMeshPro 子对象)
-        GameObject dropGo = new GameObject("Dropdown", typeof(RectTransform), typeof(Image), typeof(TMP_Dropdown));
-        dropGo.transform.SetParent(dropRow.transform, false);
-        dropGo.GetComponent<Image>().color = new Color(1, 1, 1, 0.12f);
-        _personaDropdown = dropGo.GetComponent<TMP_Dropdown>();
-        LayoutElement dle = dropGo.AddComponent<LayoutElement>();
+        // 风格按钮(显示当前 persona 名 + ▶,点击循环)
+        GameObject btnGo = NewButton("PersonaBtn", dropRow.transform, "", 18, out _personaButton);
+        btnGo.GetComponent<Image>().color = new Color(1, 1, 1, 0.12f);
+        LayoutElement dle = btnGo.AddComponent<LayoutElement>();
         dle.flexibleWidth = 1f;
         dle.preferredHeight = 36;
-
-        // Dropdown 需要 Label + Caption Text
-        TextMeshProUGUI capText = NewText("Caption", dropGo.transform, 18, TextAlignmentOptions.Left);
-        capText.color = new Color(0.92f, 0.90f, 0.82f, 1f);
-        Anchor(capText.rectTransform, Vector2.zero, Vector2.one, new Vector2(12, 2), new Vector2(-40, -2));
-        _personaDropdown.captionText = capText;
-
-        // Dropdown Item Template
-        GameObject templateGo = new GameObject("Template", typeof(RectTransform), typeof(Image));
-        templateGo.transform.SetParent(dropGo.transform, false);
-        templateGo.GetComponent<Image>().color = new Color(0.2f, 0.22f, 0.25f, 0.95f);
-        RectTransform trt = templateGo.GetComponent<RectTransform>();
-        trt.sizeDelta = new Vector2(0, 30);
-        trt.anchorMin = new Vector2(0, 0);
-        trt.anchorMax = new Vector2(1, 1);
-        trt.pivot = new Vector2(0.5f, 1);
-        _personaDropdown.template = trt;
-
-        TextMeshProUGUI itemText = NewText("ItemText", templateGo.transform, 17, TextAlignmentOptions.Left);
-        itemText.color = new Color(0.92f, 0.90f, 0.82f, 1f);
-        Anchor(itemText.rectTransform, Vector2.zero, Vector2.one, new Vector2(10, 0), new Vector2(-10, 0));
-        _personaDropdown.itemText = itemText;
-
-        _personaDropdown.onValueChanged.AddListener(delegate(int idx) { OnPersonaChanged(idx); OnConfigChanged(invalidateTest: false); });
+        _personaBtnLabel = btnGo.GetComponentInChildren<TextMeshProUGUI>();
+        if (_personaButton != null) _personaButton.onClick.AddListener(OnPersonaCycle);
 
         // 预览区
         GameObject previewBox = new GameObject("PreviewBox", typeof(RectTransform), typeof(Image));
@@ -315,6 +293,8 @@ public class ConfigPanel : MonoBehaviour, IPanel
         _personaPreviewText.text = "加载中…";
         _personaPreviewText.color = new Color(0.85f, 0.83f, 0.78f, 1f);
         _personaPreviewText.enableWordWrapping = true;
+        // 溢出时省略号截断,防止文本超出 PreviewBox 与下方区域重叠。
+        _personaPreviewText.overflowMode = TextOverflowModes.Ellipsis;
         Anchor(_personaPreviewText.rectTransform, new Vector2(0, 0), new Vector2(1, 1), new Vector2(10, 6), new Vector2(-10, -32));
 
         // 提示文本
@@ -627,16 +607,15 @@ public class ConfigPanel : MonoBehaviour, IPanel
 
     private void RefreshPersonaList()
     {
-        if (_personaDropdown == null) return;
+        if (_personaButton == null) return;
 
-        _personaDropdown.ClearOptions();
         _personaIdList = new List<string>();
 
         SkillManager? sm = FrontendServices.SkillManager;
         if (sm == null)
         {
-            _personaDropdown.AddOptions(new List<string> { "(技能目录未就绪)" });
-            _personaDropdown.interactable = false;
+            if (_personaBtnLabel != null) _personaBtnLabel.text = "(技能目录未就绪)";
+            _personaButton.interactable = false;
             if (_personaPreviewText != null) _personaPreviewText.text = "进入游戏后可选择对话风格";
             return;
         }
@@ -644,32 +623,24 @@ public class ConfigPanel : MonoBehaviour, IPanel
         List<string> personaIds = sm.GetPersonaIds();
         if (personaIds.Count == 0)
         {
-            _personaDropdown.AddOptions(new List<string> { "(无可用 Persona)" });
-            _personaDropdown.interactable = false;
+            if (_personaBtnLabel != null) _personaBtnLabel.text = "(无可用 Persona)";
+            _personaButton.interactable = false;
             if (_personaPreviewText != null) _personaPreviewText.text = "请检查 Skills/registry.yaml 配置";
             return;
         }
 
-        _personaDropdown.interactable = true;
-        List<string> displayNames = new List<string>();
-
-        foreach (string id in personaIds)
-        {
-            _personaIdList.Add(id);
-            displayNames.Add(sm.PersonaCnName(id));
-        }
-
-        _personaDropdown.AddOptions(displayNames);
+        _personaButton.interactable = true;
+        _personaIdList.AddRange(personaIds);
 
         // 选中当前保存的 persona，找不到时默认 sword-will
         string savedPersona = FrontendServices.SelectedPersonaId;
         int idx = _personaIdList.IndexOf(savedPersona);
         if (idx < 0) idx = _personaIdList.IndexOf("sword-will");
         if (idx < 0 && _personaIdList.Count > 0) idx = 0;
-        if (idx >= 0)
-            _personaDropdown.value = idx;
+        _currentPersonaIdx = idx;
+        UpdatePersonaButtonLabel();
 
-        OnPersonaChanged(_personaDropdown.value);
+        OnPersonaChanged(_currentPersonaIdx);
     }
 
 
@@ -754,7 +725,8 @@ public class ConfigPanel : MonoBehaviour, IPanel
         rle.preferredWidth = 70;
         rle.preferredHeight = 28;
         int capturedWorldId = meta.WorldId;
-        renameBtn.onClick.AddListener(delegate { OnRenameConversation(capturedWorldId); });
+        string capturedName = displayName;
+        renameBtn.onClick.AddListener(delegate { OnRenameConversation(capturedWorldId, capturedName); });
 
         return item;
     }
@@ -844,11 +816,32 @@ public class ConfigPanel : MonoBehaviour, IPanel
         ValidateFieldsInline();
     }
 
+    private void OnPersonaCycle()
+    {
+        if (_personaIdList == null || _personaIdList.Count == 0) return;
+        _currentPersonaIdx = (_currentPersonaIdx + 1) % _personaIdList.Count;
+        UnityEngine.Debug.Log("[ConfigPanel] OnPersonaCycle: idx=" + _currentPersonaIdx + " id=" + _personaIdList[_currentPersonaIdx]);
+        UpdatePersonaButtonLabel();
+        OnPersonaChanged(_currentPersonaIdx);
+        OnConfigChanged(invalidateTest: false);
+    }
+
+    private void UpdatePersonaButtonLabel()
+    {
+        if (_personaBtnLabel == null || _personaIdList == null) return;
+        if (_currentPersonaIdx < 0 || _currentPersonaIdx >= _personaIdList.Count) return;
+        SkillManager? sm = FrontendServices.SkillManager;
+        string cn = sm != null ? sm.PersonaCnName(_personaIdList[_currentPersonaIdx]) : _personaIdList[_currentPersonaIdx];
+        _personaBtnLabel.text = cn + "  ▶";
+    }
+
     private void OnPersonaChanged(int idx)
     {
+        UnityEngine.Debug.Log("[ConfigPanel] OnPersonaChanged: idx=" + idx);
         if (_personaIdList == null || idx < 0 || idx >= _personaIdList.Count) return;
 
         string personaId = _personaIdList[idx];
+        UnityEngine.Debug.Log("[ConfigPanel] OnPersonaChanged: personaId=" + personaId);
         SkillManager? sm = FrontendServices.SkillManager;
 
         if (_personaPreviewText != null)
@@ -859,19 +852,34 @@ public class ConfigPanel : MonoBehaviour, IPanel
             }
             else
             {
-                string? markdown = sm.LoadPersona(personaId);
-                if (string.IsNullOrEmpty(markdown))
-                {
-                    _personaPreviewText.text = "(该 Persona 内容为空)";
-                }
-                else
-                {
-                    // 简单截取前几百字符显示 (不做 Markdown 渲染)
-                    string preview = markdown.Length > 450 ? markdown.Substring(0, 450) + "…" : markdown;
-                    _personaPreviewText.text = preview;
-                }
+                // 优先用 registry 的 description 字段(独立简介);缺省再从全文提取。
+                string desc = sm.PersonaDescription(personaId);
+                string preview = !string.IsNullOrWhiteSpace(desc)
+                    ? desc
+                    : ExtractPersonaSummary(sm.LoadPersona(personaId) ?? "");
+                _personaPreviewText.text = preview;
             }
         }
+    }
+
+    /// <summary>从 persona markdown 提取简介:跳过标题行,取首段实际内容,限 120 字。</summary>
+    private static string ExtractPersonaSummary(string markdown)
+    {
+        var lines = markdown.Replace("\r\n", "\n").Split('\n');
+        var sb = new System.Text.StringBuilder();
+        foreach (var raw in lines)
+        {
+            var line = raw.Trim();
+            if (line.Length == 0) { if (sb.Length > 0) break; continue; }      // 空行:首段结束
+            if (line.StartsWith('#')) continue;                                // 跳过标题
+            if (line.StartsWith('-')) continue;                                // 跳过列表项
+            if (sb.Length > 0) sb.Append(' ');
+            sb.Append(line);
+            if (sb.Length >= 120) break;
+        }
+        string summary = sb.ToString().Trim();
+        if (summary.Length > 120) summary = summary.Substring(0, 120) + "…";
+        return string.IsNullOrEmpty(summary) ? "(无简介)" : summary;
     }
 
     private void OnTestConnection()
@@ -1032,17 +1040,106 @@ public class ConfigPanel : MonoBehaviour, IPanel
         if (_soulWorldExpanded) RefreshSoulWorld();
     }
 
-    private void OnRenameConversation(int worldId)
+    private void OnRenameConversation(int worldId, string currentName)
     {
-        // 简单实现：显示输入提示 (Unity 没有内置 InputDialog，这里先做个简单的)
-        // TODO: 后续可做个小的重命名弹窗
-        StartCoroutine(RenameCoroutine(worldId));
+        ShowRenamePopup(worldId, currentName);
     }
 
-    private IEnumerator RenameCoroutine(int worldId)
+    /// <summary>模态重命名弹窗:输入框预填当前名,确定→RenameConversationAsync,取消→关闭。</summary>
+    private void ShowRenamePopup(int worldId, string currentName)
     {
-        // 暂时简单实现：清空名称 (回退到 AutoName)
-        var task = FrontendServices.SessionManager.RenameConversationAsync(worldId, "");
+        if (_root == null) return;
+        Transform parent = _root.transform;
+
+        // 遮罩层(半透明,拦截背景点击)
+        GameObject overlay = new GameObject("RenameOverlay", typeof(RectTransform), typeof(Image));
+        overlay.transform.SetParent(parent, false);
+        overlay.GetComponent<Image>().color = new Color(0, 0, 0, 0.55f);
+        RectTransform ort = overlay.GetComponent<RectTransform>();
+        ort.anchorMin = Vector2.zero;
+        ort.anchorMax = Vector2.one;
+        ort.sizeDelta = Vector2.zero;
+
+        // 对话框
+        GameObject dialog = new GameObject("RenameDialog", typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup));
+        dialog.transform.SetParent(overlay.transform, false);
+        dialog.GetComponent<Image>().color = new Color(0.16f, 0.18f, 0.20f, 1f);
+        RectTransform drt = dialog.GetComponent<RectTransform>();
+        drt.anchorMin = drt.anchorMax = new Vector2(0.5f, 0.5f);
+        drt.sizeDelta = new Vector2(440, 190);
+        drt.pivot = new Vector2(0.5f, 0.5f);
+        VerticalLayoutGroup dlg = dialog.GetComponent<VerticalLayoutGroup>();
+        dlg.childForceExpandWidth = true;
+        dlg.childForceExpandHeight = false;
+        dlg.childControlWidth = true;
+        dlg.childControlHeight = true;
+        dlg.spacing = 12f;
+        dlg.padding = new RectOffset(20, 20, 18, 18);
+
+        TextMeshProUGUI title = NewText("Title", dialog.transform, 20, TextAlignmentOptions.Left);
+        title.text = "重命名对话";
+        title.color = new Color(0.92f, 0.90f, 0.82f, 1f);
+
+        // 输入框(复用 BuildLabeledInput 的创建模式,但无标签/无错误行)
+        GameObject inputGo = new GameObject("RenameInput", typeof(RectTransform), typeof(Image), typeof(TMP_InputField));
+        inputGo.transform.SetParent(dialog.transform, false);
+        inputGo.GetComponent<Image>().color = new Color(1, 1, 1, 0.10f);
+        LayoutElement ile = inputGo.AddComponent<LayoutElement>();
+        ile.preferredHeight = 40;
+        TMP_InputField input = inputGo.GetComponent<TMP_InputField>();
+        TextMeshProUGUI textArea = NewText("Text", inputGo.transform, 18, TextAlignmentOptions.Left);
+        Anchor(textArea.rectTransform, Vector2.zero, Vector2.one, new Vector2(10, 4), new Vector2(-10, -4));
+        input.textViewport = textArea.rectTransform;
+        input.textComponent = textArea;
+        input.lineType = TMP_InputField.LineType.SingleLine;
+        input.contentType = TMP_InputField.ContentType.Standard;
+        TextMeshProUGUI ph = NewText("Placeholder", inputGo.transform, 18, TextAlignmentOptions.Left);
+        Anchor(ph.rectTransform, Vector2.zero, Vector2.one, new Vector2(10, 4), new Vector2(-10, -4));
+        ph.text = "输入新名称";
+        ph.color = new Color(0.5f, 0.52f, 0.55f, 0.7f);
+        ph.raycastTarget = false;
+        input.placeholder = ph;
+        input.text = currentName ?? "";
+        input.caretPosition = (currentName ?? "").Length;
+
+        // 按钮行
+        GameObject btnRow = new GameObject("BtnRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+        btnRow.transform.SetParent(dialog.transform, false);
+        HorizontalLayoutGroup bhlg = btnRow.GetComponent<HorizontalLayoutGroup>();
+        bhlg.childForceExpandWidth = true;
+        bhlg.childForceExpandHeight = false;
+        bhlg.childControlWidth = true;
+        bhlg.childControlHeight = true;
+        bhlg.spacing = 12f;
+        bhlg.childAlignment = TextAnchor.MiddleRight;
+
+        GameObject cancelGo = NewButton("CancelBtn", btnRow.transform, "取消", 18, out Button cancelBtn);
+        cancelGo.GetComponent<Image>().color = new Color(0.25f, 0.28f, 0.30f, 1f);
+        LayoutElement cle = cancelGo.AddComponent<LayoutElement>();
+        cle.preferredWidth = 90;
+        cle.preferredHeight = 36;
+        cancelBtn.onClick.AddListener(() => { input.DeactivateInputField(); Destroy(overlay); });
+
+        GameObject okGo = NewButton("OkBtn", btnRow.transform, "确定", 18, out Button okBtn);
+        okGo.GetComponent<Image>().color = new Color(0.20f, 0.40f, 0.30f, 1f);
+        LayoutElement okle = okGo.AddComponent<LayoutElement>();
+        okle.preferredWidth = 90;
+        okle.preferredHeight = 36;
+        okBtn.onClick.AddListener(() =>
+        {
+            string newName = (input.text ?? "").Trim();
+            input.DeactivateInputField();
+            Destroy(overlay);
+            StartCoroutine(RenameCoroutine(worldId, newName));
+        });
+
+        // 输入框获焦
+        input.ActivateInputField();
+    }
+
+    private IEnumerator RenameCoroutine(int worldId, string newName)
+    {
+        var task = FrontendServices.SessionManager.RenameConversationAsync(worldId, newName);
         yield return new WaitUntil(() => task.IsCompleted);
         RefreshHistoryList();
     }
@@ -1090,9 +1187,8 @@ public class ConfigPanel : MonoBehaviour, IPanel
         string baseUrl = (_baseUrlInput?.text ?? "").Trim();
         string apiKey = (_apiKeyInput?.text ?? "").Trim();
         string model = (_modelInput?.text ?? "").Trim();
-        string personaId = (_personaIdList != null && _personaDropdown != null &&
-            _personaDropdown.value >= 0 && _personaDropdown.value < _personaIdList.Count)
-            ? _personaIdList[_personaDropdown.value]
+        string personaId = (_personaIdList != null && _currentPersonaIdx >= 0 && _currentPersonaIdx < _personaIdList.Count)
+            ? _personaIdList[_currentPersonaIdx]
             : "";
 
         // 字段校验

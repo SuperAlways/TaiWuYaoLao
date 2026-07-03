@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <RootNamespace>TaiwuEncyclopedia</RootNamespace>
+    <!-- Core 依赖 YamlDotNet 在运行时解析 registry.yaml。netstandard2.1 默认不
+         copy-local 传递依赖,导致 pack 无法合并/复制 YamlDotNet.dll,游戏运行时
+         TypeLoadException。开启后 YamlDotNet.dll 进 copy-local,再由 Pack.proj 的
+         TaiwuModMergeDependency 合并入入口 dll。其它 copy-local 依赖(如游戏自带的
+         Newtonsoft.Json)未在 Pack.proj 声明 merge/copy,不会被打包。 -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>

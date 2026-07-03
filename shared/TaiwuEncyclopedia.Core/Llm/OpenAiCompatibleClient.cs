@@ -48,6 +48,8 @@ public sealed class OpenAiCompatibleClient
         string toolChoice = "auto")
     {
         var body = BuildRequestBody(config.Model, messages, stream: false, tools: tools, toolChoice: toolChoice);
+        // 连接测试只需验证 auth+模型可达,限制 max_tokens=1 避免模型生成完整回复拖慢测试。
+        if (role == AgentLLMRole.Testing) body["max_tokens"] = 1;
         var resp = await SendWithRetry(config, body);
         var json = await resp.Content.ReadAsStringAsync();
         return ParseChatResponse(json, role);

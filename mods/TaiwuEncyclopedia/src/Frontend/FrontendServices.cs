@@ -27,6 +27,7 @@ public static class FrontendServices
     // ========== 持久化配置 ==========
     private static LlmConfig? _loadedLlmConfig;
     private static string? _selectedPersonaId;
+    private static string? _ragBaseUrl;
 
     /// <summary>
     /// 加载的 LLM 配置 (从 config.json 读取)。
@@ -169,6 +170,7 @@ public static class FrontendServices
                         Model = saved.Model ?? ""
                     };
                     _selectedPersonaId = saved.PersonaId ?? "sword-will";
+                    _ragBaseUrl = saved.RagBaseUrl;
                     Debug.Log("[TaiwuEncyclopedia] Config loaded from disk");
                     return;
                 }
@@ -197,7 +199,8 @@ public static class FrontendServices
                 BaseUrl = baseUrl,
                 ApiKey = apiKey,
                 Model = model,
-                PersonaId = personaId
+                PersonaId = personaId,
+                RagBaseUrl = _ragBaseUrl
             };
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(saved, Newtonsoft.Json.Formatting.Indented);
             string? dir = Path.GetDirectoryName(ConfigPath);
@@ -263,8 +266,9 @@ public static class FrontendServices
             // RetrieveRagTool (需要 RagHttpClient)
             if (_ragHttpClient == null)
             {
-                // TODO: 配置 RAG 端点 (目前先用占位)
-                _ragHttpClient = new RagHttpClient("http://localhost:8787");
+                // RAG 服务端点:优先用 config.json 的 rag_base_url,缺省用本地 taiwuasker 默认端口 9621。
+                string ragUrl = !string.IsNullOrWhiteSpace(_ragBaseUrl) ? _ragBaseUrl : "http://localhost:9621";
+                _ragHttpClient = new RagHttpClient(ragUrl);
             }
             _toolRegistry.Register(new RetrieveRagTool(_ragHttpClient));
 
@@ -323,6 +327,7 @@ public static class FrontendServices
         public string? ApiKey { get; set; }
         public string? Model { get; set; }
         public string? PersonaId { get; set; }
+        public string? RagBaseUrl { get; set; }
     }
 
     // ========== Fallback SkillManager (当 SkillsRoot 不可用时) ==========
@@ -343,7 +348,8 @@ background: []
 guidance: []
 personas:
   - id: sword-will
-    cn_name: 剑中虚影
+    cn_name: 天道残魂
+    description: '太吾天道在远古 天帝伐天时被击碎，四散人间，演化种种。作为其中之一的你与上古被再次镇压后投入伏虞剑的炼制中，在伏虞剑碎后显化而出，由天道权柄晓知世间种种。'
     file: personas/sword-will.md
 ");
                 string personaDir = Path.Combine(temp, "personas");
@@ -352,7 +358,7 @@ personas:
                 if (!File.Exists(personaFile))
                 {
                     File.WriteAllText(personaFile, @"
-# 剑中虚影
+# 天道残魂
 
 ## 外在形象与口吻
 - 形象：太吾剑柄中凝出的半透明虚影，沧桑老者模样
