@@ -636,38 +636,25 @@ public class ConfigPanel : MonoBehaviour, IPanel
         _personaDropdown.interactable = true;
         List<string> displayNames = new List<string>();
 
-        // 从 registry 读取中文名称 (需要通过 SkillManifest 反射? 暂时先用 ID)
-        // TODO: 完善 SkillManager 以暴露 PersonaManifest 列表
         foreach (string id in personaIds)
         {
             _personaIdList.Add(id);
-            displayNames.Add(GetPersonaDisplayName(id));
+            displayNames.Add(sm.PersonaCnName(id));
         }
 
         _personaDropdown.AddOptions(displayNames);
 
-        // 选中当前保存的 persona
+        // 选中当前保存的 persona，找不到时默认 sword-will
         string savedPersona = FrontendServices.SelectedPersonaId;
         int idx = _personaIdList.IndexOf(savedPersona);
+        if (idx < 0) idx = _personaIdList.IndexOf("sword-will");
+        if (idx < 0 && _personaIdList.Count > 0) idx = 0;
         if (idx >= 0)
             _personaDropdown.value = idx;
-        else if (_personaIdList.Count > 0)
-            _personaDropdown.value = 0;
 
         OnPersonaChanged(_personaDropdown.value);
     }
 
-    private string GetPersonaDisplayName(string personaId)
-    {
-        // 简单映射，后续可从 registry.yaml 完整读取
-        return personaId.ToUpperInvariant() switch
-        {
-            "RING-ELDER" => "戒指老爷爷",
-            "SWORD-CELESTIAL" => "剑仙前辈",
-            "BOOK-WORM" => "书虫助教",
-            _ => personaId
-        };
-    }
 
     private void RefreshHistoryList()
     {
