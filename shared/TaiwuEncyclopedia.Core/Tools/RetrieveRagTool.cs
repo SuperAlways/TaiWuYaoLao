@@ -89,6 +89,7 @@ public sealed class RetrieveRagTool : ToolBase
         var hlKeywords = ToStringList(args.GetValueOrDefault("hl_keywords"));
         var llKeywords = ToStringList(args.GetValueOrDefault("ll_keywords"));
 
+        Core.Diagnostics.CoreLog.Write("TE.RAG", $"retrieve_rag: query='{(query?.Length > 80 ? query[..80] : query)}' mode={mode}");
         var ragResult = await _ragClient.RetrieveAsync(new RagRetrieveRequest
         {
             Query = query,
@@ -98,6 +99,11 @@ public sealed class RetrieveRagTool : ToolBase
             TopK = topK,
             ChunkTopK = chunkTopK,
         });
+
+        Core.Diagnostics.CoreLog.Write("TE.RAG",
+            string.IsNullOrEmpty(ragResult.Error)
+                ? $"retrieve_rag OK: ctx={ragResult.Context?.Length ?? 0}ch refs={ragResult.References?.Count ?? 0}"
+                : $"retrieve_rag FAIL: {(ragResult.Error?.Length > 120 ? ragResult.Error[..120] : ragResult.Error)}");
 
         return new Dictionary<string, object>
         {

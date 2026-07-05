@@ -24,6 +24,9 @@ namespace TaiwuEncyclopedia;
 /// </summary>
 public static class FrontendServices
 {
+    // 把 CoreLog(shared,无 UnityEngine)桥接到 Unity Debug.Log,让 RAG/LLM 调用可见
+    static FrontendServices() { Core.Diagnostics.CoreLog.OnLog += UnityEngine.Debug.Log; }
+
     // ========== 持久化配置 ==========
     private static LlmConfig? _loadedLlmConfig;
     private static string? _selectedPersonaId;
