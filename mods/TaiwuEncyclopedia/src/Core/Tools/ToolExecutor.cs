@@ -27,7 +27,7 @@ public sealed class ToolExecutor
     }
 
     /// <summary>
-    /// 并行执行多个工具调用。
+    /// 并行执行多个工具调用（原始版本，所有数量均用 Task.WhenAll）。
     /// </summary>
     /// <param name="toolCalls">工具调用列表。</param>
     /// <param name="contextParams">上下文参数（自动注入 conversation_id、world_id 等）。</param>
@@ -43,6 +43,35 @@ public sealed class ToolExecutor
         }
         var results = await Task.WhenAll(tasks);
         return new List<ToolResult>(results);
+    }
+
+    /// <summary>
+    /// 执行单个工具调用（公共方法，供 ExecuteParallelAsync 使用）。
+    /// </summary>
+    /// <param name="tc">工具调用。</param>
+    /// <param name="contextParams">上下文参数字典。</param>
+    /// <returns>工具执行结果。</returns>
+    public async Task<ToolResult> ExecuteSingleAsync(ToolCall tc, Dictionary<string, object> contextParams)
+    {
+        return await ExecOne(tc, contextParams);
+    }
+
+    /// <summary>
+    /// 智能并行：<= 1 个工具回退串行 ExecuteAsync，>= 2 个用 Task.WhenAll 并行。
+    /// 单个或零个调用避免 Task.WhenAll 的微小开销。
+    /// </summary>
+    /// <param name="calls">工具调用列表。</param>
+    /// <param name="context">上下文参数字典。</param>
+    /// <returns>工具执行结果列表，顺序与输入一致。</returns>
+    public async Task<List<ToolResult>> ExecuteParallelAsync(
+        List<ToolCall> calls, Dictionary<string, object> context)
+    {
+        if (calls.Count <= 1)
+            return await ExecuteAsync(calls, context); // 单个或零个，走原有串行
+
+        var tasks = calls.Select(tc => ExecuteSingleAsync(tc, context));
+        var results = await Task.WhenAll(tasks);
+        return results.ToList();
     }
 
     private async Task<ToolResult> ExecOne(ToolCall tc, Dictionary<string, object> contextParams)

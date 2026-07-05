@@ -131,7 +131,7 @@ public static class AgentLoop
 
             // 并行执行工具
             var contextParams = new Dictionary<string, object> { ["world_id"] = worldId };
-            var results = await executor.ExecuteAsync(response.ToolCalls, contextParams);
+            var results = await executor.ExecuteParallelAsync(response.ToolCalls, contextParams);
 
             // 回写 tool results + yield tool_result 事件
             for (int i = 0; i < response.ToolCalls.Count; i++)
