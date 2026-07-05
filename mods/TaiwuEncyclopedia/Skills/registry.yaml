@@ -47,6 +47,46 @@ guidance:
     cn_name: 战斗 build 指引
     file: guidance/combat-build.md
     relevant_chapters: [zhandou]
+  - id: village-planning
+    cn_name: 产业规划
+    file: guidance/village-planning.md
+    relevant_chapters: [chanye]
+  - id: martial-arts-build
+    cn_name: 武学搭配
+    file: guidance/martial-arts-build.md
+    relevant_chapters: [xiuxi, zhandou]
+  - id: jianzhong-attack
+    cn_name: 剑冢攻略
+    file: guidance/jianzhong-attack.md
+    relevant_chapters: [qi-cheng]
+  - id: combat-tactics
+    cn_name: 战斗指导
+    file: guidance/combat-tactics.md
+    relevant_chapters: [zhandou]
+  - id: npc-interaction
+    cn_name: NPC互动
+    file: guidance/npc-interaction.md
+    relevant_chapters: [jiaohu, renwu]
+  - id: char-creation
+    cn_name: 开局选择
+    file: guidance/char-creation.md
+    relevant_chapters: [qi-cheng]
+  - id: sect-exploration
+    cn_name: 门派探索
+    file: guidance/sect-exploration.md
+    relevant_chapters: [menpai]
+  - id: problem-diagnosis
+    cn_name: 问题诊断
+    file: guidance/problem-diagnosis.md
+    relevant_chapters: []
+  - id: mechanism-explain
+    cn_name: 机制解释
+    file: guidance/mechanism-explain.md
+    relevant_chapters: []
+  - id: risk-warning
+    cn_name: 风险预判
+    file: guidance/risk-warning.md
+    relevant_chapters: []
 
 personas:
   - id: player-grudge

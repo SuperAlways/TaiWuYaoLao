@@ -14,7 +14,7 @@ public sealed class PromptBuilder
     private string? _cached;
     private string _cachedPersonaId = "";
 
-    // 工具使用规范段（静态）
+    // 工具使用规范段（静态，引导 skill 索引在 BuildSystemPrompt 中动态追加）
     private const string _toolSpec = @"
 ## 工具使用规范
 你有 4 个工具：retrieve_rag / load_background_skill / load_guidance_skill / lookup_concept。
@@ -22,7 +22,25 @@ public sealed class PromptBuilder
 - 检索策略：先判断需要哪类信息，再选合适工具。复杂问题可分多轮检索。
 - 不要重复检索相同内容。已检索到的资料直接用。
 - 正文中 [查:xxx] 标记处可调 lookup_concept 查询具体数值或相关章节。同一概念查一次即可。
-- 最终回答时以选中 persona 的口吻给出。";
+- 最终回答时以选中 persona 的口吻给出。
+- RAG 检索 (retrieve_rag) 的 mode / top_k 选择策略详见「通用回答规则」的「RAG 检索策略」段。";
+
+    /// <summary>构建引导 skill 索引段（10 个 skill，从 registry 动态生成）。</summary>
+    private string BuildGuidanceIndex()
+    {
+        var ids = _sm.GetGuidanceEnum();
+        if (ids is not { Count: > 0 }) return "";
+        var sb = new StringBuilder();
+        sb.AppendLine("\n---\n");
+        sb.AppendLine("## 引导骨架索引\n");
+        foreach (var id in ids)
+        {
+            var cn = _sm.GuidanceCnName(id);
+            sb.AppendLine($"- `{id}`: {cn}");
+        }
+        sb.AppendLine("\n判断玩家问题属于以上某类时，调 load_guidance_skill(skill=\"{id}\") 加载对应骨架，按骨架组织思考和检索策略。");
+        return sb.ToString();
+    }
 
     /// <summary>
     /// 初始化 PromptBuilder。
@@ -67,6 +85,9 @@ public sealed class PromptBuilder
 
         // 4. 工具使用规范
         parts.AppendLine(_toolSpec);
+
+        // 4b. 引导 skill 索引
+        parts.Append(BuildGuidanceIndex());
 
         parts.AppendLine("\n---\n");
 
