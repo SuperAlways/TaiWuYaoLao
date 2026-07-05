@@ -30,6 +30,7 @@ public sealed class AgentRunner
     private readonly SessionManager _session;
     private readonly PromptBuilder _prompts;
     private readonly int _maxIter;
+    private readonly List<Dictionary<string, object>>? _toolsSchema;
 
     /// <summary>
     /// 初始化 AgentRunner。
@@ -63,6 +64,7 @@ public sealed class AgentRunner
         _session = sessionManager;
         _prompts = promptBuilder;
         _maxIter = maxIter;
+        _toolsSchema = registry?.BuildOpenaiTools();
     }
 
     /// <summary>
@@ -91,180 +93,29 @@ public sealed class AgentRunner
         // 2. L2 collapse 检查
         messages = await _ctx.CollapseIfNeededAsync(messages, worldId);
 
-        // 3. 构建 tools schema
-        var toolsSchema = _registry.BuildOpenaiTools();
+        // 3. 使用预构建的 tools schema（_toolsSchema 已在构造函数中构建）
 
         yield return new StartEvent { WorldId = worldId };
 
-        // 4. ReAct 循环
+        // 4. ReAct 循环（转交给 AgentLoop.Run）
         var finalAnswerParts = new List<string>();
-        var totalIterations = 0;
-        List<ToolCall>? prevToolCalls = null;
+        var loopResult = new AgentLoopResult();
 
-        for (int iteration = 0; iteration < _maxIter; iteration++)
+        await foreach (var evt in AgentLoop.Run(
+            _llmClient, _executor, _ctx, _toolsSchema, messages, _llmConfig,
+            worldId, _maxIter, collectedRefs, finalAnswerParts, loopResult))
         {
-            // 4.1 THINKING 调用（非流式，带 tools）
-            LlmResponse response;
-            try
-            {
-                response = await _llmClient.Chat(
-                    AgentLLMRole.Thinking, messages, _llmConfig, tools: toolsSchema);
-            }
-            catch
-            {
-                // force_compress 重试
-                messages = _ctx.ForceCompress(messages);
-                response = await _llmClient.Chat(
-                    AgentLLMRole.Thinking, messages, _llmConfig, tools: toolsSchema);
-            }
-
-            // 4.2 无 tool_calls → 最终答案
-            if (response.ToolCalls == null || response.ToolCalls.Count == 0)
-            {
-                totalIterations = iteration;
-                if (!string.IsNullOrEmpty(response.Content))
-                {
-                    messages.Add(new LlmMessage { Role = "assistant", Content = response.Content });
-                }
-                messages.Add(new LlmMessage
-                {
-                    Role = "user",
-                    Content = "请根据以上思考过程和检索到的资料，以选中 persona 的口吻给出最终回答。",
-                });
-
-                await foreach (var chunk in _llmClient.StreamChat(AgentLLMRole.Answer, messages, _llmConfig))
-                {
-                    finalAnswerParts.Add(chunk);
-                    yield return new FinalChunkEvent { Content = chunk, Iteration = iteration };
-                }
-                break;
-            }
-
-            // 4.3 Jaccard 循环检测
-            if (LoopDetector.IsLoopSimilar(response.ToolCalls, prevToolCalls))
-            {
-                totalIterations = iteration;
-                messages.Add(new LlmMessage { Role = "assistant", Content = response.Content ?? "" });
-                messages.Add(new LlmMessage
-                {
-                    Role = "user",
-                    Content = "你似乎在重复检索相同的内容。请根据已检索到的资料，以选中 persona 的口吻给出最终回答。",
-                });
-
-                await foreach (var chunk in _llmClient.StreamChat(AgentLLMRole.Answer, messages, _llmConfig))
-                {
-                    finalAnswerParts.Add(chunk);
-                    yield return new FinalChunkEvent { Content = chunk, Iteration = iteration };
-                }
-                break;
-            }
-
-            // 4.4 有 tool_calls → yield tool_call → 执行 → yield tool_result → 回写
-            foreach (var tc in response.ToolCalls)
-            {
-                var args = ParseArgs(tc.Function.Arguments);
-                yield return new ToolCallEvent
-                {
-                    Name = tc.Function.Name,
-                    Args = args,
-                    DisplayText = $"🔧 {tc.Function.Name}",
-                    Iteration = iteration,
-                };
-            }
-
-            // 回写 assistant 消息（含 tool_calls）
-            messages.Add(new LlmMessage
-            {
-                Role = "assistant",
-                Content = response.Content ?? "",
-                ToolCalls = response.ToolCalls,
-            });
-
-            // 并行执行工具
-            var contextParams = new Dictionary<string, object> { ["world_id"] = worldId };
-            var results = await _executor.ExecuteAsync(response.ToolCalls, contextParams);
-
-            // 回写 tool results + yield tool_result 事件
-            for (int i = 0; i < response.ToolCalls.Count; i++)
-            {
-                var tc = response.ToolCalls[i];
-                var result = results[i];
-                messages.Add(new LlmMessage
-                {
-                    Role = "tool",
-                    ToolCallId = tc.Id,
-                    Content = result.Content,
-                });
-                yield return new ToolResultEvent { Name = tc.Function.Name, Iteration = iteration };
-            }
-
-            // 累积 retrieve_rag 工具返回的 references（跨轮去重，按 full_doc_id 合并 hit_count）
-            for (int i = 0; i < response.ToolCalls.Count; i++)
-            {
-                if (response.ToolCalls[i].Function.Name != "retrieve_rag") continue;
-                try
-                {
-                    var parsed = JsonConvert.DeserializeObject<Dictionary<string, object>>(results[i].Content);
-                    if (parsed == null || !parsed.TryGetValue("references", out var refsObj)) continue;
-
-                    // 处理 references 可能是 JArray 或已经是 List<Reference>
-                    List<Reference>? refs = null;
-                    if (refsObj is List<Reference> listRefs)
-                    {
-                        refs = listRefs;
-                    }
-                    else if (refsObj is JArray jArr)
-                    {
-                        refs = jArr.ToObject<List<Reference>>();
-                    }
-
-                    if (refs == null) continue;
-
-                    foreach (var r in refs)
-                    {
-                        var fullDocId = r.FullDocId ?? "";
-                        var existing = collectedRefs.Find(x => x.FullDocId == fullDocId);
-                        if (existing != null)
-                        {
-                            existing.HitCount += r.HitCount;
-                        }
-                        else
-                        {
-                            collectedRefs.Add(r);
-                        }
-                    }
-                }
-                catch { /* 解析失败忽略，不影响主流程 */ }
-            }
-
-            prevToolCalls = response.ToolCalls;
-            totalIterations = iteration + 1;
+            yield return evt;
         }
 
-        // 5. 兜底轮（max_iter 耗尽且未收敛）
-        if (finalAnswerParts.Count == 0)
-        {
-            messages.Add(new LlmMessage
-            {
-                Role = "user",
-                Content = "你已用完所有工具调用轮次。请根据已检索到的资料和思考过程，以选中 persona 的口吻给出最终回答。如果资料不足，诚实说明并给出已有的判断。",
-            });
-
-            await foreach (var chunk in _llmClient.StreamChat(AgentLLMRole.Answer, messages, _llmConfig))
-            {
-                finalAnswerParts.Add(chunk);
-                yield return new FinalChunkEvent { Content = chunk, Iteration = _maxIter };
-            }
-        }
-
-        // 6. 跨轮去重 Top-5 references → yield ReferencesEvent + 传给 SessionManager
+        // 5. 跨轮去重 Top-5 references → yield ReferencesEvent + 传给 SessionManager
         var topRefs = collectedRefs
             .OrderByDescending(r => r.HitCount)
             .Take(5)
             .ToList();
         yield return new ReferencesEvent { References = topRefs };
 
-        // 7. 保存会话
+        // 6. 保存会话
         var finalAnswer = string.Join("", finalAnswerParts);
         try
         {
@@ -272,11 +123,11 @@ public sealed class AgentRunner
         }
         catch { /* 保存失败不阻塞 */ }
 
-        // 8. yield EndEvent
+        // 7. yield EndEvent
         yield return new EndEvent
         {
             ThinkingTimeMs = (int)stopwatch.Elapsed.TotalMilliseconds,
-            TotalIterations = totalIterations + 1, // +1 计 ANSWER 直答轮
+            TotalIterations = loopResult.TotalIterations + 1, // +1 计 ANSWER 直答轮
         };
     }
 
