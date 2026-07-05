@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TaiwuEncyclopedia.Core.Http;
 
+using TaiwuEncyclopedia.Frontend.UI;
+
 namespace TaiwuEncyclopedia.UI;
 
 public sealed class ReferencePanel : MonoBehaviour
