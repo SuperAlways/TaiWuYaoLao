@@ -120,7 +120,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         GameObject panel = new GameObject("Panel", typeof(RectTransform), typeof(Image));
         panel.transform.SetParent(_root.transform, false);
         RectTransform prt = panel.GetComponent<RectTransform>();
-        prt.sizeDelta = new Vector2(720, 760);
+        prt.sizeDelta = new Vector2(1100, 750);
         prt.anchorMin = prt.anchorMax = prt.pivot = new Vector2(0.5f, 0.5f);
         prt.anchoredPosition = Vector2.zero;
         panel.GetComponent<Image>().color = UiTheme.PanelBg;

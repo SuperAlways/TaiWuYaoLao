@@ -62,10 +62,10 @@ public class ChatPanel : MonoBehaviour, IPanel
     private ActiveRequest? _activeRequest;
 
     // 当前 Agent 消息的部件（思考区 + 主内容 + 参考文献 + 重试按钮）
-    private ThinkingArea? _currentThinkingArea;
+    private ThinkingPanel? _currentThinkingPanel;
     private TextMeshProUGUI? _currentAgentText;
     private MarkdownBinder? _currentAgentBinder;
-    private ReferenceArea? _currentRefArea;
+    private ReferencePanel? _currentRefArea;
     private StringBuilder? _answerBuffer;
     private float _lastRebindTime;
     private string? _pendingAutoName;
@@ -159,7 +159,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         GameObject panel = new GameObject("Panel", typeof(RectTransform), typeof(Image));
         panel.transform.SetParent(_root.transform, false);
         RectTransform prt = panel.GetComponent<RectTransform>();
-        prt.sizeDelta = new Vector2(900, 640);
+        prt.sizeDelta = new Vector2(1100, 750);
         prt.anchorMin = prt.anchorMax = prt.pivot = new Vector2(0.5f, 0.5f);
         prt.anchoredPosition = Vector2.zero;
         panel.GetComponent<Image>().color = ColPanel;
@@ -302,7 +302,7 @@ public class ChatPanel : MonoBehaviour, IPanel
                 // 思考链:折叠状态,点 ▸ 可展开查看工具调用过程
                 if (!string.IsNullOrEmpty(msg.ThinkingContent))
                 {
-                    var area = AddThinkingArea();
+                    var area = AddThinkingPanel();
                     var lines = msg.ThinkingContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                     for (int j = 0; j < lines.Length; j++)
                         area.AddToolCall("", lines[j].Trim(), j);
@@ -313,7 +313,7 @@ public class ChatPanel : MonoBehaviour, IPanel
                 // 参考文献(在回答下方)
                 if (msg.References is { Count: > 0 })
                 {
-                    AddReferenceArea(msg.References);
+                    AddReferencePanel(msg.References);
                 }
             }
         }
@@ -365,7 +365,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         _busy = true;
         _interrupted = false;
         _lastRebindTime = Time.realtimeSinceStartup;
-        _currentThinkingArea = AddThinkingArea();
+        _currentThinkingPanel = AddThinkingPanel();
         _answerBuffer = new StringBuilder();
         var agentPair = AddAgentText();
         _currentAgentText = agentPair.Text;
@@ -373,7 +373,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         _currentRefArea = null;
 
         // 显示思考动画
-        _currentThinkingArea.SetThinking(true);
+        _currentThinkingPanel.SetThinking(true);
         ScrollDown();
         UpdateButtons();
 
@@ -397,8 +397,8 @@ public class ChatPanel : MonoBehaviour, IPanel
 
                     _busy = false;
                     UpdateButtons();
-                    _currentThinkingArea?.SetThinking(false);
-                    _currentThinkingArea?.Collapse();
+                    _currentThinkingPanel?.SetThinking(false);
+                    _currentThinkingPanel?.Collapse();
                 }
             });
         });
@@ -447,18 +447,18 @@ public class ChatPanel : MonoBehaviour, IPanel
                 break;
 
             case ToolCallEvent tc:
-                _currentThinkingArea?.AddToolCall(tc.Name, tc.DisplayText, tc.Iteration);
+                _currentThinkingPanel?.AddToolCall(tc.Name, tc.DisplayText, tc.Iteration);
                 break;
 
             case ToolResultEvent tr:
-                _currentThinkingArea?.AddToolResult(tr.Name, tr.Iteration);
+                _currentThinkingPanel?.AddToolResult(tr.Name, tr.Iteration);
                 break;
 
             case FinalChunkEvent fc:
                 // 首个内容到达 → 停止思考动画
                 if (_answerBuffer?.Length == 0)
                 {
-                    _currentThinkingArea?.SetThinking(false);
+                    _currentThinkingPanel?.SetThinking(false);
                 }
                 _answerBuffer?.Append(fc.Content);
                 fullAnswer.Append(fc.Content);
@@ -474,7 +474,7 @@ public class ChatPanel : MonoBehaviour, IPanel
 
             case ReferencesEvent re:
                 _collectedRefs = re.References;
-                _currentRefArea = AddReferenceArea(re.References);
+                _currentRefArea = AddReferencePanel(re.References);
                 ScrollDown();
                 break;
 
@@ -484,8 +484,8 @@ public class ChatPanel : MonoBehaviour, IPanel
                 {
                     _currentAgentBinder.Rebind(_answerBuffer.ToString());
                 }
-                _currentThinkingArea?.SetThinking(false);
-                _currentThinkingArea?.Collapse();
+                _currentThinkingPanel?.SetThinking(false);
+                _currentThinkingPanel?.Collapse();
                 ScrollDown();
                 break;
         }
@@ -590,9 +590,9 @@ public class ChatPanel : MonoBehaviour, IPanel
         t.color = ColError;
     }
 
-    private ThinkingArea AddThinkingArea()
+    private ThinkingPanel AddThinkingPanel()
     {
-        GameObject go = new GameObject("ThinkingArea", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+        GameObject go = new GameObject("ThinkingPanel", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
         go.transform.SetParent(_content, false);
         VerticalLayoutGroup vlg = go.GetComponent<VerticalLayoutGroup>();
         vlg.childForceExpandWidth = true;
@@ -604,15 +604,15 @@ public class ChatPanel : MonoBehaviour, IPanel
         ContentSizeFitter csf = go.GetComponent<ContentSizeFitter>();
         csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        ThinkingArea area = go.AddComponent<ThinkingArea>();
+        ThinkingPanel area = go.AddComponent<ThinkingPanel>();
         area.SetFont(_font);
         area.Build();
         return area;
     }
 
-    private ReferenceArea AddReferenceArea(List<Reference> references)
+    private ReferencePanel AddReferencePanel(List<Reference> references)
     {
-        GameObject go = new GameObject("ReferenceArea", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+        GameObject go = new GameObject("ReferencePanel", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
         go.transform.SetParent(_content, false);
         VerticalLayoutGroup vlg = go.GetComponent<VerticalLayoutGroup>();
         vlg.childForceExpandWidth = true;
@@ -624,7 +624,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         ContentSizeFitter csf = go.GetComponent<ContentSizeFitter>();
         csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        ReferenceArea area = go.AddComponent<ReferenceArea>();
+        ReferencePanel area = go.AddComponent<ReferencePanel>();
         area.SetFont(_font);
         area.Build(references);
         return area;
@@ -669,315 +669,6 @@ public class ChatPanel : MonoBehaviour, IPanel
         ConfigPanel.Open(_font);
     }
 
-    // ========== 子组件：ThinkingArea ==========
-    private class ThinkingArea : MonoBehaviour
-    {
-        private TMP_FontAsset? _font;
-        private TextMeshProUGUI? _headerText;
-        private RectTransform? _content;
-        private bool _collapsed;
-        private Coroutine? _dotsCoroutine;
-        private GameObject? _dotsText;
 
-        public void SetFont(TMP_FontAsset? font) => _font = font;
-
-        public void Build()
-        {
-            // 标题栏（可点击折叠）
-            GameObject header = new GameObject("Header", typeof(RectTransform), typeof(Image), typeof(Button));
-            header.transform.SetParent(transform, false);
-            header.GetComponent<Image>().color = new Color(0.15f, 0.18f, 0.20f, 0.95f);
-            RectTransform hrt = header.GetComponent<RectTransform>();
-            hrt.sizeDelta = new Vector2(0, 32);
-            Button hBtn = header.GetComponent<Button>();
-            hBtn.onClick.AddListener(ToggleCollapse);
-
-            _headerText = NewText("HeaderText", header.transform, 18, TextAlignmentOptions.Left);
-            _headerText.text = "▾ 思考中…";
-            _headerText.color = new Color(0.7f, 0.72f, 0.75f, 1f);
-            Anchor(_headerText.rectTransform, Vector2.zero, Vector2.one, new Vector2(12, 0), new Vector2(-12, 0));
-
-            // 内容区（工具步骤）
-            GameObject contentGo = new GameObject("Steps", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-            contentGo.transform.SetParent(transform, false);
-            _content = contentGo.GetComponent<RectTransform>();
-            VerticalLayoutGroup vlg = contentGo.GetComponent<VerticalLayoutGroup>();
-            vlg.childForceExpandWidth = true;
-            vlg.childForceExpandHeight = false;
-            vlg.childControlWidth = true;
-            vlg.childControlHeight = true;
-            vlg.padding = new RectOffset(8, 8, 4, 4);
-            vlg.spacing = 2f;
-            ContentSizeFitter csf = contentGo.GetComponent<ContentSizeFitter>();
-            csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        }
-
-        public void SetThinking(bool thinking)
-        {
-            if (thinking)
-            {
-                if (_dotsText == null && _content != null)
-                {
-                    _dotsText = new GameObject("Dots", typeof(RectTransform), typeof(TextMeshProUGUI));
-                    _dotsText.transform.SetParent(_content, false);
-                    TextMeshProUGUI t = _dotsText.GetComponent<TextMeshProUGUI>();
-                    if (_font != null) t.font = _font;
-                    t.fontSize = 18;
-                    t.alignment = TextAlignmentOptions.Left;
-                    t.color = new Color(0.65f, 0.68f, 0.7f, 1f);
-                    t.text = "·";
-                    Anchor(t.rectTransform, Vector2.zero, Vector2.one, new Vector2(4, 0), new Vector2(-4, 0));
-                }
-                if (_dotsCoroutine == null)
-                    _dotsCoroutine = StartCoroutine(DotsCoroutine());
-            }
-            else
-            {
-                if (_dotsCoroutine != null)
-                {
-                    StopCoroutine(_dotsCoroutine);
-                    _dotsCoroutine = null;
-                }
-                if (_dotsText != null)
-                {
-                    Destroy(_dotsText);
-                    _dotsText = null;
-                }
-            }
-        }
-
-        public void Collapse()
-        {
-            _collapsed = true;
-            if (_content != null) _content.gameObject.SetActive(false);
-            if (_headerText != null) _headerText.text = "▸ 思考过程";
-        }
-
-        public void Expand()
-        {
-            _collapsed = false;
-            if (_content != null) _content.gameObject.SetActive(true);
-            if (_headerText != null) _headerText.text = "▾ 思考过程";
-        }
-
-        private void ToggleCollapse()
-        {
-            if (_collapsed) Expand();
-            else Collapse();
-        }
-
-        public void AddToolCall(string name, string displayText, int iteration)
-        {
-            if (_content == null) return;
-            GameObject go = new GameObject(string.Format(CultureInfo.InvariantCulture, "ToolCall_{0}_{1}", name, iteration), typeof(RectTransform), typeof(TextMeshProUGUI));
-            go.transform.SetParent(_content, false);
-            go.name = string.Format(CultureInfo.InvariantCulture, "ToolCall_{0}_{1}", name, iteration);
-            TextMeshProUGUI t = go.GetComponent<TextMeshProUGUI>();
-            if (_font != null) t.font = _font;
-            t.fontSize = 16;
-            t.alignment = TextAlignmentOptions.Left;
-            t.color = new Color(0.75f, 0.78f, 0.82f, 1f);
-            t.text = string.Format(CultureInfo.InvariantCulture, "⏳ {0}", displayText);
-            Anchor(t.rectTransform, Vector2.zero, Vector2.one, new Vector2(4, 0), new Vector2(-4, 0));
-        }
-
-        public void AddToolResult(string name, int iteration)
-        {
-            if (_content == null) return;
-            // 查找对应的 ToolCall 并替换图标
-            for (int i = 0; i < _content.childCount; i++)
-            {
-                Transform child = _content.GetChild(i);
-                if (child.name == string.Format(CultureInfo.InvariantCulture, "ToolCall_{0}_{1}", name, iteration))
-                {
-                    TextMeshProUGUI? t = child.GetComponent<TextMeshProUGUI>();
-                    if (t != null)
-                        t.text = t.text.Replace("⏳", "✓");
-                    break;
-                }
-            }
-        }
-
-        private IEnumerator DotsCoroutine()
-        {
-            int n = 1;
-            while (true)
-            {
-                if (_dotsText != null)
-                {
-                    TextMeshProUGUI? t = _dotsText.GetComponent<TextMeshProUGUI>();
-                    if (t != null) t.text = new string('·', n);
-                }
-                n = n % 3 + 1;
-                yield return new WaitForSecondsRealtime(0.35f);
-            }
-        }
-
-        private TextMeshProUGUI NewText(string name, Transform parent, float size, TextAlignmentOptions align)
-        {
-            GameObject go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
-            go.transform.SetParent(parent, false);
-            TextMeshProUGUI t = go.GetComponent<TextMeshProUGUI>();
-            if (_font != null) t.font = _font;
-            t.fontSize = size;
-            t.alignment = align;
-            t.richText = true;
-            t.color = new Color(0.92f, 0.90f, 0.82f, 1f);
-            return t;
-        }
-
-        private static void Anchor(RectTransform rt, Vector2 min, Vector2 max, Vector2 offMin, Vector2 offMax)
-        {
-            rt.anchorMin = min;
-            rt.anchorMax = max;
-            rt.offsetMin = offMin;
-            rt.offsetMax = offMax;
-        }
-    }
-
-    // ========== 子组件：ReferenceArea ==========
-    private class ReferenceArea : MonoBehaviour
-    {
-        private TMP_FontAsset? _font;
-
-        public void SetFont(TMP_FontAsset? font) => _font = font;
-
-        public void Build(List<Reference> references)
-        {
-            if (references == null || references.Count == 0) return;
-
-            // 标题
-            TextMeshProUGUI title = NewText("RefTitle", transform, 18, TextAlignmentOptions.Left);
-            title.text = "——— 参考文献 ———";
-            title.color = new Color(0.55f, 0.58f, 0.6f, 1f);
-            Anchor(title.rectTransform, Vector2.zero, Vector2.one, new Vector2(0, 2), new Vector2(0, -2));
-
-            // 逐个文献卡片
-            foreach (Reference r in references)
-            {
-                AddReferenceCard(r);
-            }
-        }
-
-        private void AddReferenceCard(Reference r)
-        {
-            GameObject go = new GameObject("RefCard", typeof(RectTransform), typeof(Image), typeof(HorizontalLayoutGroup));
-            go.transform.SetParent(transform, false);
-            go.GetComponent<Image>().color = new Color(0.12f, 0.14f, 0.16f, 0.9f);
-            HorizontalLayoutGroup hl = go.GetComponent<HorizontalLayoutGroup>();
-            hl.childForceExpandWidth = false;
-            hl.childForceExpandHeight = false;
-            hl.childControlWidth = true;
-            hl.childControlHeight = true;
-            hl.padding = new RectOffset(10, 10, 8, 8);
-            hl.spacing = 8f;
-
-            // source_type 徽章
-            var badgeInfo = GetSourceTypeBadge(r.SourceType);
-            TextMeshProUGUI badge = NewText("Badge", go.transform, 16, TextAlignmentOptions.Center);
-            badge.text = badgeInfo.Text;
-            badge.color = badgeInfo.Color;
-            LayoutElement ble = badge.gameObject.AddComponent<LayoutElement>();
-            ble.preferredWidth = badgeInfo.Width;
-            ble.preferredHeight = 24;
-
-            // 文件名/链接
-            string nameText = string.IsNullOrEmpty(r.FilePath)
-                ? (string.IsNullOrEmpty(r.SourceUrl) ? r.FullDocId : r.SourceUrl)
-                : System.IO.Path.GetFileNameWithoutExtension(r.FilePath);
-
-            if (!string.IsNullOrEmpty(r.SourceUrl))
-            {
-                // 可点击链接
-                GameObject linkGo = NewButton("LinkBtn", go.transform, nameText, 16, out Button btn);
-                linkGo.GetComponent<Image>().color = new Color(0, 0, 0, 0);
-                btn.onClick.AddListener(delegate() { Application.OpenURL(r.SourceUrl); });
-                TextMeshProUGUI? linkText = linkGo.GetComponentInChildren<TextMeshProUGUI>();
-                if (linkText != null)
-                {
-                    linkText.color = UiTheme.Link;
-                    linkText.fontStyle = FontStyles.Underline;
-                    linkText.alignment = TextAlignmentOptions.Left;
-                }
-                LayoutElement lle = linkGo.AddComponent<LayoutElement>();
-                lle.flexibleWidth = 1f;
-                lle.preferredHeight = 24;
-
-                // 外链图标
-                TextMeshProUGUI arrow = NewText("Arrow", go.transform, 16, TextAlignmentOptions.Center);
-                arrow.text = "↗";
-                arrow.color = UiTheme.Link;
-                LayoutElement ale = arrow.gameObject.AddComponent<LayoutElement>();
-                ale.preferredWidth = 20;
-            }
-            else
-            {
-                // 纯文本
-                TextMeshProUGUI txt = NewText("Name", go.transform, 16, TextAlignmentOptions.Left);
-                txt.text = nameText;
-                txt.color = new Color(0.75f, 0.78f, 0.82f, 1f);
-                LayoutElement tle = txt.gameObject.AddComponent<LayoutElement>();
-                tle.flexibleWidth = 1f;
-                tle.preferredHeight = 24;
-            }
-
-            // game_version（可选，右对齐）
-            if (!string.IsNullOrEmpty(r.GameVersion))
-            {
-                TextMeshProUGUI ver = NewText("Ver", go.transform, 14, TextAlignmentOptions.Right);
-                ver.text = r.GameVersion;
-                ver.color = new Color(0.5f, 0.52f, 0.55f, 1f);
-                LayoutElement vle = ver.gameObject.AddComponent<LayoutElement>();
-                vle.preferredWidth = 80;
-                vle.preferredHeight = 24;
-            }
-        }
-
-        private static (string Text, Color Color, float Width) GetSourceTypeBadge(string? sourceType)
-        {
-            return (sourceType?.ToUpperInvariant()) switch
-            {
-                "WIKI" => (" WIKI ", new Color(0.25f, 0.5f, 0.85f, 1f), 58f),
-                "BBS" or "FORUM" => (" 论坛 ", new Color(0.85f, 0.55f, 0.25f, 1f), 52f),
-                "VIDEO" => (" 视频 ", new Color(0.85f, 0.3f, 0.3f, 1f), 52f),
-                "OFFICIAL" => (" 官方 ", new Color(0.3f, 0.75f, 0.4f, 1f), 52f),
-                _ => (" 资料 ", new Color(0.5f, 0.5f, 0.52f, 1f), 52f),
-            };
-        }
-
-        private TextMeshProUGUI NewText(string name, Transform parent, float size, TextAlignmentOptions align)
-        {
-            GameObject go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
-            go.transform.SetParent(parent, false);
-            TextMeshProUGUI t = go.GetComponent<TextMeshProUGUI>();
-            if (_font != null) t.font = _font;
-            t.fontSize = size;
-            t.alignment = align;
-            t.richText = true;
-            t.color = new Color(0.92f, 0.90f, 0.82f, 1f);
-            return t;
-        }
-
-        private GameObject NewButton(string name, Transform parent, string label, float size, out Button btn)
-        {
-            GameObject go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-            go.GetComponent<Image>().color = new Color(0.2f, 0.25f, 0.3f, 0.95f);
-            btn = go.GetComponent<Button>();
-            TextMeshProUGUI t = NewText("L", go.transform, size, TextAlignmentOptions.Left);
-            Anchor(t.rectTransform, Vector2.zero, Vector2.one, new Vector2(4, 0), new Vector2(-4, 0));
-            t.text = label;
-            t.raycastTarget = false;
-            return go;
-        }
-
-        private static void Anchor(RectTransform rt, Vector2 min, Vector2 max, Vector2 offMin, Vector2 offMax)
-        {
-            rt.anchorMin = min;
-            rt.anchorMax = max;
-            rt.offsetMin = offMin;
-            rt.offsetMax = offMax;
-        }
-    }
 }
 #pragma warning restore CS8604, CS8618, IDE0008, IDE0011, RCS1181, IDE0090, IDE0031, RCS1146, IDE0058, IDE0074, RCS1048, CA1822, CA1812, IDE0051, IDE0052, CA1001, CA2012, IDE0055, IDE0110, IDE0010, IDE0022, IDE0048, RCS1123, CA1307, RCS1238, CA1852
