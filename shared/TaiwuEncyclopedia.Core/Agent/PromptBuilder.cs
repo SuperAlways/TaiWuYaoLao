@@ -65,35 +65,36 @@ public sealed class PromptBuilder
 
         var parts = new StringBuilder();
 
-        // 1. 百晓册总纲
-        var overview = _sm.LoadOverview();
-        parts.AppendLine(overview ?? "## 百晓册总纲\n（总纲未就绪）");
+        // === 工具优先(LLM 对开头注意力最重,先把工具摆在前面,对齐 taiwuasker) ===
+
+        // 1. persona(角色口吻 —— taiwuasker 把 persona 放在 prompt 开头)
+        var persona = _sm.LoadPersona(pid);
+        if (!string.IsNullOrEmpty(persona)) parts.AppendLine(persona);
+        else parts.AppendLine("# 百晓问答助手\n你是太吾绘卷的 AI 助手。");
 
         parts.AppendLine("\n---\n");
 
-        // 2. 通用回答规则
+        // 2. 工具使用规范 + 引导 skill 索引(LLM 必须首先知道有哪些工具可用)
+        parts.AppendLine(_toolSpec);
+        parts.Append(BuildGuidanceIndex());
+
+        parts.AppendLine("\n---\n");
+
+        // 3. 通用回答规则(含 RAG 检索策略 —— 工具之后讲怎么用)
         var rules = _sm.LoadAnswerRules();
         if (!string.IsNullOrEmpty(rules)) parts.AppendLine(rules);
 
         parts.AppendLine("\n---\n");
 
-        // 3. 回答格式
+        // 4. 回答格式
         var style = _sm.LoadOutputStyle();
         if (!string.IsNullOrEmpty(style)) parts.AppendLine(style);
 
         parts.AppendLine("\n---\n");
 
-        // 4. 工具使用规范
-        parts.AppendLine(_toolSpec);
-
-        // 4b. 引导 skill 索引
-        parts.Append(BuildGuidanceIndex());
-
-        parts.AppendLine("\n---\n");
-
-        // 5. persona
-        var persona = _sm.LoadPersona(pid);
-        if (!string.IsNullOrEmpty(persona)) parts.AppendLine(persona);
+        // 5. 百晓册总纲(知识背景后置 —— LLM 先知道工具有哪些,再看预加载的知识)
+        var overview = _sm.LoadOverview();
+        if (!string.IsNullOrEmpty(overview)) parts.AppendLine(overview);
 
         _cached = parts.ToString();
         _cachedPersonaId = pid;
