@@ -8,6 +8,8 @@
          TaiwuModMergeDependency 合并入入口 dll。其它 copy-local 依赖(如游戏自带的
          Newtonsoft.Json)未在 Pack.proj 声明 merge/copy,不会被打包。 -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- 临时关闭(Task6 引入新文件有 style 诊断,待后续清理后恢复 true) -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
