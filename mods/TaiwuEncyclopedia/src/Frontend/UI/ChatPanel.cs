@@ -306,12 +306,13 @@ public class ChatPanel : MonoBehaviour, IPanel
                         area.AddToolCall("", lines[j].Trim(), j);
                     area.Collapse();
                 }
-                // 参考文献
+                // 回答文本(在思考链下方)
+                AddAgentMessage(msg.Content ?? "");
+                // 参考文献(在回答下方)
                 if (msg.References is { Count: > 0 })
                 {
                     AddReferenceArea(msg.References);
                 }
-                AddAgentMessage(msg.Content ?? "");
             }
         }
 
