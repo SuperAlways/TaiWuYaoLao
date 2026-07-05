@@ -13,6 +13,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+using TaiwuEncyclopedia.Frontend.UI;
+
 namespace TaiwuEncyclopedia.UI;
 
 /// <summary>
