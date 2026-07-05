@@ -249,6 +249,9 @@ public static class FrontendServices
         {
             RebuildAgentRunner();
         }
+
+        // 初始化 AgentRunnerHost（DontDestroyOnLoad 单例）
+        var _ = AgentRunnerHost.Instance;
     }
 
     private static void RebuildAgentRunner()

@@ -120,6 +120,22 @@ public sealed class ReferencesEvent : AgentEvent
 }
 
 /// <summary>
+/// 状态通知事件(用于面板消息,非 Agent 自身产出)。
+/// </summary>
+public sealed class StatusEvent : AgentEvent
+{
+    /// <summary>
+    /// 状态消息内容。
+    /// </summary>
+    public string Message { get; init; } = "";
+
+    /// <summary>
+    /// 初始化 StatusEvent。
+    /// </summary>
+    public StatusEvent() { Type = "status"; }
+}
+
+/// <summary>
 /// Agent 运行结束事件。
 /// </summary>
 public sealed class EndEvent : AgentEvent

@@ -28,6 +28,14 @@ public sealed class SessionManager
         _store = store;
     }
 
+    /// <summary>即时持久化用户提问（不等循环结束），支持面板关后重连恢复上下文。</summary>
+    /// <param name="worldId">世界 ID</param>
+    /// <param name="userQuery">用户查询内容</param>
+    public async Task SaveUserQueryAsync(int worldId, string userQuery)
+    {
+        await _store.AppendMessageAsync(worldId, new MessageRecord { Role = "user", Content = userQuery });
+    }
+
     /// <summary>循环结束后一次性保存 user_query + assistant_answer（含可选 references）。</summary>
     /// <param name="worldId">世界ID</param>
     /// <param name="userQuery">用户查询内容</param>

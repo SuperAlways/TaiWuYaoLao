@@ -56,6 +56,7 @@ public class ChatPanel : MonoBehaviour, IPanel
     private bool _busy;
     private bool _interrupted;
     private Coroutine? _runCoroutine;
+    private ActiveRequest? _activeRequest;
 
     // 当前 Agent 消息的部件（思考区 + 主内容 + 参考文献 + 重试按钮）
     private ThinkingArea? _currentThinkingArea;
@@ -88,15 +89,28 @@ public class ChatPanel : MonoBehaviour, IPanel
         _currentWorldId = WorldIdReader.CurrentWorldId();
         UpdateTitle();
 
-        // 加载历史（异步）
-        StartCoroutine(LoadHistoryCoroutine());
+        // 重连:检查 AgentRunnerHost 是否有正在跑的请求
+        var running = AgentRunnerHost.Instance.GetRequest(_currentWorldId);
+        if (running != null)
+        {
+            _activeRequest = running;
+            // 重连到现有请求:渲染已有 AnswerBuilder 内容
+            if (_currentAgentBinder != null && running.AnswerBuilder.Length > 0)
+                _currentAgentBinder.Rebind(running.AnswerBuilder.ToString());
+            // 注意:现有事件流通过 _activeRequest 的回调继续接收
+        }
+        else
+        {
+            StartCoroutine(LoadHistoryCoroutine());
+        }
     }
 
     public void Hide()
     {
         Debug.Log("[ChatPanel] Hide called, busy=" + _busy);
         if (_root != null) _root.SetActive(false);
-        Interrupt();
+        // 不中断 Agent — Host 上继续跑
+        // Interrupt();
     }
 
     private void UpdateTitle()
@@ -325,11 +339,52 @@ public class ChatPanel : MonoBehaviour, IPanel
             });
         }
 
-        // 启动 AgentRunner 协程
+        // 即时持久化 user 提问
+        var worldId = _currentWorldId;
+        _ = FrontendServices.SessionManager.SaveUserQueryAsync(worldId, text);
+
+        // 创建思考区 + 占位 Agent 消息
         _busy = true;
         _interrupted = false;
+        _lastRebindTime = Time.realtimeSinceStartup;
+        _currentThinkingArea = AddThinkingArea();
+        _answerBuffer = new StringBuilder();
+        var agentPair = AddAgentText();
+        _currentAgentText = agentPair.Text;
+        _currentAgentBinder = agentPair.Binder;
+        _currentRefArea = null;
+
+        // 显示思考动画
+        _currentThinkingArea.SetThinking(true);
+        ScrollDown();
         UpdateButtons();
-        _runCoroutine = StartCoroutine(RunAgentCoroutine(text));
+
+        // 调度到 AgentRunnerHost
+        var fullAnswer = new StringBuilder();
+        _activeRequest = AgentRunnerHost.Instance.StartRequest(worldId, text, evt =>
+        {
+            MainThreadDispatcher.Instance.Enqueue(() =>
+            {
+                if (_interrupted) return;
+                HandleAgentEvent(evt, fullAnswer);
+                if (evt is EndEvent)
+                {
+                    // 最终保存
+                    string finalAnswer = _answerBuffer?.ToString() ?? "";
+                    string? autoName = _pendingAutoName;
+                    List<Reference>? refs = _collectedRefs;
+                    Debug.Log("[ChatPanel] SaveConversationAsync: worldId=" + worldId + " queryLen=" + text.Length + " answerLen=" + finalAnswer.Length);
+                    _ = FrontendServices.SessionManager.SaveConversationAsync(
+                        worldId, text, finalAnswer, refs, autoName);
+
+                    _busy = false;
+                    UpdateButtons();
+                    _currentThinkingArea?.SetThinking(false);
+                    _currentThinkingArea?.Collapse();
+                }
+            });
+        });
+
         StartCoroutine(RefocusInputCoroutine());
     }
 
@@ -337,7 +392,10 @@ public class ChatPanel : MonoBehaviour, IPanel
     {
         if (!_busy) return;
         _interrupted = true;
+        // 取消 Host 上对应请求
+        AgentRunnerHost.Instance.Cancel(_currentWorldId);
         if (_runCoroutine != null) StopCoroutine(_runCoroutine);
+        _activeRequest = null;
         _busy = false;
         UpdateButtons();
         AddSysBubble("已中断");
@@ -360,86 +418,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         }
     }
 
-    // ========== AgentRunner 流式协程 ==========
-    private IEnumerator RunAgentCoroutine(string query)
-    {
-        // 先加载历史
-        List<LlmMessage>? history = null;
-        var loadTask = FrontendServices.SessionManager.LoadHistoryAsync(_currentWorldId, limit: 10);
-        yield return new WaitUntil(() => loadTask.IsCompleted);
-        if (!loadTask.IsFaulted && !loadTask.IsCanceled)
-            history = loadTask.Result;
-
-        // 创建思考区 + 占位 Agent 消息
-        _currentThinkingArea = AddThinkingArea();
-        _answerBuffer = new StringBuilder();
-        _lastRebindTime = Time.realtimeSinceStartup;
-        var agentPair = AddAgentText();
-        _currentAgentText = agentPair.Text;
-        _currentAgentBinder = agentPair.Binder;
-        _currentRefArea = null;
-
-        // 显示思考动画
-        _currentThinkingArea.SetThinking(true);
-        ScrollDown();
-
-        // 启动 RunAsync 任务
-        AgentRunner? runner = FrontendServices.AgentRunner;
-        if (runner == null)
-        {
-            AddErrorBubble("AgentRunner 未配置");
-            _busy = false;
-            UpdateButtons();
-            yield break;
-        }
-
-        var enumerator = runner.RunAsync(query, _currentWorldId, personaId: null, history).GetAsyncEnumerator();
-        var fullAnswer = new StringBuilder();
-
-        // 逐事件枚举
-        var moveNextTask = enumerator.MoveNextAsync();
-        while (true)
-        {
-            yield return new WaitUntil(() => moveNextTask.IsCompleted);
-
-            if (moveNextTask.IsFaulted || moveNextTask.IsCanceled || !moveNextTask.Result)
-                break;
-
-            AgentEvent evt = enumerator.Current;
-            if (_interrupted) break;
-
-            // 事件处理（全部走 MainThreadDispatcher 确保 UI 线程，虽然这里已是协程但遵循规范）
-            MainThreadDispatcher.Instance.Enqueue(delegate() {
-                if (_interrupted) return;
-                HandleAgentEvent(evt, fullAnswer);
-            });
-
-            moveNextTask = enumerator.MoveNextAsync();
-        }
-
-        // 结束清理
-        yield return null;
-        if (!_interrupted && _currentAgentBinder != null && _answerBuffer != null)
-        {
-            _currentAgentBinder.Rebind(_answerBuffer.ToString());
-        }
-
-        // 最终保存（异步，不阻塞 UI）
-        if (!_interrupted)
-        {
-            string finalAnswer = fullAnswer.ToString();
-            string? autoName = _pendingAutoName;
-            List<Reference>? refs = _collectedRefs;
-            Debug.Log("[ChatPanel] SaveConversationAsync: worldId=" + _currentWorldId + " queryLen=" + query.Length + " answerLen=" + finalAnswer.Length);
-            _ = FrontendServices.SessionManager.SaveConversationAsync(
-                _currentWorldId, query, finalAnswer, refs, autoName);
-        }
-
-        _busy = false;
-        UpdateButtons();
-        _currentThinkingArea?.SetThinking(false);
-        _currentThinkingArea?.Collapse();
-    }
+    // ========== AgentRunner 流式协程(已迁移至 AgentRunnerHost) ==========
 
     private void HandleAgentEvent(AgentEvent evt, StringBuilder fullAnswer)
     {
