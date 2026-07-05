@@ -81,16 +81,25 @@ ls artifacts/mods/TaiwuEncyclopedia/Plugins/                          # 期望 T
 
 ```bash
 GAME_MOD="D:/game/Steam/steamapps/common/The Scroll Of Taiwu/Mod/TaiwuEncyclopedia"
+GAME_MOD_DIR="D:/game/Steam/steamapps/common/The Scroll Of Taiwu/Mod"
 ART="D:/shuoshu/taiwuask/TaiWuYaoLao/artifacts/mods/TaiwuEncyclopedia"
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+# 删除之前的老备份（Mod 目录内外都扫一遍，避免游戏扫到 Mod 目录内的备份）
+rm -rf "${GAME_MOD_DIR}/../TaiwuEncyclopedia.bak."*
+rm -rf "${GAME_MOD_DIR}/TaiwuEncyclopedia.bak."*
 
 # 备份当前部署（含 Settings.Lua，可回滚）
-cp -r "$GAME_MOD" "${GAME_MOD}.bak.$(date +%s)"
+cp -r "$GAME_MOD" "${GAME_MOD_DIR}/../TaiwuEncyclopedia.bak.${TIMESTAMP}"
 
 # 清空游戏 mod 目录，但保留 Settings.Lua
 find "$GAME_MOD" -mindepth 1 ! -name "Settings.Lua" -exec rm -rf {} +
 
 # 复制新产物进去
-cp -r "$ART"/* "$GAME_MOD/"
+cp -r "$ART"/* "$GAME_MOD"/
+
+# 在 Config.Lua 的 Title 上追加时间戳，游戏内模组管理可见
+sed -i "s/Title = \"\(.*\)\"/Title = \"\1 (${TIMESTAMP})\"/" "$GAME_MOD/Config.Lua"
 ```
 
 `Settings.Lua` 是游戏运行时写回的玩家设置（mod 配置面板里的值），**不在打包产物里**，清空时必须显式保留，否则玩家配置丢失。
@@ -138,10 +147,11 @@ cp -r "$ART"/* "$GAME_MOD/"
 
 ```bash
 GAME_MOD="D:/game/Steam/steamapps/common/The Scroll Of Taiwu/Mod/TaiwuEncyclopedia"
-ls -d "${GAME_MOD}.bak."*          # 列出备份
+GAME_MOD_DIR="D:/game/Steam/steamapps/common/The Scroll Of Taiwu/Mod"
+ls -d "${GAME_MOD_DIR}/../TaiwuEncyclopedia.bak."*          # 列出备份
 # 选一个备份恢复：
 rm -rf "$GAME_MOD"
-mv "${GAME_MOD}.bak.<timestamp>" "$GAME_MOD"
+mv "${GAME_MOD_DIR}/../TaiwuEncyclopedia.bak.<timestamp>" "$GAME_MOD"
 ```
 
 ## 相关文档

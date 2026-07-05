@@ -100,6 +100,8 @@ public class ChatPanel : MonoBehaviour, IPanel
             // 重连到现有请求:渲染已有 AnswerBuilder 内容
             if (_currentAgentBinder != null && running.AnswerBuilder.Length > 0)
                 _currentAgentBinder.Rebind(running.AnswerBuilder.ToString());
+            // 恢复思考面板计时动画（Panel Hide 时 Unity 停掉了 Coroutine）
+            _currentThinkingPanel?.ResumeThinkingAnimation();
             // 注意:现有事件流通过 _activeRequest 的回调继续接收
         }
         else
@@ -293,6 +295,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         for (int i = 0; i < messages.Count; i++)
         {
             var msg = messages[i];
+            Debug.Log($"[DIAG-ChatPanel.LoadHistory] msg[{i}] role={msg.Role} contentLen={msg.Content?.Length ?? 0} thinkingContent='{msg.ThinkingContent ?? "NULL"}' thinkingLen={msg.ThinkingContent?.Length ?? -1} refsCount={msg.References?.Count ?? 0}");
             if (msg.Role == "user")
             {
                 AddPlayerBubble(msg.Content ?? "");
@@ -302,11 +305,16 @@ public class ChatPanel : MonoBehaviour, IPanel
                 // 思考链:折叠状态,点 ▸ 可展开查看工具调用过程
                 if (!string.IsNullOrEmpty(msg.ThinkingContent))
                 {
+                    Debug.Log($"[DIAG-ChatPanel.LoadHistory] msg[{i}] RENDERING thinking panel with {msg.ThinkingContent.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length} lines");
                     var area = AddThinkingPanel();
                     var lines = msg.ThinkingContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                     for (int j = 0; j < lines.Length; j++)
                         area.AddToolCall("", lines[j].Trim(), j);
                     area.Collapse();
+                }
+                else
+                {
+                    Debug.Log($"[DIAG-ChatPanel.LoadHistory] msg[{i}] SKIPPED thinking panel — ThinkingContent is null/empty");
                 }
                 // 回答文本(在思考链下方)
                 AddAgentMessage(msg.Content ?? "");
@@ -357,9 +365,8 @@ public class ChatPanel : MonoBehaviour, IPanel
             });
         }
 
-        // 即时持久化 user 提问
+        // AgentRunner.RunAsync 在循环结束后统一保存 user+assistant，这里不再单独写 user
         var worldId = _currentWorldId;
-        _ = FrontendServices.SessionManager.SaveUserQueryAsync(worldId, text);
 
         // 创建思考区 + 占位 Agent 消息
         _busy = true;
@@ -387,14 +394,8 @@ public class ChatPanel : MonoBehaviour, IPanel
                 HandleAgentEvent(evt, fullAnswer);
                 if (evt is EndEvent)
                 {
-                    // 最终保存
-                    string finalAnswer = _answerBuffer?.ToString() ?? "";
-                    string? autoName = _pendingAutoName;
-                    List<Reference>? refs = _collectedRefs;
-                    Debug.Log("[ChatPanel] SaveConversationAsync: worldId=" + worldId + " queryLen=" + text.Length + " answerLen=" + finalAnswer.Length);
-                    _ = FrontendServices.SessionManager.SaveConversationAsync(
-                        worldId, text, finalAnswer, refs, autoName);
-
+                    // AgentRunner.RunAsync 已负责完整保存（含 thinkingContent），这里只做 UI 收尾
+                    Debug.Log("[ChatPanel] EndEvent received — AgentRunner already saved. Cleaning up UI.");
                     _busy = false;
                     UpdateButtons();
                     _currentThinkingPanel?.SetThinking(false);

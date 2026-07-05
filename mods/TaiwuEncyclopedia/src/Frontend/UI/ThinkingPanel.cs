@@ -17,6 +17,7 @@ public sealed class ThinkingPanel : MonoBehaviour
     public bool _collapsed;
     public Coroutine? _dotsCoroutine;
     public GameObject? _dotsText;
+    public GameObject? _hintText;
     public TextMeshProUGUI? _timerText;
     public float _startTime;
 
@@ -44,6 +45,7 @@ public sealed class ThinkingPanel : MonoBehaviour
         icon.text = "▾";
         icon.color = new Color(0.65f, 0.68f, 0.70f, 1f);
         icon.alignment = TextAlignmentOptions.Left;
+        icon.raycastTarget = false;
         LayoutElement ile = icon.gameObject.AddComponent<LayoutElement>();
         ile.preferredWidth = 20;
 
@@ -55,6 +57,7 @@ public sealed class ThinkingPanel : MonoBehaviour
         _headerText.text = "▾ 思考中…";
         _headerText.color = new Color(0.65f, 0.68f, 0.70f, 1f);
         _headerText.alignment = TextAlignmentOptions.Left;
+        _headerText.raycastTarget = false;
 
         _timerText = new GameObject("Timer", typeof(RectTransform), typeof(TextMeshProUGUI))
             .GetComponent<TextMeshProUGUI>();
@@ -63,6 +66,7 @@ public sealed class ThinkingPanel : MonoBehaviour
         _timerText.fontSize = 15;
         _timerText.color = new Color(0.45f, 0.48f, 0.50f, 1f);
         _timerText.alignment = TextAlignmentOptions.Right;
+        _timerText.raycastTarget = false;
         LayoutElement tle = _timerText.gameObject.AddComponent<LayoutElement>();
         tle.flexibleWidth = 1f;
 
@@ -95,16 +99,36 @@ public sealed class ThinkingPanel : MonoBehaviour
                 if (_font != null) t.font = _font;
                 t.fontSize = 18;
                 t.color = new Color(0.55f, 0.58f, 0.60f, 1f);
+                t.raycastTarget = false;
                 t.text = "⏳";
                 if (_dotsCoroutine == null)
                     _dotsCoroutine = StartCoroutine(AnimateDots());
+
+                // 耗时提示
+                _hintText = new GameObject("Hint", typeof(RectTransform), typeof(TextMeshProUGUI));
+                _hintText.transform.SetParent(_content, false);
+                TextMeshProUGUI h = _hintText.GetComponent<TextMeshProUGUI>();
+                if (_font != null) h.font = _font;
+                h.fontSize = 14;
+                h.color = new Color(0.45f, 0.48f, 0.50f, 1f);
+                h.text = "大约需要 30–40 秒";
+                h.raycastTarget = false;
             }
         }
         else
         {
             if (_dotsCoroutine != null) { StopCoroutine(_dotsCoroutine); _dotsCoroutine = null; }
             if (_dotsText != null) { Destroy(_dotsText); _dotsText = null; }
+            if (_hintText != null) { Destroy(_hintText); _hintText = null; }
         }
+    }
+
+    /// <summary>面板 Hide/Show 后 Unity 会停掉 Coroutine，重连时调用此方法恢复计时动画。</summary>
+    public void ResumeThinkingAnimation()
+    {
+        // 只在还没被 SetThinking(false) 清除的状态下恢复（即还在思考中）
+        if (_dotsText == null || _dotsCoroutine != null) return;
+        _dotsCoroutine = StartCoroutine(AnimateDots());
     }
 
     private IEnumerator AnimateDots()

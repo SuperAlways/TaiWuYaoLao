@@ -125,12 +125,14 @@ public sealed class AgentRunner
         // 6. 保存会话
         var finalAnswer = string.Join("", finalAnswerParts);
         var thinkingContent = thinkingBuilder.Length > 0 ? thinkingBuilder.ToString().TrimEnd() : null;
+        CoreLog.Write("DIAG-AgentRunner.Save", $"worldId={worldId} thinkingContent='{thinkingContent ?? "NULL"}' thinkingLen={thinkingContent?.Length ?? -1} finalAnswerLen={finalAnswer.Length}");
         try
         {
             await _session.SaveConversationAsync(worldId, query, finalAnswer, topRefs,
                 thinkingContent: thinkingContent);
+            CoreLog.Write("DIAG-AgentRunner.Save", $"SaveConversationAsync completed for worldId={worldId}");
         }
-        catch { /* 保存失败不阻塞 */ }
+        catch (System.Exception ex) { CoreLog.Write("DIAG-AgentRunner.Save", $"SaveConversationAsync FAILED: {ex.Message}"); }
 
         // 7. yield EndEvent
         yield return new EndEvent

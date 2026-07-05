@@ -28,6 +28,12 @@ public sealed class ReferencePanel : MonoBehaviour
         // 逐个文献卡片
         foreach (Reference r in references)
             AddReferenceCard(r);
+
+        // 点击提示
+        TextMeshProUGUI hint = NewText("ClickHint", transform, 14, TextAlignmentOptions.Center);
+        hint.text = "点击链接可跳转参考源";
+        hint.color = new Color(0.40f, 0.42f, 0.45f, 1f);
+        hint.raycastTarget = false;
     }
 
     private void AddReferenceCard(Reference r)

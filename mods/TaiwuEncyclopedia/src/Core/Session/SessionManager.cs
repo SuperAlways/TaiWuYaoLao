@@ -50,6 +50,7 @@ public sealed class SessionManager
         string? autoName = null,
         string? thinkingContent = null)
     {
+        Core.Diagnostics.CoreLog.Write("DIAG-SessionMgr.Save", $"worldId={worldId} thinkingContent='{thinkingContent ?? "NULL"}' thinkingLen={thinkingContent?.Length ?? -1} refsCount={references?.Count ?? 0}");
         await _store.AppendMessageAsync(worldId, new MessageRecord { Role = "user", Content = userQuery });
         await _store.AppendMessageAsync(worldId, new MessageRecord
         {

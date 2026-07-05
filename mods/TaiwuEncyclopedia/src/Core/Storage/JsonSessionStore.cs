@@ -57,6 +57,7 @@ public sealed class JsonSessionStore : ISessionStore
         var path = PathFor(worldId);
         var messages = await LoadRecentAsync(worldId, int.MaxValue);
         messages.Add(message);
+        Diagnostics.CoreLog.Write("DIAG-JsonStore.Append", $"worldId={worldId} role={message.Role} thinkingContent='{message.ThinkingContent ?? "NULL"}' thinkingLen={message.ThinkingContent?.Length ?? -1}");
         await AtomicFile.WriteJsonAsync(path, messages);
 
         // 更新 index.json 的 count
