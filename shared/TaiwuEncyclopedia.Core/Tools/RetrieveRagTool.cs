@@ -86,6 +86,10 @@ public sealed class RetrieveRagTool : ToolBase
         topK = System.Math.Max(5, System.Math.Min(topK, 40));
         chunkTopK = System.Math.Max(3, System.Math.Min(chunkTopK, 20));
 
+        // 空 query 守卫: LLM 偶尔漏填,直接返回错误,省一次 HTTP 422
+        if (string.IsNullOrWhiteSpace(query))
+            return new Dictionary<string, object> { ["error"] = "retrieve_rag 需要非空 query 参数,请重新调用并填入有效检索关键词。" };
+
         var hlKeywords = ToStringList(args.GetValueOrDefault("hl_keywords"));
         var llKeywords = ToStringList(args.GetValueOrDefault("ll_keywords"));
 
