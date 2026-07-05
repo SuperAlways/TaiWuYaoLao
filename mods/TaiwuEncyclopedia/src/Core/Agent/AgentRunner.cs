@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TaiwuEncyclopedia.Core.Context;
+using TaiwuEncyclopedia.Core.Diagnostics;
 using TaiwuEncyclopedia.Core.Http;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Session;
@@ -30,6 +31,7 @@ public sealed class AgentRunner
     private readonly SessionManager _session;
     private readonly PromptBuilder _prompts;
     private readonly int _maxIter;
+    private readonly IAgentTrace _trace;
     private readonly List<Dictionary<string, object>>? _toolsSchema;
 
     /// <summary>
@@ -53,7 +55,8 @@ public sealed class AgentRunner
         SoulManager soulManager,
         SessionManager sessionManager,
         PromptBuilder promptBuilder,
-        int maxIter = 6)
+        int maxIter = 6,
+        IAgentTrace? trace = null)
     {
         _llmClient = llmClient;
         _llmConfig = llmConfig;
@@ -64,6 +67,7 @@ public sealed class AgentRunner
         _session = sessionManager;
         _prompts = promptBuilder;
         _maxIter = maxIter;
+        _trace = trace ?? NullAgentTrace.Instance;
         _toolsSchema = registry?.BuildOpenaiTools();
     }
 
