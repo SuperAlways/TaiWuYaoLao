@@ -18,5 +18,6 @@
     <!-- YamlDotNet: Core 在运行时用它解析 registry.yaml,游戏不自带,需合并入入口 dll。
          Frontend csproj 已开 CopyLocalLockFileAssemblies 让它进 copy-local。 -->
     <TaiwuModMergeDependency Include="YamlDotNet.dll" />
+    <TaiwuModMergeDependency Include="TaiwuEncyclopedia.Core.dll" />
   </ItemGroup>
 </Project>

@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\shared\TaiwuEncyclopedia.Core\TaiwuEncyclopedia.Core.csproj" />
+    <ProjectReference Include="..\Core\TaiwuEncyclopedia.Core.csproj" />
     <ProjectReference Include="..\..\..\..\shared\TaiwuEncyclopedia.Markdown\TaiwuEncyclopedia.Markdown.csproj" />
   </ItemGroup>
 

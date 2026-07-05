@@ -11,6 +11,6 @@
     <PackageReference Include="FluentAssertions" Version="6.12.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../shared/TaiwuEncyclopedia.Core/TaiwuEncyclopedia.Core.csproj" />
+    <ProjectReference Include="../../mods/TaiwuEncyclopedia/src/Core/TaiwuEncyclopedia.Core.csproj" />
   </ItemGroup>
 </Project>

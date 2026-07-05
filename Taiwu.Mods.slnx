@@ -2,9 +2,9 @@
   <Folder Name="/mods/">
     <Project Path="mods/TaiwuEncyclopedia/src/Frontend/TaiwuEncyclopedia.Frontend.csproj" />
     <Project Path="mods/TaiwuEncyclopedia/src/Backend/TaiwuEncyclopedia.Backend.csproj" />
+    <Project Path="mods/TaiwuEncyclopedia/src/Core/TaiwuEncyclopedia.Core.csproj" />
   </Folder>
   <Folder Name="/shared/">
-    <Project Path="shared/TaiwuEncyclopedia.Core/TaiwuEncyclopedia.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TaiwuEncyclopedia.Core.Tests/TaiwuEncyclopedia.Core.Tests.csproj" />
