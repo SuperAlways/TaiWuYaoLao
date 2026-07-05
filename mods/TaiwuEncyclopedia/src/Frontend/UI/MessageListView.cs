@@ -41,7 +41,6 @@ public sealed class MessageListView : MonoBehaviour
 
     public void AddPlayerBubble(string text)
     {
-        Debug.Log("[MessageListView] AddPlayerBubble: text='" + (text ?? "") + "'");
         if (_content == null) return;
 
         GameObject row = new GameObject("Row", typeof(RectTransform), typeof(HorizontalLayoutGroup));
@@ -81,7 +80,6 @@ public sealed class MessageListView : MonoBehaviour
 
     public (TextMeshProUGUI Text, MarkdownBinder Binder) AddAgentText(string? initialText = null)
     {
-        Debug.Log("[MessageListView] AddAgentText (new agent bubble)");
         TextMeshProUGUI t = NewText("AgentText", _content, 20, TextAlignmentOptions.TopLeft);
         t.enableWordWrapping = true;
         t.raycastTarget = false;
