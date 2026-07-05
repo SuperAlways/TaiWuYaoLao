@@ -8,6 +8,9 @@
     <!-- mod 清单(游戏靠它识别 mod + 声明 FrontendPlugins) -->
     <TaiwuModPackFile Include="Config.Lua" PackagePath="Config.Lua" />
 
+    <!-- 封面图(Steam Workshop 预览图) -->
+    <TaiwuModPackFile Include="封面.png" PackagePath="封面.png" />
+
     <!-- 前端插件项目(入口程序集 TaiwuEncyclopedia.Frontend.dll + 依赖 Core/Markdown 自动带上) -->
     <TaiwuModPackProject Include="src/Frontend/TaiwuEncyclopedia.Frontend.csproj" />
 

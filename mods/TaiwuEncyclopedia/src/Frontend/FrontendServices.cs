@@ -272,8 +272,8 @@ public static class FrontendServices
             // RetrieveRagTool (需要 RagHttpClient)
             if (_ragHttpClient == null)
             {
-                // RAG 服务端点:优先用 config.json 的 rag_base_url,缺省用本地 taiwuasker 默认端口 9621。
-                string ragUrl = !string.IsNullOrWhiteSpace(_ragBaseUrl) ? _ragBaseUrl : "http://localhost:9621";
+                // RAG 服务端点:优先用 config.json 的 rag_base_url,缺省用远程服务。
+                string ragUrl = !string.IsNullOrWhiteSpace(_ragBaseUrl) ? _ragBaseUrl : "https://rag.goodcooking.top";
                 _ragHttpClient = new RagHttpClient(ragUrl);
             }
             _toolRegistry.Register(new RetrieveRagTool(_ragHttpClient));
