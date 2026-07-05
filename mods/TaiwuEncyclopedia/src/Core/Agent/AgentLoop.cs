@@ -45,7 +45,8 @@ public static class AgentLoop
         List<Reference> collectedRefs,
         List<string> finalAnswerParts,
         AgentLoopResult result,
-        ReactTrace? trace = null)
+        ReactTrace? trace = null,
+        System.Text.StringBuilder? thinkingBuilder = null)
     {
         List<ToolCall>? prevToolCalls = null;
         var totalIterations = 0;
@@ -112,11 +113,13 @@ public static class AgentLoop
             foreach (var tc in response.ToolCalls)
             {
                 var args = ParseArgs(tc.Function.Arguments);
+                var displayText = BuildDisplayText(tc.Function.Name, args);
+                thinkingBuilder?.AppendLine(displayText);
                 yield return new ToolCallEvent
                 {
                     Name = tc.Function.Name,
                     Args = args,
-                    DisplayText = $"\U0001f527 {tc.Function.Name}",
+                    DisplayText = displayText,
                     Iteration = iteration,
                 };
             }
@@ -218,6 +221,28 @@ public static class AgentLoop
             return JObject.Parse(arguments).ToObject<Dictionary<string, object>>() ?? new();
         }
         catch { return new(); }
+    }
+
+    /// <summary>生成工具调用的显示文本(纯文本,无 emoji)。</summary>
+    private static string BuildDisplayText(string toolName, Dictionary<string, object> args)
+    {
+        return toolName switch
+        {
+            "retrieve_rag" => $"[检索] 查'{Short(args, "query", 40)}'相关",
+            "load_background_skill" => $"[百晓册] 加载{Str(args, "chapter")}",
+            "load_guidance_skill" => $"[引导] 加载{Str(args, "skill")}",
+            "lookup_concept" => $"[查询] 查概念'{Str(args, "name")}'",
+            _ => $"[工具] {toolName}",
+        };
+    }
+
+    private static string Str(Dictionary<string, object> args, string key)
+        => args.TryGetValue(key, out var v) && v is string s ? s : "?";
+
+    private static string Short(Dictionary<string, object> args, string key, int max)
+    {
+        var s = Str(args, key);
+        return s.Length > max ? s[..max] : s;
     }
 }
 

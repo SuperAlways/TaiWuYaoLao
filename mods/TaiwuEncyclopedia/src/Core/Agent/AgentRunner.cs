@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -104,10 +105,12 @@ public sealed class AgentRunner
         // 4. ReAct 循环（转交给 AgentLoop.Run）
         var finalAnswerParts = new List<string>();
         var loopResult = new AgentLoopResult();
+        var thinkingBuilder = new StringBuilder();
 
         await foreach (var evt in AgentLoop.Run(
             _llmClient, _executor, _ctx, _toolsSchema, messages, _llmConfig,
-            worldId, _maxIter, collectedRefs, finalAnswerParts, loopResult))
+            worldId, _maxIter, collectedRefs, finalAnswerParts, loopResult,
+            thinkingBuilder: thinkingBuilder))
         {
             yield return evt;
         }
@@ -121,9 +124,11 @@ public sealed class AgentRunner
 
         // 6. 保存会话
         var finalAnswer = string.Join("", finalAnswerParts);
+        var thinkingContent = thinkingBuilder.Length > 0 ? thinkingBuilder.ToString().TrimEnd() : null;
         try
         {
-            await _session.SaveConversationAsync(worldId, query, finalAnswer, topRefs);
+            await _session.SaveConversationAsync(worldId, query, finalAnswer, topRefs,
+                thinkingContent: thinkingContent);
         }
         catch { /* 保存失败不阻塞 */ }
 

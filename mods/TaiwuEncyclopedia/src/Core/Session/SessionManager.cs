@@ -47,7 +47,8 @@ public sealed class SessionManager
         string userQuery,
         string assistantAnswer,
         List<Reference>? references = null,
-        string? autoName = null)
+        string? autoName = null,
+        string? thinkingContent = null)
     {
         await _store.AppendMessageAsync(worldId, new MessageRecord { Role = "user", Content = userQuery });
         await _store.AppendMessageAsync(worldId, new MessageRecord
@@ -55,6 +56,7 @@ public sealed class SessionManager
             Role = "assistant",
             Content = assistantAnswer,
             References = references,
+            ThinkingContent = thinkingContent,
         });
 
         // 首次对话写入太吾名快照（SetAutoNameAsync 自身是幂等 guard，仅当 AutoName 为空时写入）
@@ -68,15 +70,9 @@ public sealed class SessionManager
     /// <param name="worldId">世界ID</param>
     /// <param name="limit">返回的最大消息数量，默认10</param>
     /// <returns>按时间顺序排列的LLM消息列表</returns>
-    public async Task<List<LlmMessage>> LoadHistoryAsync(int worldId, int limit = 10)
+    public async Task<List<MessageRecord>> LoadHistoryAsync(int worldId, int limit = 10)
     {
-        var records = await _store.LoadRecentAsync(worldId, limit);
-        var messages = new List<LlmMessage>();
-        foreach (var r in records)
-        {
-            messages.Add(new LlmMessage { Role = r.Role, Content = r.Content });
-        }
-        return messages;
+        return await _store.LoadRecentAsync(worldId, limit);
     }
 
     /// <summary>列出所有会话的元数据（透传 ISessionStore.ListConversationsAsync）。</summary>

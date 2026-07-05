@@ -23,4 +23,7 @@ public sealed class MessageRecord
 
     /// <summary>扩展数据(react_trace 等),按需存入,默认 null。</summary>
     public System.Collections.Generic.Dictionary<string, object>? ExtData { get; set; }
+
+    /// <summary>思考链工具调用显示文本(每行一个 display_text,纯文本无 emoji)。</summary>
+    public string? ThinkingContent { get; set; }
 }

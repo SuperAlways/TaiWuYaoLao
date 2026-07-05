@@ -7,6 +7,7 @@ using System.Text;
 using TaiwuEncyclopedia.Core.Agent;
 using TaiwuEncyclopedia.Core.Http;
 using TaiwuEncyclopedia.Core.Llm;
+using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Threading;
 using UnityEngine;
 using UnityEngine.UI;
@@ -282,20 +283,34 @@ public class ChatPanel : MonoBehaviour, IPanel
             yield break;
         }
 
-        List<LlmMessage> messages = task.Result;
+        List<MessageRecord> messages = task.Result;
         Debug.Log("[ChatPanel] LoadHistory: loadedCount=" + (messages?.Count ?? 0));
         if (messages == null || messages.Count == 0) yield break;
 
-        // 从旧到新显示：user/assistant 交替
+        // 从旧到新显示：user/assistant 交替, assistant 带思考链+参考文献
         for (int i = 0; i < messages.Count; i++)
         {
-            LlmMessage msg = messages[i];
+            var msg = messages[i];
             if (msg.Role == "user")
             {
                 AddPlayerBubble(msg.Content ?? "");
             }
             else if (msg.Role == "assistant")
             {
+                // 思考链:折叠状态,点 ▸ 可展开查看工具调用过程
+                if (!string.IsNullOrEmpty(msg.ThinkingContent))
+                {
+                    var area = AddThinkingArea();
+                    var lines = msg.ThinkingContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                    for (int j = 0; j < lines.Length; j++)
+                        area.AddToolCall("", lines[j].Trim(), j);
+                    area.Collapse();
+                }
+                // 参考文献
+                if (msg.References is { Count: > 0 })
+                {
+                    AddReferenceArea(msg.References);
+                }
                 AddAgentMessage(msg.Content ?? "");
             }
         }
