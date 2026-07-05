@@ -36,8 +36,11 @@ public sealed class LoadGuidanceSkillTool : ToolBase
     {
         var skill = args.GetValueOrDefault("skill")?.ToString() ?? "";
         var content = _sm.LoadGuidanceSkill(skill);
-        return Task.FromResult(content != null
-            ? new Dictionary<string, object> { ["skill"] = skill, ["content"] = content }
-            : new Dictionary<string, object> { ["error"] = $"引导骨架未找到: {skill}（该骨架可能尚未编写，请基于已有知识回答）" });
+        if (content == null)
+            return Task.FromResult(new Dictionary<string, object> { ["error"] = $"引导骨架未找到: {skill}" });
+
+        // 返回内容前加指令头: 确保 LLM 不只是"读到"而是"按骨架执行"
+        var directive = $"[系统指令] 你已加载「{skill}」引导骨架。请严格按骨架的「问题特征」确认问题类型、「追问维度」引导玩家补充信息、「检索建议」调 retrieve_rag 或 load_background_skill、「回答骨架」组织最终回答。\n\n---\n\n{content}";
+        return Task.FromResult(new Dictionary<string, object> { ["skill"] = skill, ["content"] = directive });
     }
 }
