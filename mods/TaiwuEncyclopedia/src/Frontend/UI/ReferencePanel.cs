@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,17 +17,13 @@ public sealed class ReferencePanel : MonoBehaviour
     {
         if (references == null || references.Count == 0) return;
 
-        TextMeshProUGUI title = new GameObject("RefTitle", typeof(RectTransform), typeof(TextMeshProUGUI))
-            .GetComponent<TextMeshProUGUI>();
-        title.transform.SetParent(transform, false);
-        if (_font != null) title.font = _font;
-        title.fontSize = 17;
+        // 标题
+        TextMeshProUGUI title = NewText("RefTitle", transform, 18, TextAlignmentOptions.Left);
         title.text = "——— 参考文献 ———";
-        title.color = new Color(0.55f, 0.58f, 0.60f, 1f);
-        title.alignment = TextAlignmentOptions.Center;
-        LayoutElement tle = title.gameObject.AddComponent<LayoutElement>();
-        tle.preferredHeight = 30;
+        title.color = new Color(0.55f, 0.58f, 0.6f, 1f);
+        UiFactory.Anchor(title.rectTransform, Vector2.zero, Vector2.one, new Vector2(0, 2), new Vector2(0, -2));
 
+        // 逐个文献卡片
         foreach (Reference r in references)
             AddReferenceCard(r);
     }
@@ -35,59 +32,48 @@ public sealed class ReferencePanel : MonoBehaviour
     {
         GameObject go = new GameObject("RefCard", typeof(RectTransform), typeof(Image), typeof(HorizontalLayoutGroup));
         go.transform.SetParent(transform, false);
-        go.GetComponent<Image>().color = new Color(0.08f, 0.10f, 0.10f, 0.95f);
-        HorizontalLayoutGroup hlg = go.GetComponent<HorizontalLayoutGroup>();
-        hlg.childForceExpandWidth = false;
-        hlg.childForceExpandHeight = false;
-        hlg.childControlWidth = false;
-        hlg.childControlHeight = true;
-        hlg.spacing = 8f;
-        hlg.padding = new RectOffset(10, 10, 6, 6);
+        go.GetComponent<Image>().color = new Color(0.12f, 0.14f, 0.16f, 0.9f);
+        HorizontalLayoutGroup hl = go.GetComponent<HorizontalLayoutGroup>();
+        hl.childForceExpandWidth = false;
+        hl.childForceExpandHeight = false;
+        hl.childControlWidth = true;
+        hl.childControlHeight = true;
+        hl.padding = new RectOffset(10, 10, 8, 8);
+        hl.spacing = 8f;
 
-        LayoutElement le = go.AddComponent<LayoutElement>();
-        le.preferredHeight = 40;
+        // source_type badge
+        var badgeInfo = GetSourceTypeBadge(r.SourceType);
+        TextMeshProUGUI badge = NewText("Badge", go.transform, 16, TextAlignmentOptions.Center);
+        badge.text = badgeInfo.Text;
+        badge.color = badgeInfo.Color;
+        LayoutElement ble = badge.gameObject.AddComponent<LayoutElement>();
+        ble.preferredWidth = badgeInfo.Width;
+        ble.preferredHeight = 24;
 
-        TextMeshProUGUI num = new GameObject("RefNum", typeof(RectTransform), typeof(TextMeshProUGUI))
-            .GetComponent<TextMeshProUGUI>();
-        num.transform.SetParent(go.transform, false);
-        if (_font != null) num.font = _font;
-        num.fontSize = 15;
-        num.text = "📄";
-        num.color = new Color(0.55f, 0.58f, 0.60f, 1f);
-        num.alignment = TextAlignmentOptions.Center;
-        num.GetComponent<RectTransform>().sizeDelta = new Vector2(24, 0);
+        // 文件名/链接
+        string nameText = string.IsNullOrEmpty(r.FilePath)
+            ? (string.IsNullOrEmpty(r.SourceUrl) ? r.FullDocId : r.SourceUrl)
+            : Path.GetFileNameWithoutExtension(r.FilePath);
 
-        TextMeshProUGUI title = new GameObject("RefTitle", typeof(RectTransform), typeof(TextMeshProUGUI))
-            .GetComponent<TextMeshProUGUI>();
-        title.transform.SetParent(go.transform, false);
-        if (_font != null) title.font = _font;
-        title.fontSize = 16;
-        title.text = r.FilePath ?? "参考资料";
-        title.color = new Color(0.85f, 0.83f, 0.78f, 1f);
-        title.alignment = TextAlignmentOptions.Left;
-        LayoutElement tle = title.gameObject.AddComponent<LayoutElement>();
-        tle.flexibleWidth = 1f;
-
-        // Source-type badge
-        var (badgeText, badgeColor, badgeWidth) = GetSourceTypeBadge(r.SourceType);
-        TextMeshProUGUI badge = new GameObject("Badge", typeof(RectTransform), typeof(TextMeshProUGUI))
-            .GetComponent<TextMeshProUGUI>();
-        badge.transform.SetParent(go.transform, false);
-        if (_font != null) badge.font = _font;
-        badge.fontSize = 14;
-        badge.text = badgeText;
-        badge.color = badgeColor;
-        badge.alignment = TextAlignmentOptions.Center;
-        badge.GetComponent<RectTransform>().sizeDelta = new Vector2(badgeWidth, 0);
-
-        // URL link (if available)
         if (!string.IsNullOrEmpty(r.SourceUrl))
         {
-            Button linkBtn = go.AddComponent<Button>();
-            linkBtn.onClick.AddListener(delegate
-            {
-                Application.OpenURL(r.SourceUrl);
-            });
+            GameObject linkGo = NewButton("LinkBtn", go.transform, nameText, 16, out Button btn);
+            linkGo.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+            btn.onClick.AddListener(() => Application.OpenURL(r.SourceUrl));
+            TextMeshProUGUI? linkText = linkGo.GetComponentInChildren<TextMeshProUGUI>();
+            if (linkText != null) linkText.color = UiTheme.Link;
+            RectTransform lrt = linkGo.GetComponent<RectTransform>();
+            LayoutElement lle = linkGo.AddComponent<LayoutElement>();
+            lle.flexibleWidth = 1f;
+            lle.preferredHeight = 24;
+        }
+        else
+        {
+            TextMeshProUGUI nameLabel = NewText("Name", go.transform, 16, TextAlignmentOptions.Left);
+            nameLabel.text = nameText;
+            nameLabel.color = new Color(0.82f, 0.80f, 0.75f, 1f);
+            LayoutElement nle = nameLabel.gameObject.AddComponent<LayoutElement>();
+            nle.flexibleWidth = 1f;
         }
     }
 
@@ -106,5 +92,31 @@ public sealed class ReferencePanel : MonoBehaviour
             "mod" => ("Mod", new Color(0.6f, 0.4f, 0.2f, 1f), 44f),
             _ => (sourceType ?? "?", new Color(0.4f, 0.4f, 0.4f, 1f), 50f),
         };
+    }
+
+    private TextMeshProUGUI NewText(string name, Transform parent, float size, TextAlignmentOptions align)
+    {
+        GameObject go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
+        go.transform.SetParent(parent, false);
+        TextMeshProUGUI t = go.GetComponent<TextMeshProUGUI>();
+        if (_font != null) t.font = _font;
+        t.fontSize = size;
+        t.alignment = align;
+        t.richText = true;
+        t.raycastTarget = false;
+        return t;
+    }
+
+    private GameObject NewButton(string name, Transform parent, string label, float size, out Button btn)
+    {
+        GameObject go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+        go.transform.SetParent(parent, false);
+        go.GetComponent<Image>().color = UiTheme.Accent;
+        btn = go.GetComponent<Button>();
+        TextMeshProUGUI t = NewText("L", go.transform, size, TextAlignmentOptions.Left);
+        UiFactory.Anchor(t.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        t.text = label;
+        t.raycastTarget = false;
+        return go;
     }
 }
