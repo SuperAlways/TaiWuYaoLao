@@ -127,4 +127,70 @@ public class JsonSessionStoreTest
         var list = await store.ListConversationsAsync();
         list[0].Name.Should().Be("");
     }
+
+    [Fact]
+    public async Task LoadForAgentAsync_NoBoundary_ReturnsNullSummaryAndAllMessages()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-agent-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "user", Content = "q1" });
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "assistant", Content = "a1" });
+
+        var (oldSummary, newMessages) = await store.LoadForAgentAsync(1);
+
+        oldSummary.Should().BeNull();
+        newMessages.Should().HaveCount(2);
+        newMessages[0].Content.Should().Be("q1");
+        newMessages[1].Content.Should().Be("a1");
+    }
+
+    [Fact]
+    public async Task LoadForAgentAsync_WithBoundary_ReturnsSummaryAndMessagesAfterBoundary()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-agent-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "user", Content = "old q" });
+        await store.AppendBoundaryAsync(1, "旧摘要内容");
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "user", Content = "new q" });
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "assistant", Content = "new a" });
+
+        var (oldSummary, newMessages) = await store.LoadForAgentAsync(1);
+
+        oldSummary.Should().Be("旧摘要内容");
+        newMessages.Should().HaveCount(2);
+        newMessages[0].Content.Should().Be("new q");
+        newMessages[1].Content.Should().Be("new a");
+    }
+
+    [Fact]
+    public async Task LoadForAgentAsync_MultipleBoundaries_ReturnsLastSummary()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-agent-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        await store.AppendBoundaryAsync(1, "summary_v1");
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "user", Content = "q" });
+        await store.AppendBoundaryAsync(1, "summary_v2");
+
+        var (oldSummary, newMessages) = await store.LoadForAgentAsync(1);
+
+        oldSummary.Should().Be("summary_v2");
+        newMessages.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task AppendBoundaryAsync_AppendsSystemMessageWithFlag()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-agent-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "user", Content = "q" });
+
+        await store.AppendBoundaryAsync(1, "摘要");
+
+        var all = await store.LoadRecentAsync(1, int.MaxValue);
+        all.Should().HaveCount(2);
+        all[1].Role.Should().Be("system");
+        all[1].IsCompactBoundary.Should().BeTrue();
+        all[1].BoundarySummary.Should().Be("摘要");
+        all[1].Content.Should().Contain("摘要");
+    }
 }

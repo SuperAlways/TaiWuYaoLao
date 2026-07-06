@@ -14,7 +14,17 @@ public interface ISessionStore
     /// <summary>读取指定 WorldId 的最近 N 条消息（按时间正序返回）。</summary>
     /// <param name="worldId">世界 ID</param>
     /// <param name="limit">最大消息数</param>
-    System.Threading.Tasks.Task<System.Collections.Generic.List<Session.MessageRecord>> LoadRecentAsync(int worldId, int limit);
+    /// <param name="includeBoundaries">是否包含压缩边界消息（前端传 false 过滤）</param>
+    System.Threading.Tasks.Task<System.Collections.Generic.List<Session.MessageRecord>> LoadRecentAsync(int worldId, int limit, bool includeBoundaries = true);
+
+    /// <summary>加载 Agent 用的历史：找最后一条压缩边界，返回 (边界摘要, 边界之后的消息)。无边界返回 (null, 全部)。</summary>
+    /// <param name="worldId">世界 ID</param>
+    System.Threading.Tasks.Task<(string? oldSummary, System.Collections.Generic.List<Session.MessageRecord> newMessages)> LoadForAgentAsync(int worldId);
+
+    /// <summary>在指定 WorldId 的对话流末尾追加压缩边界消息（Role=system, IsCompactBoundary=true）。</summary>
+    /// <param name="worldId">世界 ID</param>
+    /// <param name="summary">压缩摘要文本</param>
+    System.Threading.Tasks.Task AppendBoundaryAsync(int worldId, string summary);
 
     /// <summary>清空指定 WorldId 的对话流（玩家重置用）。</summary>
     /// <param name="worldId">世界 ID</param>

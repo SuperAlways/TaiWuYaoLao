@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using TaiwuEncyclopedia.Core.Session;
 
@@ -66,18 +67,56 @@ public sealed class JsonSessionStore : ISessionStore
         await SaveIndexAsync(idx);
     }
 
+    /// <summary>加载 Agent 用的历史：找最后一条压缩边界，返回 (边界摘要, 边界之后的消息)。</summary>
+    public async Task<(string? oldSummary, List<MessageRecord> newMessages)> LoadForAgentAsync(int worldId)
+    {
+        var all = await LoadRecentAsync(worldId, int.MaxValue);
+        int lastBoundary = -1;
+        for (int i = all.Count - 1; i >= 0; i--)
+        {
+            if (all[i].IsCompactBoundary) { lastBoundary = i; break; }
+        }
+        if (lastBoundary < 0) return (null, all);
+        return (all[lastBoundary].BoundarySummary, all.GetRange(lastBoundary + 1, all.Count - lastBoundary - 1));
+    }
+
+    /// <summary>末尾追加压缩边界消息。</summary>
+    public async Task AppendBoundaryAsync(int worldId, string summary)
+    {
+        var path = PathFor(worldId);
+        var messages = await LoadRecentAsync(worldId, int.MaxValue);
+        messages.Add(new MessageRecord
+        {
+            Role = "system",
+            Content = $"【历史摘要】\n{summary}",
+            IsCompactBoundary = true,
+            BoundarySummary = summary,
+        });
+        await AtomicFile.WriteJsonAsync(path, messages);
+
+        var idx = await LoadIndexAsync();
+        var meta = EnsureEntry(idx, worldId);
+        meta.Count = messages.Count;
+        await SaveIndexAsync(idx);
+    }
+
     /// <summary>
     /// 读取指定 WorldId 的最近 N 条消息（按时间正序返回）。
     /// </summary>
     /// <param name="worldId">世界 ID</param>
     /// <param name="limit">最大消息数</param>
-    public async Task<List<MessageRecord>> LoadRecentAsync(int worldId, int limit)
+    /// <param name="includeBoundaries">是否包含压缩边界消息（前端传 false 过滤）</param>
+    public async Task<List<MessageRecord>> LoadRecentAsync(int worldId, int limit, bool includeBoundaries = true)
     {
         var path = PathFor(worldId);
         var messages = await AtomicFile.ReadJsonAsync<List<MessageRecord>>(path);
         if (messages == null || messages.Count == 0)
         {
             return new List<MessageRecord>();
+        }
+        if (!includeBoundaries)
+        {
+            messages = messages.Where(m => !m.IsCompactBoundary).ToList();
         }
         if (limit >= messages.Count)
         {

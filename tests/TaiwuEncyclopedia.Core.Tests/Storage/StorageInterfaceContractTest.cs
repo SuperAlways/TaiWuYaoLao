@@ -54,7 +54,7 @@ public class StorageInterfaceContractTest
             return System.Threading.Tasks.Task.CompletedTask;
         }
 
-        public System.Threading.Tasks.Task<System.Collections.Generic.List<Core.Session.MessageRecord>> LoadRecentAsync(int worldId, int limit)
+        public System.Threading.Tasks.Task<System.Collections.Generic.List<Core.Session.MessageRecord>> LoadRecentAsync(int worldId, int limit, bool includeBoundaries = true)
         {
             if (!_storage.TryGetValue(worldId, out var list))
                 return System.Threading.Tasks.Task.FromResult(new System.Collections.Generic.List<Core.Session.MessageRecord>());
@@ -91,6 +91,29 @@ public class StorageInterfaceContractTest
         public System.Threading.Tasks.Task SetAutoNameAsync(int worldId, string autoName)
         {
             return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        public async System.Threading.Tasks.Task<(string? oldSummary, System.Collections.Generic.List<Core.Session.MessageRecord> newMessages)> LoadForAgentAsync(int worldId)
+        {
+            var all = await LoadRecentAsync(worldId, int.MaxValue);
+            int lastBoundary = -1;
+            for (int i = all.Count - 1; i >= 0; i--)
+            {
+                if (all[i].IsCompactBoundary) { lastBoundary = i; break; }
+            }
+            if (lastBoundary < 0) return (null, all);
+            return (all[lastBoundary].BoundarySummary, all.GetRange(lastBoundary + 1, all.Count - lastBoundary - 1));
+        }
+
+        public System.Threading.Tasks.Task AppendBoundaryAsync(int worldId, string summary)
+        {
+            return AppendMessageAsync(worldId, new Core.Session.MessageRecord
+            {
+                Role = "system",
+                Content = $"【历史摘要】\n{summary}",
+                IsCompactBoundary = true,
+                BoundarySummary = summary,
+            });
         }
     }
 
