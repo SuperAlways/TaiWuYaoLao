@@ -30,19 +30,25 @@ public sealed class SoulManager
 
     private const string _extractPrompt = @"请分析以下对话历史，提取玩家状态信息，并压缩历史为摘要。
 
-对话历史：
+【旧摘要】（如有，请在此基础上更新）
+{old_summary}
+
+【新对话】
 {history}
 
 请返回 JSON（不要 markdown 代码块），格式如下：
-{""summary"": ""对话摘要（500字内）"", ""profile_fields"": {""Playstyle"": """", ""TechnicalLevel"": """", ""QuestionHabits"": """"}, ""world_fields"": {""Sect"": """", ""Stage"": """", ""Failures"": """"}}
+{""summary"": ""对话摘要"", ""profile_fields"": {""Playstyle"": """", ""TechnicalLevel"": """", ""QuestionHabits"": """"}, ""world_fields"": {""Sect"": """", ""Stage"": """", ""Failures"": """"}}
 
 注意：
+- 如果提供了旧摘要，请融合新旧内容生成更新后的摘要
+- 摘要核心目的是把握玩家的提问脉络和回答方向：玩家主要问了哪些方向的问题、AI 给了什么方向的指引、得出了什么结论
+- 摘要长度按对话信息量自适应，不设硬性字数上限，但应保持精炼、不堆砌原文
 - 只填写对话中明确提到的字段，不确定的留空字符串
 - Playstyle: 玩法偏好（如苟道流、速通、全收集）
 - TechnicalLevel: 技术水平（如新手、老手、精通）
-- QuestionHabits: 提问习惯（偏好问什么类型的问题）
-- Sect: 门派名（如少林、峨眉）
-- Stage: 游戏阶段（如开局、中期、剑冢前）
+- QuestionHabits: 提问习惯
+- Sect: 门派名
+- Stage: 游戏阶段
 - Failures: 失败经历简述";
 
     /// <summary>
@@ -88,7 +94,8 @@ public sealed class SoulManager
         int worldId,
         string earlyHistoryText,
         OpenAiCompatibleClient llmClient,
-        LlmConfig llmConfig)
+        LlmConfig llmConfig,
+        string? oldSummary = null)
     {
         var profile = await _store.LoadProfileAsync();
         var world = await _store.LoadWorldAsync(worldId);
@@ -97,7 +104,10 @@ public sealed class SoulManager
         string summary;
         try
         {
-            var prompt = _extractPrompt.Replace("{history}", earlyHistoryText[..System.Math.Min(8000, earlyHistoryText.Length)]);
+            var oldSummarySection = string.IsNullOrEmpty(oldSummary) ? "（无）" : oldSummary;
+            var prompt = _extractPrompt
+                .Replace("{old_summary}", oldSummarySection)
+                .Replace("{history}", earlyHistoryText); // 不截断，全文传入
             var response = await llmClient.Chat(
                 AgentLLMRole.Intent,
                 new List<LlmMessage> { new() { Role = "user", Content = prompt } },

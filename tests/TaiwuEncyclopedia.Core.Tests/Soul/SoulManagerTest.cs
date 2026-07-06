@@ -123,6 +123,25 @@ public class SoulManagerTest
         world.Summary.Should().BeNullOrEmpty();
     }
 
+    [Fact]
+    public async Task UpdateFromCompressAsync_WithOldSummary_PassesOldSummaryToLlm()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-soul-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSoulStore(root);
+        var sm = new SoulManager(store);
+        string? capturedPrompt = null;
+        var handler = new StubLlmHandlerForSoul(
+            responseJson: "{\"summary\":\"新摘要\",\"profile_fields\":{},\"world_fields\":{}}",
+            capturePrompt: p => capturedPrompt = p);
+        var llmClient = new OpenAiCompatibleClient(handler);
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+
+        await sm.UpdateFromCompressAsync(worldId: 1, earlyHistoryText: "user: 新问题", llmClient, config, oldSummary: "旧摘要内容");
+
+        capturedPrompt.Should().Contain("旧摘要内容");
+        capturedPrompt.Should().Contain("新问题");
+    }
+
     private sealed class FailingHandler : System.Net.Http.HttpMessageHandler
     {
         protected override Task<System.Net.Http.HttpResponseMessage> SendAsync(
@@ -142,6 +161,27 @@ public class SoulManagerTest
             {
                 Content = new System.Net.Http.StringContent(_response, System.Text.Encoding.UTF8, "application/json")
             });
+        }
+    }
+
+    private sealed class StubLlmHandlerForSoul : System.Net.Http.HttpMessageHandler
+    {
+        private readonly string _responseJson;
+        private readonly System.Action<string>? _capturePrompt;
+        public StubLlmHandlerForSoul(string responseJson, System.Action<string>? capturePrompt = null)
+        { _responseJson = responseJson; _capturePrompt = capturePrompt; }
+        protected override Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken ct)
+        {
+            var body = request.Content?.ReadAsStringAsync(ct).Result ?? "";
+            // 从请求 body 解出 messages[0].content 作为 prompt
+            try
+            {
+                var obj = Newtonsoft.Json.Linq.JObject.Parse(body);
+                _capturePrompt?.Invoke(obj["messages"]?[0]?["content"]?.ToString() ?? "");
+            }
+            catch { }
+            return Task.FromResult(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            { Content = new System.Net.Http.StringContent($"{{\"choices\":[{{\"message\":{{\"role\":\"assistant\",\"content\":{_responseJson}}}}}],\"usage\":{{\"prompt_tokens\":10,\"completion_tokens\":5}}}}", System.Text.Encoding.UTF8, "application/json") });
         }
     }
 }
