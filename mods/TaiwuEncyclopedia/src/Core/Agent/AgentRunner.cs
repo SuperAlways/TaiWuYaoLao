@@ -142,7 +142,7 @@ public sealed class AgentRunner
         string? summary = newSummary ?? oldSummary;
 
         // 3. 组装提示词
-        var messages = _ctx.BuildInitialMessages(systemPrompt, history, soulSummary, summary, query);
+        var messages = _ctx.BuildInitialMessages(systemPrompt, history, soulSummary, query, summary);
 
         yield return new StartEvent { WorldId = worldId };
 
