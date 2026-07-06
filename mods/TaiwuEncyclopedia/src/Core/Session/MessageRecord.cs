@@ -26,4 +26,10 @@ public sealed class MessageRecord
 
     /// <summary>思考链工具调用显示文本(每行一个 display_text,纯文本无 emoji)。</summary>
     public string? ThinkingContent { get; set; }
+
+    /// <summary>是否为压缩边界消息。</summary>
+    public bool IsCompactBoundary { get; set; } = false;
+
+    /// <summary>压缩边界摘要。</summary>
+    public string? BoundarySummary { get; set; }
 }
