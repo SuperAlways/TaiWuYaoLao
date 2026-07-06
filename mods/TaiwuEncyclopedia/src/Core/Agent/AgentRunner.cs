@@ -13,13 +13,14 @@ using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Soul;
 using TaiwuEncyclopedia.Core.Tools;
+using TaiwuEncyclopedia.Core.Util;
 
 namespace TaiwuEncyclopedia.Core.Agent;
 
 /// <summary>
 /// Agent 编排入口。搬 v0.5 AgentRunner + agent_loop。
 /// RunAsync 是 IAsyncEnumerable，yield 事件序列：
-/// StartEvent → [ToolCallEvent / ToolResultEvent / FinalChunkEvent]* → EndEvent
+/// StartEvent → [ToolCallEvent / ToolResultEvent / FinalChunkEvent] → EndEvent
 /// </summary>
 public sealed class AgentRunner
 {
@@ -32,6 +33,7 @@ public sealed class AgentRunner
     private readonly SessionManager _session;
     private readonly PromptBuilder _prompts;
     private readonly int _maxIter;
+    private readonly int _collapseThreshold;
     private readonly IAgentTrace _trace;
     private readonly List<Dictionary<string, object>>? _toolsSchema;
 
@@ -47,6 +49,8 @@ public sealed class AgentRunner
     /// <param name="sessionManager">会话管理器。</param>
     /// <param name="promptBuilder">提示构建器。</param>
     /// <param name="maxIter">最大迭代次数（默认 6）。</param>
+    /// <param name="collapseThresholdTokens">压缩阈值 token 数（默认 80000）。</param>
+    /// <param name="trace">追踪器（可选）。</param>
     public AgentRunner(
         OpenAiCompatibleClient llmClient,
         LlmConfig llmConfig,
@@ -57,6 +61,7 @@ public sealed class AgentRunner
         SessionManager sessionManager,
         PromptBuilder promptBuilder,
         int maxIter = 6,
+        int collapseThresholdTokens = 80000,
         IAgentTrace? trace = null)
     {
         _llmClient = llmClient;
@@ -68,6 +73,7 @@ public sealed class AgentRunner
         _session = sessionManager;
         _prompts = promptBuilder;
         _maxIter = maxIter;
+        _collapseThreshold = collapseThresholdTokens;
         _trace = trace ?? NullAgentTrace.Instance;
         _toolsSchema = registry?.BuildOpenaiTools();
     }
@@ -87,22 +93,60 @@ public sealed class AgentRunner
         List<LlmMessage>? history = null)
     {
         var stopwatch = Stopwatch.StartNew();
-        history ??= new List<LlmMessage>();
         var collectedRefs = new List<Reference>();
 
-        // 1. 构建 messages
+        // 1. 加载组件
         var systemPrompt = _prompts.BuildSystemPrompt(personaId);
         var soulSummary = await _soul.GetSoulSummaryAsync(worldId);
-        var messages = _ctx.BuildInitialMessages(systemPrompt, history, soulSummary, query);
 
-        // 2. L2 collapse 检查
-        messages = await _ctx.CollapseIfNeededAsync(messages, worldId);
+        string? oldSummary;
+        if (history == null)
+        {
+            var (s, newMsgs) = await _session.LoadForAgentAsync(worldId);
+            oldSummary = s;
+            history = newMsgs
+                .Where(m => m.Role == "user" || m.Role == "assistant")
+                .Select(m => new LlmMessage { Role = m.Role, Content = m.Content })
+                .ToList();
+        }
+        else
+        {
+            oldSummary = null;
+        }
 
-        // 3. 使用预构建的 tools schema（_toolsSchema 已在构造函数中构建）
+        // 2. 检测是否需要压缩（组装前）
+        bool boundaryPending = false;
+        string? newSummary = null;
+        var projectedTokens = TokenEstimator.EstimateTokens(systemPrompt)
+            + TokenEstimator.EstimateTokens(soulSummary)
+            + TokenEstimator.EstimateTokens(oldSummary)
+            + TokenEstimator.EstimateTokensForMessages(history)
+            + TokenEstimator.EstimateTokens(query);
+
+        if (projectedTokens >= _collapseThreshold)
+        {
+            yield return new StatusEvent { Message = "正在压缩历史对话，需要约 20 秒..." };
+            var historyText = FormatHistory(history);
+            newSummary = await _soul.UpdateFromCompressAsync(worldId, historyText, _llmClient, _llmConfig, oldSummary);
+            if (!string.IsNullOrEmpty(newSummary))
+            {
+                history = new List<LlmMessage>(); // 全部被摘要吸收
+                boundaryPending = true;
+            }
+            else
+            {
+                newSummary = null; // 压缩失败，退化
+            }
+        }
+
+        string? summary = newSummary ?? oldSummary;
+
+        // 3. 组装提示词
+        var messages = _ctx.BuildInitialMessages(systemPrompt, history, soulSummary, summary, query);
 
         yield return new StartEvent { WorldId = worldId };
 
-        // 4. ReAct 循环（转交给 AgentLoop.Run）
+        // 4. ReAct 循环
         var finalAnswerParts = new List<string>();
         var loopResult = new AgentLoopResult();
         var thinkingBuilder = new StringBuilder();
@@ -115,7 +159,7 @@ public sealed class AgentRunner
             yield return evt;
         }
 
-        // 5. 跨轮去重 Top-5 references → yield ReferencesEvent + 传给 SessionManager
+        // 5. Top-5 references
         var topRefs = collectedRefs
             .OrderByDescending(r => r.HitCount)
             .Take(5)
@@ -132,21 +176,28 @@ public sealed class AgentRunner
         }
         catch (System.Exception ex) { CoreLog.Write("TE.Session", $"SaveConversationAsync failed: {ex.Message}"); }
 
-        // 7. yield EndEvent
+        // 7. 追加压缩边界
+        if (boundaryPending && !string.IsNullOrEmpty(newSummary))
+        {
+            try { await _session.AppendBoundaryAsync(worldId, newSummary!); }
+            catch (System.Exception ex) { CoreLog.Write("TE.Session", $"AppendBoundaryAsync failed: {ex.Message}"); }
+        }
+
+        // 8. yield EndEvent
         yield return new EndEvent
         {
             ThinkingTimeMs = (int)stopwatch.Elapsed.TotalMilliseconds,
-            TotalIterations = loopResult.TotalIterations + 1, // +1 计 ANSWER 直答轮
+            TotalIterations = loopResult.TotalIterations + 1,
         };
     }
 
-    private static Dictionary<string, object> ParseArgs(string? arguments)
+    private static string FormatHistory(List<LlmMessage> history)
     {
-        if (string.IsNullOrEmpty(arguments)) return new();
-        try
+        var parts = new List<string>();
+        foreach (var m in history)
         {
-            return JObject.Parse(arguments).ToObject<Dictionary<string, object>>() ?? new();
+            parts.Add($"{m.Role}: {m.Content}");
         }
-        catch { return new(); }
+        return string.Join("\n", parts);
     }
 }

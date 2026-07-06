@@ -42,32 +42,6 @@ public class ContextManagerTest
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task CollapseIfNeededBelowThresholdReturnsOriginal()
-    {
-        var cm = new ContextManager(collapseThresholdTokens: 40000);
-        var messages = new List<LlmMessage>
-        {
-            new() { Role = "system", Content = "SYS" },
-            new() { Role = "user", Content = "hi" },
-        };
-        var result = await cm.CollapseIfNeededAsync(messages, worldId: 1);
-        result.Should().BeSameAs(messages); // 未触发，返回原列表
-    }
-
-    [Fact]
-    public async System.Threading.Tasks.Task CollapseIfNeededNoSoulManagerReturnsOriginal()
-    {
-        var cm = new ContextManager(collapseThresholdTokens: 1); // 极低阈值强制触发
-        var messages = new List<LlmMessage>
-        {
-            new() { Role = "system", Content = "SYS" },
-            new() { Role = "user", Content = "long enough to trigger" },
-        };
-        var result = await cm.CollapseIfNeededAsync(messages, worldId: 1);
-        result.Should().BeSameAs(messages); // soul_manager 为 null，直接返回
-    }
-
-    [Fact]
     public void ForceCompressTruncatesLongestToolResult()
     {
         var cm = new ContextManager();

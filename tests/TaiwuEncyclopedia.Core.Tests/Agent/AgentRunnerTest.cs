@@ -155,6 +155,8 @@ personas:
         private readonly string _stream;
         private int _callCount;
 
+        public string? LastThinkingRequestBody;
+
         public StubLlmHandler(string thinkingResponse, string streamResponse)
         {
             _thinking = thinkingResponse;
@@ -169,6 +171,12 @@ personas:
             var isStream = _callCount > 1;
             var content = new StringContent(body, Encoding.UTF8,
                 isStream ? "text/event-stream" : "application/json");
+
+            if (!isStream)
+            {
+                LastThinkingRequestBody = req.Content!.ReadAsStringAsync(ct).Result;
+            }
+
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
         }
     }
@@ -231,5 +239,75 @@ personas:
             var content = new StringContent(body, Encoding.UTF8, "application/json");
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
         }
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task RunAsync_LoadsHistoryFromSession_WhenHistoryParamNull()
+    {
+        var root = PathRoot();
+        var llmHandler = new StubLlmHandler(
+            thinkingResponse: "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"回答\"}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
+            streamResponse: "data: {\"choices\":[{\"delta\":{\"content\":\"最终答案\"}}]}\n\ndata: {\"choices\":[],\"usage\":{\"prompt_tokens\":20,\"completion_tokens\":10}}\n\ndata: [DONE]\n\n");
+        var sm = MakeSkillManager();
+        var llmClient = new OpenAiCompatibleClient(llmHandler);
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+        var ragClient = new RagHttpClient(new StubRagHandler(), "http://taiwuasker");
+        var soulStore = new JsonSoulStore(root);
+        var sessionStore = new JsonSessionStore(root);
+        var sessionManager = new SessionManager(sessionStore);
+
+        // 预存一轮历史
+        await sessionManager.SaveConversationAsync(worldId: 1, userQuery: "上一轮问题", assistantAnswer: "上一轮回答");
+
+        var registry = new ToolRegistry();
+        var executor = new ToolExecutor(registry);
+        var ctx = new ContextManager();
+        var soulManager = new SoulManager(soulStore);
+        var prompts = new PromptBuilder(sm);
+        var runner = new AgentRunner(llmClient, config, registry, executor, ctx, soulManager, sessionManager, prompts);
+
+        await foreach (var _ in runner.RunAsync(query: "这轮问题", worldId: 1)) { }
+
+        // 验证 LLM 收到的 messages 含上一轮历史（通过 handler 捕获）
+        llmHandler.LastThinkingRequestBody.Should().Contain("上一轮问题");
+        llmHandler.LastThinkingRequestBody.Should().Contain("这轮问题");
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task RunAsync_CompressesHistory_WhenTokenExceedsThreshold()
+    {
+        var root = PathRoot();
+        // 使用支持多次调用的 handler
+        var llmHandler = new StubLlmHandlerWithToolCall(
+            thinking1: "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"{\\\"summary\\\":\\\"玩家问了历史问题\\\",\\\"profile_fields\\\":{},\\\"world_fields\\\":{}}\"}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
+            thinking2: "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"我直接回答\"}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
+            stream: "data: {\"choices\":[{\"delta\":{\"content\":\"最终答案\"}}]}\n\ndata: {\"choices\":[],\"usage\":{\"prompt_tokens\":20,\"completion_tokens\":10}}\n\ndata: [DONE]\n\n");
+        var sm = MakeSkillManager();
+        var llmClient = new OpenAiCompatibleClient(llmHandler);
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+        var soulStore = new JsonSoulStore(root);
+        var sessionStore = new JsonSessionStore(root);
+        var sessionManager = new SessionManager(sessionStore);
+
+        // 预存历史
+        await sessionManager.SaveConversationAsync(1, "历史问题", "历史回答");
+
+        var registry = new ToolRegistry();
+        var executor = new ToolExecutor(registry);
+        var ctx = new ContextManager();
+        var soulManager = new SoulManager(soulStore);
+        var prompts = new PromptBuilder(sm);
+        // collapseThresholdTokens:1 强制触发压缩
+        var runner = new AgentRunner(llmClient, config, registry, executor, ctx, soulManager, sessionManager, prompts, maxIter: 6, collapseThresholdTokens: 1);
+
+        var events = new List<AgentEvent>();
+        await foreach (var evt in runner.RunAsync(query: "新问题", worldId: 1)) events.Add(evt);
+
+        // 验证 yield 了 StatusEvent（压缩提示）
+        events.Should().Contain(e => e.GetType() == typeof(StatusEvent) && ((StatusEvent)e).Message.Contains("压缩"));
+        // 验证边界已追加到存储
+        var (oldSummary, newMessages) = await sessionManager.LoadForAgentAsync(1);
+        oldSummary.Should().Contain("历史问题");
+        newMessages.Should().BeEmpty(); // 压缩后边界在末尾，之后无消息
     }
 }
