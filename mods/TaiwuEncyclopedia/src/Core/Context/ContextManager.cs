@@ -45,12 +45,14 @@ public sealed class ContextManager
     /// <param name="history">历史消息列表</param>
     /// <param name="soulSummary">玩家灵魂摘要</param>
     /// <param name="userQuery">用户当前查询</param>
+    /// <param name="summary">历史对话摘要（可选）</param>
     /// <returns>构建好的初始消息列表</returns>
     public List<LlmMessage> BuildInitialMessages(
         string systemPrompt,
         List<LlmMessage> history,
         string? soulSummary,
-        string userQuery)
+        string userQuery,
+        string? summary = null)
     {
         var messages = new List<LlmMessage>
         {
@@ -63,6 +65,10 @@ public sealed class ContextManager
                 Role = "user",
                 Content = $"【PLAYER_SOUL】\n{soulSummary}",
             });
+        }
+        if (!string.IsNullOrEmpty(summary))
+        {
+            messages.Add(new LlmMessage { Role = "system", Content = $"【历史摘要】\n{summary}" });
         }
         if (history != null) messages.AddRange(history);
         messages.Add(new LlmMessage { Role = "user", Content = userQuery });

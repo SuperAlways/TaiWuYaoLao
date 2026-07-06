@@ -111,4 +111,36 @@ public class ContextManagerTest
         var result = cm.ForceCompress(messages);
         result.Should().BeSameAs(messages);
     }
+
+    [Fact]
+    public void BuildInitialMessagesWithSummary_InjectsSummaryAsSystem()
+    {
+        var cm = new ContextManager();
+        var messages = cm.BuildInitialMessages(
+            systemPrompt: "SYS",
+            history: new List<LlmMessage>(),
+            soulSummary: null,
+            userQuery: "继续问",
+            summary: "历史摘要内容");
+
+        messages.Should().HaveCount(3); // system + summary + user_query
+        messages[0].Role.Should().Be("system");
+        messages[0].Content.Should().Be("SYS");
+        messages[1].Role.Should().Be("system");
+        messages[1].Content.Should().Contain("【历史摘要】");
+        messages[1].Content.Should().Contain("历史摘要内容");
+        messages[2].Role.Should().Be("user");
+        messages[2].Content.Should().Be("继续问");
+    }
+
+    [Fact]
+    public void BuildInitialMessagesWithNullSummary_OmitsSummaryMessage()
+    {
+        var cm = new ContextManager();
+        var messages = cm.BuildInitialMessages("SYS", new List<LlmMessage>(), "", "hi", summary: null);
+        messages.Should().HaveCount(2); // system + user_query，无 summary
+        messages[0].Role.Should().Be("system");
+        messages[1].Role.Should().Be("user");
+        messages[1].Content.Should().Be("hi");
+    }
 }
