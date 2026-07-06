@@ -169,6 +169,16 @@ public sealed class ThinkingPanel : MonoBehaviour
         else Collapse();
     }
 
+    /// <summary>更新思考区下方的提示文字（默认"大约需要 30-40 秒"，压缩时改为"正在压缩历史对话..."）。</summary>
+    public void SetHint(string text)
+    {
+        if (_hintText != null)
+        {
+            var t = _hintText.GetComponent<TextMeshProUGUI>();
+            if (t != null) t.text = text;
+        }
+    }
+
     public void AddToolCall(string name, string displayText, int iteration)
     {
         if (_content == null) return;

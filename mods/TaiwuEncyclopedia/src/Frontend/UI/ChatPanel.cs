@@ -123,7 +123,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         var msgList = _view?.MsgList;
         if (msgList == null) yield break;
         msgList.ClearLog();
-        var task = FrontendServices.SessionManager.LoadHistoryAsync(_currentWorldId, limit: 20);
+        var task = FrontendServices.SessionManager.LoadHistoryAsync(_currentWorldId, limit: 20, includeBoundaries: false);
         yield return new WaitUntil(() => task.IsCompleted);
 
         if (task.IsFaulted || task.IsCanceled) { msgList.AddSysBubble("⚠ 加载历史失败"); yield break; }
@@ -243,6 +243,9 @@ public class ChatPanel : MonoBehaviour, IPanel
         switch (evt)
         {
             case StartEvent _: break;
+            case StatusEvent se:
+                _currentThinkingPanel?.SetHint(se.Message);
+                break;
             case ToolCallEvent tc:
                 _currentThinkingPanel?.AddToolCall(tc.Name, tc.DisplayText, tc.Iteration);
                 break;
