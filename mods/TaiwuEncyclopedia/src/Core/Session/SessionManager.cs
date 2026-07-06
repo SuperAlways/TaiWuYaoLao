@@ -85,4 +85,23 @@ public sealed class SessionManager
 
     /// <summary>清空指定 WorldId 的对话流（透传 ISessionStore.ClearAsync）。</summary>
     public Task ClearAsync(int worldId) => _store.ClearAsync(worldId);
+
+    /// <summary>加载 Agent 用的历史：找最后一条压缩边界，返回 (边界摘要, 边界之后的消息)。</summary>
+    public async Task<(string? oldSummary, List<MessageRecord> newMessages)> LoadForAgentAsync(int worldId)
+    {
+        return await _store.LoadForAgentAsync(worldId);
+    }
+
+    /// <summary>末尾追加压缩边界消息（L2 压缩完成后调用）。</summary>
+    public Task AppendBoundaryAsync(int worldId, string summary) => _store.AppendBoundaryAsync(worldId, summary);
+
+    /// <summary>加载会话历史，格式可直接用于 build_initial_messages。</summary>
+    /// <param name="worldId">世界ID</param>
+    /// <param name="limit">返回的最大消息数量，默认10</param>
+    /// <param name="includeBoundaries">是否包含压缩边界消息</param>
+    /// <returns>按时间顺序排列的LLM消息列表</returns>
+    public async Task<List<MessageRecord>> LoadHistoryAsync(int worldId, int limit = 10, bool includeBoundaries = true)
+    {
+        return await _store.LoadRecentAsync(worldId, limit, includeBoundaries);
+    }
 }

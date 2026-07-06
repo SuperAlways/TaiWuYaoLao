@@ -182,4 +182,21 @@ public class SessionManagerTest
         pregame.AutoName.Should().Be("主界面对话");
         pregame.Count.Should().Be(2); // user + assistant = 2 messages
     }
+
+    [Fact]
+    public async Task LoadForAgentAsync_PassesThroughToStore()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-sm-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        var sm = new SessionManager(store);
+        await sm.SaveConversationAsync(1, "q", "a");
+        await sm.AppendBoundaryAsync(1, "摘要");
+        // Add messages after boundary
+        await sm.SaveConversationAsync(1, "new q", "new a");
+
+        var (oldSummary, newMessages) = await sm.LoadForAgentAsync(1);
+
+        oldSummary.Should().Be("摘要");
+        newMessages.Should().HaveCount(2); // user + assistant saved after boundary
+    }
 }
