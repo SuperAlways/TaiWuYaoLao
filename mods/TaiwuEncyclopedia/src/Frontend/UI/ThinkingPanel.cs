@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+using TaiwuEncyclopedia.Core.Agent;
 using TaiwuEncyclopedia.Frontend.UI;
 
 namespace TaiwuEncyclopedia.UI;
@@ -21,7 +22,12 @@ public sealed class ThinkingPanel : MonoBehaviour
     public TextMeshProUGUI? _timerText;
     public float _startTime;
 
+    private ActiveRequest? _activeRequest;
+
     public void SetFont(TMP_FontAsset? font) => _font = font;
+
+    /// <summary>设置当前请求（用于 Update 读取计时器+token）。null 清除。</summary>
+    public void SetActiveRequest(ActiveRequest? req) => _activeRequest = req;
 
     public void Build()
     {
@@ -126,9 +132,28 @@ public sealed class ThinkingPanel : MonoBehaviour
     /// <summary>面板 Hide/Show 后 Unity 会停掉 Coroutine，重连时调用此方法恢复计时动画。</summary>
     public void ResumeThinkingAnimation()
     {
-        // 只在还没被 SetThinking(false) 清除的状态下恢复（即还在思考中）
-        if (_dotsText == null || _dotsCoroutine != null) return;
+        // 只在还在思考状态（_dotsText 存在）时恢复
+        if (_dotsText == null) return;
+        // _dotsCoroutine 可能是 Hide 时 Unity 隐式停掉的死引用，清理后重启
+        if (_dotsCoroutine != null) StopCoroutine(_dotsCoroutine);
         _dotsCoroutine = StartCoroutine(AnimateDots());
+    }
+
+    private void Update()
+    {
+        if (_activeRequest == null || _timerText == null) return;
+        var elapsed = UnityEngine.Time.realtimeSinceStartup - _activeRequest.StartTime;
+        _timerText.text = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+            "{0:F1}s · {1}", elapsed, FormatTokens(
+                _activeRequest.TotalPromptTokens,
+                _activeRequest.TotalCompletionTokens,
+                _activeRequest.TotalCacheHitTokens));
+    }
+
+    private static string FormatTokens(int prompt, int completion, int cache)
+    {
+        string F(int n) => n >= 1000 ? $"{n / 1000.0:F1}K" : n.ToString();
+        return $"tokens {F(prompt)}↑ {F(completion)}↓ ({F(cache)} cache)";
     }
 
     private IEnumerator AnimateDots()
@@ -142,9 +167,6 @@ public sealed class ThinkingPanel : MonoBehaviour
                 TextMeshProUGUI t = _dotsText.GetComponent<TextMeshProUGUI>();
                 t.text = new string('·', n);
             }
-            float elapsed = Time.realtimeSinceStartup - _startTime;
-            if (_timerText != null)
-                _timerText.text = string.Format(CultureInfo.InvariantCulture, "{0:F1}s", elapsed);
             yield return new WaitForSeconds(0.5f);
         }
     }

@@ -76,6 +76,7 @@ public class ChatPanel : MonoBehaviour, IPanel
             _activeRequest = running;
             if (_currentAgentBinder != null && running.AnswerBuilder.Length > 0)
                 _currentAgentBinder.Rebind(running.AnswerBuilder.ToString());
+            _currentThinkingPanel?.SetActiveRequest(running);
             _currentThinkingPanel?.ResumeThinkingAnimation();
         }
         else
@@ -190,6 +191,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         _lastRebindTime = Time.realtimeSinceStartup;
         _currentThinkingPanel = _view?.MsgList?.AddThinkingPanel();
         _answerBuffer = new StringBuilder();
+        var fullAnswer = new StringBuilder();
         var agentPair = _view?.MsgList?.AddAgentText();
         if (agentPair.HasValue)
         {
@@ -198,11 +200,6 @@ public class ChatPanel : MonoBehaviour, IPanel
         }
         _currentRefArea = null;
 
-        _currentThinkingPanel?.SetThinking(true);
-        _view?.MsgList?.ScrollDown();
-        _view?.InputBar?.SetBusy(true);
-
-        var fullAnswer = new StringBuilder();
         _activeRequest = AgentRunnerHost.Instance.StartRequest(worldId, text, evt =>
         {
             MainThreadDispatcher.Instance.Enqueue(() =>
@@ -218,6 +215,11 @@ public class ChatPanel : MonoBehaviour, IPanel
                 }
             });
         });
+
+        _currentThinkingPanel?.SetActiveRequest(_activeRequest);
+        _currentThinkingPanel?.SetThinking(true);
+        _view?.MsgList?.ScrollDown();
+        _view?.InputBar?.SetBusy(true);
 
         StartCoroutine(_view?.InputBar?.RefocusCoroutine() ?? (IEnumerator)EmptyCoroutine());
     }
@@ -243,6 +245,8 @@ public class ChatPanel : MonoBehaviour, IPanel
         switch (evt)
         {
             case StartEvent _: break;
+            case UsageEvent _:
+                break;
             case StatusEvent se:
                 _currentThinkingPanel?.SetHint(se.Message);
                 break;
