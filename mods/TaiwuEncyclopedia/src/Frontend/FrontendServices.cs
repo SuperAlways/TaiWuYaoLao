@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using TaiwuEncyclopedia.Core.Agent;
 using TaiwuEncyclopedia.Core.Context;
+using TaiwuEncyclopedia.Core.Diagnostics;
 using TaiwuEncyclopedia.Core.Http;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Session;
@@ -31,6 +32,7 @@ public static class FrontendServices
     private static LlmConfig? _loadedLlmConfig;
     private static string? _selectedPersonaId;
     private static string? _ragBaseUrl;
+    private static bool _agentTrace;
 
     /// <summary>
     /// 加载的 LLM 配置 (从 config.json 读取)。
@@ -174,6 +176,7 @@ public static class FrontendServices
                     };
                     _selectedPersonaId = saved.PersonaId ?? "sword-will";
                     _ragBaseUrl = saved.RagBaseUrl;
+                    _agentTrace = saved.AgentTrace;
                     Debug.Log("[TaiwuEncyclopedia] Config loaded from disk");
                     return;
                 }
@@ -187,12 +190,13 @@ public static class FrontendServices
         // 回退到默认
         _loadedLlmConfig = new LlmConfig();
         _selectedPersonaId = "sword-will";
+        _agentTrace = false;
     }
 
     /// <summary>
     /// 保存 LLM 配置并重建 AgentRunner。
     /// </summary>
-    public static void SaveLlmConfig(string baseUrl, string apiKey, string model, string personaId)
+    public static void SaveLlmConfig(string baseUrl, string apiKey, string model, string personaId, bool agentTrace = false)
     {
         try
         {
@@ -203,7 +207,8 @@ public static class FrontendServices
                 ApiKey = apiKey,
                 Model = model,
                 PersonaId = personaId,
-                RagBaseUrl = _ragBaseUrl
+                RagBaseUrl = _ragBaseUrl,
+                AgentTrace = agentTrace
             };
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(saved, Newtonsoft.Json.Formatting.Indented);
             string? dir = Path.GetDirectoryName(ConfigPath);
@@ -221,6 +226,7 @@ public static class FrontendServices
                 Model = model
             };
             _selectedPersonaId = personaId;
+            _agentTrace = agentTrace;
 
             // 重建 AgentRunner
             RebuildAgentRunner();
@@ -260,6 +266,15 @@ public static class FrontendServices
 
         try
         {
+            // 读取 trace 开关
+            bool agentTrace = _agentTrace;
+            IAgentTrace trace = NullAgentTrace.Instance;
+            if (agentTrace)
+            {
+                var traceDir = Bootstrap.TracesDir;
+                trace = new JsonlAgentTrace(traceDir);
+            }
+
             // 1. LLM Client
             _llmClient = new OpenAiCompatibleClient();
 
@@ -292,19 +307,20 @@ public static class FrontendServices
             // 5. SoulManager
             _soulManager = new SoulManager(SoulStore);
 
-            // 6. ContextManager
+            // 6. ContextManager（注入 trace）
             _contextManager = new ContextManager(
                 _soulManager,
                 _llmClient,
                 _loadedLlmConfig,
-                collapseThresholdTokens: 80000);
+                collapseThresholdTokens: 80000,
+                trace: trace);
 
             // 7. PromptBuilder
             _promptBuilder = sm != null
                 ? new PromptBuilder(sm, _selectedPersonaId ?? "sword-will")
                 : new PromptBuilder(new FallbackSkillManager(), _selectedPersonaId ?? "sword-will");
 
-            // 8. AgentRunner
+            // 8. AgentRunner（注入 trace）
             _agentRunner = new AgentRunner(
                 _llmClient,
                 _loadedLlmConfig,
@@ -314,7 +330,8 @@ public static class FrontendServices
                 _soulManager,
                 SessionManager,
                 _promptBuilder,
-                maxIter: 6);
+                maxIter: 6,
+                trace: trace);
 
             Debug.Log("[TaiwuEncyclopedia] AgentRunner built successfully");
         }
@@ -333,6 +350,7 @@ public static class FrontendServices
         public string? Model { get; set; }
         public string? PersonaId { get; set; }
         public string? RagBaseUrl { get; set; }
+        public bool AgentTrace { get; set; }
     }
 
     // ========== Fallback SkillManager (当 SkillsRoot 不可用时) ==========

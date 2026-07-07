@@ -18,6 +18,7 @@ public static class Bootstrap
     public static string WorldsDir => Path.Combine(SessionsDir, "Worlds");
     public static string SoulDir => Path.Combine(RuntimeRoot, "Soul");
     public static string LogsDir => Path.Combine(RuntimeRoot, "Logs");
+    public static string TracesDir => Path.Combine(RuntimeRoot, "Traces");
 
     public static void Run()
     {
@@ -51,7 +52,7 @@ public static class Bootstrap
         }
 
         // 创建所需目录
-        foreach (string d in new[] { RuntimeRoot, WorldsDir, SoulDir, LogsDir })
+        foreach (string d in new[] { RuntimeRoot, WorldsDir, SoulDir, LogsDir, TracesDir })
         {
             try
             {
