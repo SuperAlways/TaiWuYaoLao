@@ -29,6 +29,9 @@ public sealed class ActiveRequest
     /// <summary>累积 cache 命中 tokens。</summary>
     public int TotalCacheHitTokens { get; set; }
 
-    /// <summary>是否还在思考（StartEvent→true，首个 FinalChunkEvent→false）。</summary>
+    /// <summary>是否还在思考（StartEvent→true，EndEvent→false）。</summary>
     public bool IsThinking { get; set; } = true;
+
+    /// <summary>停止时保留的最终耗时（秒）。IsThinking=true 时持续更新，false 时冻结。</summary>
+    public float FinalElapsed { get; set; }
 }

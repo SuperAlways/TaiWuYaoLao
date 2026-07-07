@@ -142,7 +142,12 @@ public sealed class ThinkingPanel : MonoBehaviour
     private void Update()
     {
         if (_activeRequest == null || _timerText == null) return;
-        var elapsed = UnityEngine.Time.realtimeSinceStartup - _activeRequest.StartTime;
+        // IsThinking=false（流式输出结束）后计时器停在最终值，token 显示最终累计
+        var elapsed = _activeRequest.IsThinking
+            ? UnityEngine.Time.realtimeSinceStartup - _activeRequest.StartTime
+            : _activeRequest.FinalElapsed;
+        if (_activeRequest.IsThinking)
+            _activeRequest.FinalElapsed = elapsed;  // 持续更新，停止时保留最终值
         _timerText.text = string.Format(System.Globalization.CultureInfo.InvariantCulture,
             "{0:F1}s · {1}", elapsed, FormatTokens(
                 _activeRequest.TotalPromptTokens,

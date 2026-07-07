@@ -74,13 +74,17 @@ public sealed class AgentRunnerHost : MonoBehaviour
             else if (evt is FinalChunkEvent fc)
             {
                 if (fc.Content != null) req.AnswerBuilder.Append(fc.Content);
-                req.IsThinking = false;
+                // IsThinking 在 EndEvent 时置 false（流式输出完才算结束）
             }
             else if (evt is UsageEvent ue)
             {
                 req.TotalPromptTokens += ue.PromptTokens;
                 req.TotalCompletionTokens += ue.CompletionTokens;
                 req.TotalCacheHitTokens += ue.CacheHitTokens;
+            }
+            else if (evt is EndEvent)
+            {
+                req.IsThinking = false;
             }
             onEvent(evt);
             if (evt is EndEvent) { receivedEnd = true; break; }
