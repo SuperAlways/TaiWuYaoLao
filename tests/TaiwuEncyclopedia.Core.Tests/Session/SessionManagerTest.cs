@@ -199,4 +199,39 @@ public class SessionManagerTest
         oldSummary.Should().Be("摘要");
         newMessages.Should().HaveCount(2); // user + assistant saved after boundary
     }
+
+    [Fact]
+    public async Task LoadForAgentAsMessagesAsync_ConvertsRecordsToLlmMessages()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-sm2-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        var sm = new SessionManager(store);
+        await sm.AppendBoundaryAsync(1, "摘要");
+        await sm.SaveConversationAsync(1, "用户问题", "AI回答");
+
+        var (oldSummary, messages) = await sm.LoadForAgentAsMessagesAsync(1);
+
+        oldSummary.Should().Be("摘要");
+        messages.Should().HaveCount(2);
+        messages[0].Role.Should().Be("user");
+        messages[0].Content.Should().Be("用户问题");
+        messages[1].Role.Should().Be("assistant");
+        messages[1].Content.Should().Be("AI回答");
+    }
+
+    [Fact]
+    public async Task LoadForAgentAsMessagesAsync_FiltersSystemMessages()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-sm2-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSessionStore(root);
+        var sm = new SessionManager(store);
+        // 直接写一条 system 消息（模拟异常数据）
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "system", Content = "系统消息" });
+        await store.AppendMessageAsync(1, new MessageRecord { Role = "user", Content = "用户消息" });
+
+        var (oldSummary, messages) = await sm.LoadForAgentAsMessagesAsync(1);
+
+        messages.Should().HaveCount(1);
+        messages[0].Role.Should().Be("user");
+    }
 }

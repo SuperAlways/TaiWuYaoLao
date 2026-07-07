@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TaiwuEncyclopedia.Core.Http;
 using TaiwuEncyclopedia.Core.Llm;
@@ -90,6 +91,17 @@ public sealed class SessionManager
     public async Task<(string? oldSummary, List<MessageRecord> newMessages)> LoadForAgentAsync(int worldId)
     {
         return await _store.LoadForAgentAsync(worldId);
+    }
+
+    /// <summary>加载 Agent 用的历史并转换为 LlmMessage（只取 user/assistant，跳过 system/tool）。</summary>
+    public async Task<(string? oldSummary, List<LlmMessage> newMessages)> LoadForAgentAsMessagesAsync(int worldId)
+    {
+        var (oldSummary, records) = await _store.LoadForAgentAsync(worldId);
+        var messages = records
+            .Where(m => m.Role == "user" || m.Role == "assistant")
+            .Select(m => new LlmMessage { Role = m.Role, Content = m.Content })
+            .ToList();
+        return (oldSummary, messages);
     }
 
     /// <summary>末尾追加压缩边界消息（L2 压缩完成后调用）。</summary>
