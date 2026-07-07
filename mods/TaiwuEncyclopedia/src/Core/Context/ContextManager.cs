@@ -110,7 +110,7 @@ public sealed class ContextManager
 
         var historyText = FormatHistory(history);
         var newSummary = await _soulManager.UpdateFromCompressAsync(
-            worldId, historyText, _llmClient, _llmConfig, oldSummary);
+            worldId, historyText, _llmClient, _llmConfig, oldSummary, _trace);
 
         if (string.IsNullOrEmpty(newSummary))
         {

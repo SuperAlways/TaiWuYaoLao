@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using TaiwuEncyclopedia.Core.Diagnostics;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Storage;
@@ -95,7 +96,8 @@ public sealed class SoulManager
         string earlyHistoryText,
         OpenAiCompatibleClient llmClient,
         LlmConfig llmConfig,
-        string? oldSummary = null)
+        string? oldSummary = null,
+        IAgentTrace? trace = null)
     {
         var profile = await _store.LoadProfileAsync();
         var world = await _store.LoadWorldAsync(worldId);
@@ -108,10 +110,16 @@ public sealed class SoulManager
             var prompt = _extractPrompt
                 .Replace("{old_summary}", oldSummarySection)
                 .Replace("{history}", earlyHistoryText); // 不截断，全文传入
+            var promptMsgs = new List<LlmMessage> { new() { Role = "user", Content = prompt } };
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            trace?.LlmCall(0, "intent", "soul_extract", promptMsgs, null);
             var response = await llmClient.Chat(
                 AgentLLMRole.Intent,
-                new List<LlmMessage> { new() { Role = "user", Content = prompt } },
+                promptMsgs,
                 llmConfig);
+            sw.Stop();
+            trace?.LlmResponse(0, "intent", response.Content, null, "stop",
+                response.Usage, (int)sw.ElapsedMilliseconds);
             var parsed = JObject.Parse(response.Content ?? "{}");
             summary = parsed["summary"]?.ToString() ?? "";
 
