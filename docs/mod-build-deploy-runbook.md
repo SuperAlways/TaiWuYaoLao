@@ -59,7 +59,35 @@ ls mods/TaiwuEncyclopedia/{Config.Lua,Taiwu.Mod.Pack.proj}
 | `src/Frontend/TaiwuEncyclopedia.Frontend.csproj` | Project | 入口程序集，IL Repack 合并 Core+Markdown |
 | `Skills` | Directory | 百晓册知识库（总纲 + 10 章 + glossary + registry + concept_index） |
 
-### 4. 打包
+### 4. 版本号自增（每次迭代 +1）
+
+源码 `Config.Lua` 的 `Version` 格式 `1.0.NN`，每次部署把末位 `NN` 加 1，同时更新 `Title` 里的尾缀。
+
+```bash
+cd "D:/shuoshu/taiwuask/TaiWuYaoLao"
+CFG="mods/TaiwuEncyclopedia/Config.Lua"
+
+# 读当前 Version（如 1.0.01），取末位 +1（01 → 02），补零到两位
+CUR=$(grep '^  Version = ' "$CFG" | sed 's/.*"\(.*\)".*/\1/')
+SUF=$(echo "$CUR" | sed 's/.*\.//')
+NEW_SUF=$(printf "%02d" $((10#$SUF + 1)))
+NEW_VER=$(echo "$CUR" | sed "s/\.[0-9]*\$/.$NEW_SUF/")
+
+# 更新 Version 和 Title（Title 形如 "太吾药老 V1.0.01" → "太吾药老 V1.0.02"）
+sed -i "s/Version = \"$CUR\"/Version = \"$NEW_VER\"/" "$CFG"
+sed -i "s/Title = \"\(.*\) V$CUR\"/Title = \"\1 V$NEW_VER\"/" "$CFG"
+
+grep -E "Title|Version" "$CFG"
+```
+
+提交版本号变更：
+
+```bash
+git add "$CFG"
+git commit -m "chore: bump version to $NEW_VER"
+```
+
+### 5. 打包
 
 ```bash
 dotnet run --project tools/Taiwu.Mods.Cli -- pack-mod --name TaiwuEncyclopedia
@@ -77,7 +105,7 @@ ls artifacts/mods/TaiwuEncyclopedia/Skills/background/               # 期望 10
 ls artifacts/mods/TaiwuEncyclopedia/Plugins/                          # 期望 TaiwuEncyclopedia.Frontend.dll
 ```
 
-### 5. 部署到游戏（保留 Settings.Lua）
+### 6. 部署到游戏（保留 Settings.Lua）
 
 ```bash
 GAME_MOD="D:/game/Steam/steamapps/common/The Scroll Of Taiwu/Mod/TaiwuEncyclopedia"
@@ -104,7 +132,7 @@ sed -i "s/Title = \"\(.*\)\"/Title = \"\1 (${TIMESTAMP})\"/" "$GAME_MOD/Config.L
 
 `Settings.Lua` 是游戏运行时写回的玩家设置（mod 配置面板里的值），**不在打包产物里**，清空时必须显式保留，否则玩家配置丢失。
 
-### 6. 游戏内验收
+### 7. 游戏内验收
 
 启动太吾绘卷，按 frontend plan 的验收清单检查：
 
