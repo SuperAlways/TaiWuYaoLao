@@ -294,11 +294,10 @@ personas:
 
         var registry = new ToolRegistry();
         var executor = new ToolExecutor(registry);
-        var ctx = new ContextManager();
         var soulManager = new SoulManager(soulStore);
+        var ctx = new ContextManager(soulManager, llmClient, config, collapseThresholdTokens: 1);
         var prompts = new PromptBuilder(sm);
-        // collapseThresholdTokens:1 强制触发压缩
-        var runner = new AgentRunner(llmClient, config, registry, executor, ctx, soulManager, sessionManager, prompts, maxIter: 6, collapseThresholdTokens: 1);
+        var runner = new AgentRunner(llmClient, config, registry, executor, ctx, soulManager, sessionManager, prompts, maxIter: 6);
 
         var events = new List<AgentEvent>();
         await foreach (var evt in runner.RunAsync(query: "新问题", worldId: 1)) events.Add(evt);

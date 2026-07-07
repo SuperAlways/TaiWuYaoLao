@@ -13,7 +13,6 @@ using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Soul;
 using TaiwuEncyclopedia.Core.Tools;
-using TaiwuEncyclopedia.Core.Util;
 
 namespace TaiwuEncyclopedia.Core.Agent;
 
@@ -33,7 +32,6 @@ public sealed class AgentRunner
     private readonly SessionManager _session;
     private readonly PromptBuilder _prompts;
     private readonly int _maxIter;
-    private readonly int _collapseThreshold;
     private readonly IAgentTrace _trace;
     private readonly List<Dictionary<string, object>>? _toolsSchema;
 
@@ -49,7 +47,6 @@ public sealed class AgentRunner
     /// <param name="sessionManager">会话管理器。</param>
     /// <param name="promptBuilder">提示构建器。</param>
     /// <param name="maxIter">最大迭代次数（默认 6）。</param>
-    /// <param name="collapseThresholdTokens">压缩阈值 token 数（默认 80000）。</param>
     /// <param name="trace">追踪器（可选）。</param>
     public AgentRunner(
         OpenAiCompatibleClient llmClient,
@@ -61,7 +58,6 @@ public sealed class AgentRunner
         SessionManager sessionManager,
         PromptBuilder promptBuilder,
         int maxIter = 6,
-        int collapseThresholdTokens = 80000,
         IAgentTrace? trace = null)
     {
         _llmClient = llmClient;
@@ -73,7 +69,6 @@ public sealed class AgentRunner
         _session = sessionManager;
         _prompts = promptBuilder;
         _maxIter = maxIter;
-        _collapseThreshold = collapseThresholdTokens;
         _trace = trace ?? NullAgentTrace.Instance;
         _toolsSchema = registry?.BuildOpenaiTools();
     }
@@ -102,47 +97,28 @@ public sealed class AgentRunner
         string? oldSummary;
         if (history == null)
         {
-            var (s, newMsgs) = await _session.LoadForAgentAsync(worldId);
+            var (s, msgs) = await _session.LoadForAgentAsMessagesAsync(worldId);
             oldSummary = s;
-            history = newMsgs
-                .Where(m => m.Role == "user" || m.Role == "assistant")
-                .Select(m => new LlmMessage { Role = m.Role, Content = m.Content })
-                .ToList();
+            history = msgs;
         }
         else
         {
             oldSummary = null;
         }
 
-        // 2. 检测是否需要压缩（组装前）
-        bool boundaryPending = false;
-        string? newSummary = null;
-        var projectedTokens = TokenEstimator.EstimateTokens(systemPrompt)
-            + TokenEstimator.EstimateTokens(soulSummary)
-            + TokenEstimator.EstimateTokens(oldSummary)
-            + TokenEstimator.EstimateTokensForMessages(history)
-            + TokenEstimator.EstimateTokens(query);
-
-        if (projectedTokens >= _collapseThreshold)
+        // 2. 压缩检测 + 执行（委托 ContextManager）
+        CompressResult? compress = null;
+        if (_ctx.ShouldCompress(oldSummary, history, systemPrompt, soulSummary, query))
         {
             yield return new StatusEvent { Message = "正在压缩历史对话，需要约 20 秒..." };
-            var historyText = FormatHistory(history);
-            newSummary = await _soul.UpdateFromCompressAsync(worldId, historyText, _llmClient, _llmConfig, oldSummary);
-            if (!string.IsNullOrEmpty(newSummary))
-            {
-                history = new List<LlmMessage>(); // 全部被摘要吸收
-                boundaryPending = true;
-            }
-            else
-            {
-                newSummary = null; // 压缩失败，退化
-            }
+            compress = await _ctx.CompressAsync(oldSummary, history, worldId);
         }
 
-        string? summary = newSummary ?? oldSummary;
+        string? summary = compress?.Summary ?? oldSummary;
+        var effectiveHistory = compress?.History ?? history;
 
         // 3. 组装提示词
-        var messages = _ctx.BuildInitialMessages(systemPrompt, history, soulSummary, query, summary);
+        var messages = _ctx.BuildInitialMessages(systemPrompt, effectiveHistory, soulSummary, query, summary);
 
         yield return new StartEvent { WorldId = worldId };
 
@@ -177,9 +153,9 @@ public sealed class AgentRunner
         catch (System.Exception ex) { CoreLog.Write("TE.Session", $"SaveConversationAsync failed: {ex.Message}"); }
 
         // 7. 追加压缩边界
-        if (boundaryPending && !string.IsNullOrEmpty(newSummary))
+        if (compress is { BoundaryPending: true, NewSummary: not null })
         {
-            try { await _session.AppendBoundaryAsync(worldId, newSummary!); }
+            try { await _session.AppendBoundaryAsync(worldId, compress.NewSummary!); }
             catch (System.Exception ex) { CoreLog.Write("TE.Session", $"AppendBoundaryAsync failed: {ex.Message}"); }
         }
 
@@ -191,13 +167,4 @@ public sealed class AgentRunner
         };
     }
 
-    private static string FormatHistory(List<LlmMessage> history)
-    {
-        var parts = new List<string>();
-        foreach (var m in history)
-        {
-            parts.Add($"{m.Role}: {m.Content}");
-        }
-        return string.Join("\n", parts);
-    }
 }

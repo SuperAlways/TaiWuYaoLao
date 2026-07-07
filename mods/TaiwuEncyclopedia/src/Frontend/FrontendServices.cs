@@ -296,7 +296,8 @@ public static class FrontendServices
             _contextManager = new ContextManager(
                 _soulManager,
                 _llmClient,
-                _loadedLlmConfig);
+                _loadedLlmConfig,
+                collapseThresholdTokens: 80000);
 
             // 7. PromptBuilder
             _promptBuilder = sm != null
