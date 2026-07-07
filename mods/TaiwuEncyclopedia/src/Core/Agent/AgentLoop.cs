@@ -55,10 +55,12 @@ public static class AgentLoop
         {
             // 4.1 THINKING 调用（非流式，带 tools）
             LlmResponse response;
+            TokenUsage? thinkingUsage = null;
             try
             {
                 response = await llmClient.Chat(
                     AgentLLMRole.Thinking, messages, llmConfig, tools: toolsSchema);
+                thinkingUsage = response.Usage;
             }
             catch
             {
@@ -66,6 +68,19 @@ public static class AgentLoop
                 messages = ctx.ForceCompress(messages);
                 response = await llmClient.Chat(
                     AgentLLMRole.Thinking, messages, llmConfig, tools: toolsSchema);
+                thinkingUsage = response.Usage;
+            }
+
+            if (thinkingUsage != null)
+            {
+                yield return new UsageEvent
+                {
+                    Iteration = iteration,
+                    Role = "thinking",
+                    PromptTokens = thinkingUsage.PromptTokens,
+                    CompletionTokens = thinkingUsage.CompletionTokens,
+                    CacheHitTokens = thinkingUsage.CacheHitTokens,
+                };
             }
 
             // 4.2 无 tool_calls → 最终答案
@@ -87,6 +102,17 @@ public static class AgentLoop
                     finalAnswerParts.Add(chunk);
                     yield return new FinalChunkEvent { Content = chunk, Iteration = iteration };
                 }
+                if (llmClient.LastStreamUsage != null)
+                {
+                    yield return new UsageEvent
+                    {
+                        Iteration = iteration,
+                        Role = "answer",
+                        PromptTokens = llmClient.LastStreamUsage.PromptTokens,
+                        CompletionTokens = llmClient.LastStreamUsage.CompletionTokens,
+                        CacheHitTokens = llmClient.LastStreamUsage.CacheHitTokens,
+                    };
+                }
                 break;
             }
 
@@ -105,6 +131,17 @@ public static class AgentLoop
                 {
                     finalAnswerParts.Add(chunk);
                     yield return new FinalChunkEvent { Content = chunk, Iteration = iteration };
+                }
+                if (llmClient.LastStreamUsage != null)
+                {
+                    yield return new UsageEvent
+                    {
+                        Iteration = iteration,
+                        Role = "answer",
+                        PromptTokens = llmClient.LastStreamUsage.PromptTokens,
+                        CompletionTokens = llmClient.LastStreamUsage.CompletionTokens,
+                        CacheHitTokens = llmClient.LastStreamUsage.CacheHitTokens,
+                    };
                 }
                 break;
             }
@@ -206,6 +243,17 @@ public static class AgentLoop
             {
                 finalAnswerParts.Add(chunk);
                 yield return new FinalChunkEvent { Content = chunk, Iteration = maxIter };
+            }
+            if (llmClient.LastStreamUsage != null)
+            {
+                yield return new UsageEvent
+                {
+                    Iteration = maxIter,
+                    Role = "answer",
+                    PromptTokens = llmClient.LastStreamUsage.PromptTokens,
+                    CompletionTokens = llmClient.LastStreamUsage.CompletionTokens,
+                    CacheHitTokens = llmClient.LastStreamUsage.CacheHitTokens,
+                };
             }
         }
 

@@ -155,3 +155,13 @@ public sealed class EndEvent : AgentEvent
     /// </summary>
     public EndEvent() { Type = "end"; }
 }
+
+/// <summary>单次 LLM 调用的 token 用量（UI 通道，yield 给 ChatPanel 显示）。</summary>
+public sealed class UsageEvent : AgentEvent
+{
+    public int Iteration { get; set; }
+    public string Role { get; set; } = "";        // "thinking" / "answer"
+    public int PromptTokens { get; set; }
+    public int CompletionTokens { get; set; }
+    public int CacheHitTokens { get; set; }
+}
