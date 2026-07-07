@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TaiwuEncyclopedia.Core.Context;
+using TaiwuEncyclopedia.Core.Diagnostics;
 using TaiwuEncyclopedia.Core.Http;
 using TaiwuEncyclopedia.Core.Llm;
-using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Tools;
 
 namespace TaiwuEncyclopedia.Core.Agent;
@@ -45,7 +45,7 @@ public static class AgentLoop
         List<Reference> collectedRefs,
         List<string> finalAnswerParts,
         AgentLoopResult result,
-        ReactTrace? trace = null,
+        IAgentTrace trace,
         System.Text.StringBuilder? thinkingBuilder = null)
     {
         List<ToolCall>? prevToolCalls = null;
@@ -58,16 +58,26 @@ public static class AgentLoop
             TokenUsage? thinkingUsage = null;
             try
             {
+                var llmSw = System.Diagnostics.Stopwatch.StartNew();
+                trace.LlmCall(iteration, "thinking", "thinking_normal", messages, toolsSchema);
                 response = await llmClient.Chat(
                     AgentLLMRole.Thinking, messages, llmConfig, tools: toolsSchema);
+                llmSw.Stop();
+                trace.LlmResponse(iteration, "thinking", response.Content, response.ToolCalls,
+                    "", response.Usage, (int)llmSw.ElapsedMilliseconds);
                 thinkingUsage = response.Usage;
             }
             catch
             {
                 // force_compress 重试
+                var llmSw2 = System.Diagnostics.Stopwatch.StartNew();
+                trace.LlmCall(iteration, "thinking", "thinking_force_compress_retry", messages, toolsSchema);
                 messages = ctx.ForceCompress(messages);
                 response = await llmClient.Chat(
                     AgentLLMRole.Thinking, messages, llmConfig, tools: toolsSchema);
+                llmSw2.Stop();
+                trace.LlmResponse(iteration, "thinking", response.Content, response.ToolCalls,
+                    "", response.Usage, (int)llmSw2.ElapsedMilliseconds);
                 thinkingUsage = response.Usage;
             }
 
@@ -97,11 +107,18 @@ public static class AgentLoop
                     Content = "请根据以上思考过程和检索到的资料，以选中 persona 的口吻给出最终回答。",
                 });
 
+                var ansSw = System.Diagnostics.Stopwatch.StartNew();
+                trace.LlmCall(iteration, "answer", "answer_direct", messages, null);
+                var answerContent = new System.Text.StringBuilder();
                 await foreach (var chunk in llmClient.StreamChat(AgentLLMRole.Answer, messages, llmConfig))
                 {
                     finalAnswerParts.Add(chunk);
+                    answerContent.Append(chunk);
                     yield return new FinalChunkEvent { Content = chunk, Iteration = iteration };
                 }
+                ansSw.Stop();
+                trace.LlmResponse(iteration, "answer", answerContent.ToString(), null, "stop",
+                    llmClient.LastStreamUsage, (int)ansSw.ElapsedMilliseconds);
                 if (llmClient.LastStreamUsage != null)
                 {
                     yield return new UsageEvent
@@ -127,11 +144,18 @@ public static class AgentLoop
                     Content = "你似乎在重复检索相同的内容。请根据已检索到的资料，以选中 persona 的口吻给出最终回答。",
                 });
 
+                var ansSw = System.Diagnostics.Stopwatch.StartNew();
+                trace.LlmCall(iteration, "answer", "answer_loop_detected", messages, null);
+                var answerContent = new System.Text.StringBuilder();
                 await foreach (var chunk in llmClient.StreamChat(AgentLLMRole.Answer, messages, llmConfig))
                 {
                     finalAnswerParts.Add(chunk);
+                    answerContent.Append(chunk);
                     yield return new FinalChunkEvent { Content = chunk, Iteration = iteration };
                 }
+                ansSw.Stop();
+                trace.LlmResponse(iteration, "answer", answerContent.ToString(), null, "stop",
+                    llmClient.LastStreamUsage, (int)ansSw.ElapsedMilliseconds);
                 if (llmClient.LastStreamUsage != null)
                 {
                     yield return new UsageEvent
@@ -152,6 +176,7 @@ public static class AgentLoop
                 var args = ParseArgs(tc.Function.Arguments);
                 var displayText = BuildDisplayText(tc.Function.Name, args);
                 thinkingBuilder?.AppendLine(displayText);
+                trace.ToolCall(tc.Function.Name, tc.Id, args, iteration);
                 yield return new ToolCallEvent
                 {
                     Name = tc.Function.Name,
@@ -184,6 +209,7 @@ public static class AgentLoop
                     ToolCallId = tc.Id,
                     Content = resultItem.Content,
                 });
+                trace.ToolResult(tc.Function.Name, tc.Id, resultItem.Content, iteration);
                 yield return new ToolResultEvent { Name = tc.Function.Name, Iteration = iteration };
             }
 
@@ -239,11 +265,18 @@ public static class AgentLoop
                 Content = "你已用完所有工具调用轮次。请根据已检索到的资料和思考过程，以选中 persona 的口吻给出最终回答。如果资料不足，诚实说明并给出已有的判断。",
             });
 
+            var ansSw = System.Diagnostics.Stopwatch.StartNew();
+            trace.LlmCall(maxIter, "answer", "answer_fallback", messages, null);
+            var answerContent = new System.Text.StringBuilder();
             await foreach (var chunk in llmClient.StreamChat(AgentLLMRole.Answer, messages, llmConfig))
             {
                 finalAnswerParts.Add(chunk);
+                answerContent.Append(chunk);
                 yield return new FinalChunkEvent { Content = chunk, Iteration = maxIter };
             }
+            ansSw.Stop();
+            trace.LlmResponse(maxIter, "answer", answerContent.ToString(), null, "stop",
+                llmClient.LastStreamUsage, (int)ansSw.ElapsedMilliseconds);
             if (llmClient.LastStreamUsage != null)
             {
                 yield return new UsageEvent

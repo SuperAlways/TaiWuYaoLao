@@ -161,6 +161,7 @@ public sealed class AgentRunner
         await foreach (var evt in AgentLoop.Run(
             _llmClient, _executor, _ctx, _toolsSchema, messages, _llmConfig,
             worldId, _maxIter, collectedRefs, finalAnswerParts, loopResult,
+            trace: _trace,
             thinkingBuilder: thinkingBuilder))
         {
             yield return evt;
