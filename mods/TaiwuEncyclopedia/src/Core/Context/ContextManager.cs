@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TaiwuEncyclopedia.Core.Diagnostics;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Soul;
 using TaiwuEncyclopedia.Core.Util;
@@ -16,6 +17,7 @@ public sealed class ContextManager
     private readonly OpenAiCompatibleClient? _llmClient;
     private readonly LlmConfig? _llmConfig;
     private readonly int _collapseThreshold;
+    private readonly IAgentTrace? _trace;
 
     /// <summary>
     /// 创建 ContextManager 实例。
@@ -28,12 +30,14 @@ public sealed class ContextManager
         SoulManager? soulManager = null,
         OpenAiCompatibleClient? llmClient = null,
         LlmConfig? llmConfig = null,
-        int collapseThresholdTokens = 80000)
+        int collapseThresholdTokens = 80000,
+        IAgentTrace? trace = null)
     {
         _soulManager = soulManager;
         _llmClient = llmClient;
         _llmConfig = llmConfig;
         _collapseThreshold = collapseThresholdTokens;
+        _trace = trace;
     }
 
     /// <summary>构建 Agent 循环初始 messages。soul 注入位置：system 之后、历史之前（缓存友好）。</summary>
@@ -84,7 +88,15 @@ public sealed class ContextManager
             + TokenEstimator.EstimateTokens(oldSummary)
             + TokenEstimator.EstimateTokensForMessages(history)
             + TokenEstimator.EstimateTokens(query);
-        return projected >= _collapseThreshold;
+        var triggered = projected >= _collapseThreshold;
+        _trace?.ContextStep("compression_check", 0, new Dictionary<string, object>
+        {
+            ["triggered"] = triggered,
+            ["projectedTokens"] = projected,
+            ["threshold"] = _collapseThreshold,
+            ["oldSummaryChars"] = oldSummary?.Length ?? 0,
+        });
+        return triggered;
     }
 
     /// <summary>执行压缩：oldSummary + history → 新摘要。返回 CompressResult。</summary>
@@ -101,8 +113,20 @@ public sealed class ContextManager
             worldId, historyText, _llmClient, _llmConfig, oldSummary);
 
         if (string.IsNullOrEmpty(newSummary))
+        {
+            _trace?.ContextStep("compression_summary", 0, new Dictionary<string, object>
+            {
+                ["success"] = false,
+            });
             return CompressResult.Failed(oldSummary, history);
+        }
 
+        _trace?.ContextStep("compression_summary", 0, new Dictionary<string, object>
+        {
+            ["success"] = true,
+            ["newSummaryChars"] = newSummary!.Length,
+            ["summary"] = newSummary,
+        });
         return CompressResult.Done(newSummary!);
     }
 
@@ -140,7 +164,14 @@ public sealed class ContextManager
         }
         if (longestIdx >= 0)
         {
-            messages[longestIdx].Content = (messages[longestIdx].Content ?? "").Substring(0, 100000) + "\n... [已截断]";
+            var original = messages[longestIdx].Content ?? "";
+            messages[longestIdx].Content = original[..100000] + "\n... [已截断]";
+            _trace?.ContextStep("force_compress", 0, new Dictionary<string, object>
+            {
+                ["truncatedIndex"] = longestIdx,
+                ["originalChars"] = original.Length,
+                ["truncatedChars"] = messages[longestIdx].Content.Length,
+            });
         }
         return messages;
     }
