@@ -90,16 +90,38 @@ public sealed class AgentRunner
         var stopwatch = Stopwatch.StartNew();
         var collectedRefs = new List<Reference>();
 
+        // 0. 开始 trace 会话（必须最先，生成 sessionId）
+        _trace.BeginSession(query, worldId, personaId);
+
         // 1. 加载组件
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         var systemPrompt = _prompts.BuildSystemPrompt(personaId);
+        _trace.ContextStep("load_system_prompt", (int)sw.ElapsedMilliseconds, new Dictionary<string, object>
+        {
+            ["chars"] = systemPrompt.Length,
+            ["personaId"] = personaId ?? "",
+        });
+
+        sw.Restart();
         var soulSummary = await _soul.GetSoulSummaryAsync(worldId);
+        _trace.ContextStep("get_soul_summary", (int)sw.ElapsedMilliseconds, new Dictionary<string, object>
+        {
+            ["chars"] = soulSummary?.Length ?? 0,
+        });
 
         string? oldSummary;
         if (history == null)
         {
+            sw.Restart();
             var (s, msgs) = await _session.LoadForAgentAsMessagesAsync(worldId);
             oldSummary = s;
             history = msgs;
+            _trace.ContextStep("load_history", (int)sw.ElapsedMilliseconds, new Dictionary<string, object>
+            {
+                ["oldSummaryChars"] = oldSummary?.Length ?? 0,
+                ["newMsgCount"] = history.Count,
+                ["historyRounds"] = history.Count / 2,
+            });
         }
         else
         {
@@ -118,7 +140,16 @@ public sealed class AgentRunner
         var effectiveHistory = compress?.History ?? history;
 
         // 3. 组装提示词
+        sw.Restart();
         var messages = _ctx.BuildInitialMessages(systemPrompt, effectiveHistory, soulSummary, query, summary);
+        var totalChars = 0;
+        foreach (var m in messages) totalChars += (m.Content ?? "").Length;
+        _trace.ContextStep("build_initial_messages", (int)sw.ElapsedMilliseconds, new Dictionary<string, object>
+        {
+            ["messagesCount"] = messages.Count,
+            ["totalChars"] = totalChars,
+            ["messages"] = messages,
+        });
 
         yield return new StartEvent { WorldId = worldId };
 
@@ -159,7 +190,17 @@ public sealed class AgentRunner
             catch (System.Exception ex) { CoreLog.Write("TE.Session", $"AppendBoundaryAsync failed: {ex.Message}"); }
         }
 
-        // 8. yield EndEvent
+        // 8. 结束 trace 会话
+        var totalUsage = new TokenUsage
+        {
+            PromptTokens = 0,
+            CompletionTokens = 0,
+            CacheHitTokens = 0,
+        };
+        _trace.EndSession((int)stopwatch.Elapsed.TotalMilliseconds, loopResult.TotalIterations + 1,
+            finalAnswer.Length, totalUsage);
+
+        // 9. yield EndEvent
         yield return new EndEvent
         {
             ThinkingTimeMs = (int)stopwatch.Elapsed.TotalMilliseconds,
