@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Soul;
+using TaiwuEncyclopedia.Core.Util;
 
 namespace TaiwuEncyclopedia.Core.Context;
 
@@ -14,6 +15,7 @@ public sealed class ContextManager
     private readonly SoulManager? _soulManager;
     private readonly OpenAiCompatibleClient? _llmClient;
     private readonly LlmConfig? _llmConfig;
+    private readonly int _collapseThreshold;
 
     /// <summary>
     /// 创建 ContextManager 实例。
@@ -21,14 +23,17 @@ public sealed class ContextManager
     /// <param name="soulManager">SoulManager 实例</param>
     /// <param name="llmClient">LLM 客户端</param>
     /// <param name="llmConfig">LLM 配置</param>
+    /// <param name="collapseThresholdTokens">压缩阈值 token 数</param>
     public ContextManager(
         SoulManager? soulManager = null,
         OpenAiCompatibleClient? llmClient = null,
-        LlmConfig? llmConfig = null)
+        LlmConfig? llmConfig = null,
+        int collapseThresholdTokens = 80000)
     {
         _soulManager = soulManager;
         _llmClient = llmClient;
         _llmConfig = llmConfig;
+        _collapseThreshold = collapseThresholdTokens;
     }
 
     /// <summary>构建 Agent 循环初始 messages。soul 注入位置：system 之后、历史之前（缓存友好）。</summary>
@@ -66,6 +71,51 @@ public sealed class ContextManager
         return messages;
     }
 
+    /// <summary>检测是否需要压缩（不执行压缩）。token 估算含 system+soul+oldSummary+history+query。</summary>
+    public bool ShouldCompress(
+        string? oldSummary,
+        List<LlmMessage> history,
+        string systemPrompt,
+        string? soulSummary,
+        string query)
+    {
+        var projected = TokenEstimator.EstimateTokens(systemPrompt)
+            + TokenEstimator.EstimateTokens(soulSummary)
+            + TokenEstimator.EstimateTokens(oldSummary)
+            + TokenEstimator.EstimateTokensForMessages(history)
+            + TokenEstimator.EstimateTokens(query);
+        return projected >= _collapseThreshold;
+    }
+
+    /// <summary>执行压缩：oldSummary + history → 新摘要。返回 CompressResult。</summary>
+    public async Task<CompressResult> CompressAsync(
+        string? oldSummary,
+        List<LlmMessage> history,
+        int worldId)
+    {
+        if (_soulManager == null || _llmClient == null || _llmConfig == null)
+            return CompressResult.NotTriggered(oldSummary, history);
+
+        var historyText = FormatHistory(history);
+        var newSummary = await _soulManager.UpdateFromCompressAsync(
+            worldId, historyText, _llmClient, _llmConfig, oldSummary);
+
+        if (string.IsNullOrEmpty(newSummary))
+            return CompressResult.Failed(oldSummary, history);
+
+        return CompressResult.Done(newSummary!);
+    }
+
+    private static string FormatHistory(List<LlmMessage> history)
+    {
+        var parts = new List<string>();
+        foreach (var m in history)
+        {
+            parts.Add($"{m.Role}: {m.Content}");
+        }
+        return string.Join("\n", parts);
+    }
+
     /// <summary>
     /// API 报 context too long 时的兜底：截断最长 tool result，不摘要。
     /// L1 循环内的异常路径，不常态。
@@ -94,4 +144,44 @@ public sealed class ContextManager
         }
         return messages;
     }
+}
+
+/// <summary>压缩检测结果。携带摘要、历史、是否待追加边界。</summary>
+public sealed class CompressResult
+{
+    /// <summary>用于注入 messages 的摘要（压缩成功=新摘要，否则=旧摘要）。</summary>
+    public string? Summary { get; init; }
+
+    /// <summary>压缩后剩余的历史（压缩成功=空列表，否则=原 history）。</summary>
+    public List<LlmMessage> History { get; init; } = new();
+
+    /// <summary>是否需要在轮末追加边界消息。</summary>
+    public bool BoundaryPending { get; init; }
+
+    /// <summary>新摘要（仅压缩成功时非 null，用于 AppendBoundaryAsync）。</summary>
+    public string? NewSummary { get; init; }
+
+    public static CompressResult NotTriggered(string? oldSummary, List<LlmMessage> history) => new()
+    {
+        Summary = oldSummary,
+        History = history,
+        BoundaryPending = false,
+        NewSummary = null,
+    };
+
+    public static CompressResult Failed(string? oldSummary, List<LlmMessage> history) => new()
+    {
+        Summary = oldSummary,
+        History = history,
+        BoundaryPending = false,
+        NewSummary = null,
+    };
+
+    public static CompressResult Done(string newSummary) => new()
+    {
+        Summary = newSummary,
+        History = new List<LlmMessage>(),
+        BoundaryPending = true,
+        NewSummary = newSummary,
+    };
 }

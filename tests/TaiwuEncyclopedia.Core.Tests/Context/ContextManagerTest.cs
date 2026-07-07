@@ -117,4 +117,54 @@ public class ContextManagerTest
         messages[1].Role.Should().Be("user");
         messages[1].Content.Should().Be("hi");
     }
+
+    [Fact]
+    public void ShouldCompress_BelowThreshold_ReturnsFalse()
+    {
+        var cm = new ContextManager(collapseThresholdTokens: 80000);
+        var history = new List<LlmMessage> { new() { Role = "user", Content = "短问题" } };
+        var needs = cm.ShouldCompress(null, history, "sys", null, "q");
+        needs.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ShouldCompress_AtOrAboveThreshold_ReturnsTrue()
+    {
+        var cm = new ContextManager(collapseThresholdTokens: 1); // 极低阈值强制触发
+        var history = new List<LlmMessage> { new() { Role = "user", Content = "x" } };
+        var needs = cm.ShouldCompress(null, history, "sys", null, "q");
+        needs.Should().BeTrue();
+    }
+
+    [Fact]
+    public void CompressResult_NotTriggered_KeepsOldSummaryAndHistory()
+    {
+        var history = new List<LlmMessage> { new() { Role = "user", Content = "h" } };
+        var r = CompressResult.NotTriggered("old", history);
+        r.Summary.Should().Be("old");
+        r.History.Should().BeSameAs(history);
+        r.BoundaryPending.Should().BeFalse();
+        r.NewSummary.Should().BeNull();
+    }
+
+    [Fact]
+    public void CompressResult_Done_ClearsHistoryAndSetsNewSummary()
+    {
+        var r = CompressResult.Done("新摘要");
+        r.Summary.Should().Be("新摘要");
+        r.History.Should().BeEmpty();
+        r.BoundaryPending.Should().BeTrue();
+        r.NewSummary.Should().Be("新摘要");
+    }
+
+    [Fact]
+    public void CompressResult_Failed_KeepsOldSummaryAndHistory()
+    {
+        var history = new List<LlmMessage> { new() { Role = "user", Content = "h" } };
+        var r = CompressResult.Failed("old", history);
+        r.Summary.Should().Be("old");
+        r.History.Should().BeSameAs(history);
+        r.BoundaryPending.Should().BeFalse();
+        r.NewSummary.Should().BeNull();
+    }
 }
