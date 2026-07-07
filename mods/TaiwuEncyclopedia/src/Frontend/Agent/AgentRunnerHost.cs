@@ -66,7 +66,22 @@ public sealed class AgentRunnerHost : MonoBehaviour
 
             var evt = enumerator.Current;
             req.CompletedEvents.Add(evt);
-            if (evt is FinalChunkEvent fc && fc.Content != null) req.AnswerBuilder.Append(fc.Content);
+            if (evt is StartEvent)
+            {
+                req.StartTime = UnityEngine.Time.realtimeSinceStartup;
+                req.IsThinking = true;
+            }
+            else if (evt is FinalChunkEvent fc)
+            {
+                if (fc.Content != null) req.AnswerBuilder.Append(fc.Content);
+                req.IsThinking = false;
+            }
+            else if (evt is UsageEvent ue)
+            {
+                req.TotalPromptTokens += ue.PromptTokens;
+                req.TotalCompletionTokens += ue.CompletionTokens;
+                req.TotalCacheHitTokens += ue.CacheHitTokens;
+            }
             onEvent(evt);
             if (evt is EndEvent) { receivedEnd = true; break; }
         }
