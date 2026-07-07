@@ -96,6 +96,41 @@ public class OpenAiCompatibleClientTest
         handler.CallCount.Should().Be(2);
     }
 
+    [Fact]
+    public async Task Chat_FillsLlmResponseUsage()
+    {
+        var handler = new StubHandler(
+            "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"hi\"}}],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20,\"prompt_cache_hit_tokens\":80}}");
+        var client = new OpenAiCompatibleClient(handler);
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+
+        var resp = await client.Chat(AgentLLMRole.Thinking, new List<LlmMessage> { new() { Role = "user", Content = "q" } }, config, tools: null);
+
+        resp.Usage.Should().NotBeNull();
+        resp.Usage!.PromptTokens.Should().Be(100);
+        resp.Usage.CompletionTokens.Should().Be(20);
+        resp.Usage.CacheHitTokens.Should().Be(80);
+    }
+
+    [Fact]
+    public async Task StreamChat_FillsLastStreamUsage()
+    {
+        var handler = new StubHandler(
+            "data: {\"choices\":[{\"delta\":{\"content\":\"a\"}}]}\n\ndata: {\"usage\":{\"prompt_tokens\":50,\"completion_tokens\":10,\"prompt_cache_hit_tokens\":40},\"choices\":[]}\n\ndata: [DONE]\n\n",
+            isStream: true);
+        var client = new OpenAiCompatibleClient(handler);
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+
+        var chunks = new List<string>();
+        await foreach (var c in client.StreamChat(AgentLLMRole.Answer, new List<LlmMessage> { new() { Role = "user", Content = "q" } }, config))
+            chunks.Add(c);
+
+        client.LastStreamUsage.Should().NotBeNull();
+        client.LastStreamUsage!.PromptTokens.Should().Be(50);
+        client.LastStreamUsage.CompletionTokens.Should().Be(10);
+        client.LastStreamUsage.CacheHitTokens.Should().Be(40);
+    }
+
     private sealed class StubHandler : HttpMessageHandler
     {
         private readonly string _response;

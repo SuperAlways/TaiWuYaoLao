@@ -10,4 +10,7 @@ public sealed class LlmResponse
 
     /// <summary>工具调用列表。</summary>
     public List<ToolCall>? ToolCalls { get; set; }
+
+    /// <summary>本次调用的 token 用量（LLM 返回 usage 时有值）。</summary>
+    public TokenUsage? Usage { get; set; }
 }

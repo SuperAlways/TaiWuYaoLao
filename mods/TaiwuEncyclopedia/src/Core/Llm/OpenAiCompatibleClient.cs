@@ -20,6 +20,9 @@ public sealed class OpenAiCompatibleClient
     /// <summary>Token 用量追踪器。</summary>
     public TokenTracker Tracker { get; } = new();
 
+    /// <summary>StreamChat 最近一次调用的 usage（末尾 chunk 填充）。Chat 用 LlmResponse.Usage。</summary>
+    public TokenUsage? LastStreamUsage { get; private set; }
+
     // 静态共享 HttpClient（非 mock 场景）。构造函数传 handler=null 时用此实例。
     private static readonly HttpClient _sharedHttp = new() { Timeout = System.TimeSpan.FromSeconds(120) };
 
@@ -65,6 +68,7 @@ public sealed class OpenAiCompatibleClient
         List<LlmMessage> messages,
         LlmConfig config)
     {
+        LastStreamUsage = null;
         var body = BuildRequestBody(config.Model, messages, stream: true);
         var resp = await SendWithRetry(config, body);
         using var stream = await resp.Content.ReadAsStreamAsync();
@@ -83,6 +87,7 @@ public sealed class OpenAiCompatibleClient
             if (usage != null && (choices == null || choices.Count == 0))
             {
                 TrackUsage(usage, role);
+                LastStreamUsage = ParseUsage(usage);
                 continue;
             }
             if (choices == null || choices.Count == 0) continue;
@@ -212,6 +217,7 @@ public sealed class OpenAiCompatibleClient
         if (usage != null)
         {
             TrackUsage(usage, role);
+            resp.Usage = ParseUsage(usage);
         }
         return resp;
     }
@@ -229,5 +235,19 @@ public sealed class OpenAiCompatibleClient
                  ?? usage["prompt_tokens_details"]?["cached_tokens"]?.Value<int>()
                  ?? 0;
         Tracker.Track(p, c, cr, role.ToString().ToLowerInvariant());
+    }
+
+    /// <summary>解析 OpenAI usage JSON 对象为 TokenUsage。</summary>
+    /// <param name="usage">OpenAI usage JSON 对象。</param>
+    /// <returns>解析后的 TokenUsage，若 usage 为 null 则返回 null。</returns>
+    private static TokenUsage? ParseUsage(JToken? usage)
+    {
+        if (usage == null) return null;
+        int p = usage["prompt_tokens"]?.Value<int>() ?? 0;
+        int c = usage["completion_tokens"]?.Value<int>() ?? 0;
+        int cr = usage["prompt_cache_hit_tokens"]?.Value<int>()
+                 ?? usage["prompt_tokens_details"]?["cached_tokens"]?.Value<int>()
+                 ?? 0;
+        return new TokenUsage { PromptTokens = p, CompletionTokens = c, CacheHitTokens = cr };
     }
 }
