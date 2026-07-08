@@ -48,9 +48,11 @@ public class AtomicFileTest
     [Fact]
     public async Task OverwritePreservesFileCreationTime()
     {
-        // File.Replace 保留目标文件 CreationTime；Delete+Move 会让 CreationTime 变成 tmp 的创建时间。
-        // 这是 File.Replace 与 Delete+Move 唯一可单元观测的差异（原子性窗口本身无法模拟崩溃测试）。
-        // 假设 NTFS（本机 Windows + Unity 目标一致）。
+        // 特征测试：File.Replace 保留目标文件 CreationTime。
+        // 注意：NTFS 隧道效应会让 Delete+Move 也保留原 CreationTime（同目录同名 15s 内重建），
+        // 所以本测试在 NTFS 上无法区分新旧实现——它是特征锁定（锁定 CreationTime 被保留这一属性），
+        // 而非 RED 区分测试。File.Replace 的原子性（单次 OS 操作 vs Delete+Move 两步窗口）靠代码审查保证，
+        // 无法用单测模拟崩溃。
         var path = NewPath();
         await AtomicFile.WriteJsonAsync(path, new TestData { Name = "v1", Count = 1 });
         var originalCreation = File.GetCreationTime(path);
