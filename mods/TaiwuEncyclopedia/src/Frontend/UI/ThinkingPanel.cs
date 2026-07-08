@@ -196,13 +196,22 @@ public sealed class ThinkingPanel : MonoBehaviour
         else Collapse();
     }
 
-    /// <summary>更新思考区下方的提示文字（默认"大约需要 30-40 秒"，压缩时改为"正在压缩历史对话..."）。</summary>
-    public void SetHint(string text)
+    /// <summary>更新思考区下方的提示文字并按 level 着色（info 灰/warn 黄/error 红）。</summary>
+    public void SetHint(string text, string level = "info")
     {
         if (_hintText != null)
         {
             var t = _hintText.GetComponent<TextMeshProUGUI>();
-            if (t != null) t.text = text;
+            if (t != null)
+            {
+                t.text = text;
+                t.color = level switch
+                {
+                    "warn" => new Color(0.85f, 0.75f, 0.30f, 1f),
+                    "error" => new Color(0.90f, 0.30f, 0.30f, 1f),
+                    _ => new Color(0.45f, 0.48f, 0.50f, 1f),  // info 灰（不变）
+                };
+            }
         }
     }
 

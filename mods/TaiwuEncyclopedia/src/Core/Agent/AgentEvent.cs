@@ -129,6 +129,9 @@ public sealed class StatusEvent : AgentEvent
     /// </summary>
     public string Message { get; init; } = "";
 
+    /// <summary>"info" | "warn" | "error"，默认 info。warn/error 由 API 重试层发射。</summary>
+    public string Level { get; init; } = "info";
+
     /// <summary>
     /// 初始化 StatusEvent。
     /// </summary>

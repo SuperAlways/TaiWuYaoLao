@@ -248,7 +248,7 @@ public class ChatPanel : MonoBehaviour, IPanel
             case UsageEvent _:
                 break;
             case StatusEvent se:
-                _currentThinkingPanel?.SetHint(se.Message);
+                _currentThinkingPanel?.SetHint(se.Message, se.Level);
                 break;
             case ToolCallEvent tc:
                 _currentThinkingPanel?.AddToolCall(tc.Name, tc.DisplayText, tc.Iteration);
