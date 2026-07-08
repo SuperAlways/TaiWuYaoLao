@@ -1184,7 +1184,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
     }
 
 
-    private void OnSaveAndClose()
+    private async void OnSaveAndClose()
     {
         string baseUrl = (_baseUrlInput?.text ?? "").Trim();
         string apiKey = (_apiKeyInput?.text ?? "").Trim();
@@ -1222,7 +1222,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
             personaId = "sword-will";
 
         // 保存配置
-        FrontendServices.SaveLlmConfig(baseUrl, apiKey, model, personaId);
+        await FrontendServices.SaveLlmConfig(baseUrl, apiKey, model, personaId);
         _hasUnsavedChanges = false;
 
         PanelStack.Pop();

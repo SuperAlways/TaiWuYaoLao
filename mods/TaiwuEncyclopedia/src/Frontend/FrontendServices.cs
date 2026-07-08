@@ -196,11 +196,11 @@ public static class FrontendServices
     /// <summary>
     /// 保存 LLM 配置并重建 AgentRunner。
     /// </summary>
-    public static void SaveLlmConfig(string baseUrl, string apiKey, string model, string personaId, bool agentTrace = false)
+    public static async System.Threading.Tasks.Task SaveLlmConfig(string baseUrl, string apiKey, string model, string personaId, bool agentTrace = false)
     {
         try
         {
-            // 保存到磁盘
+            // 保存到磁盘（AtomicFile：单次 OS 原子操作，防崩溃丢配置）
             var saved = new SavedConfig
             {
                 BaseUrl = baseUrl,
@@ -210,13 +210,7 @@ public static class FrontendServices
                 RagBaseUrl = _ragBaseUrl,
                 AgentTrace = agentTrace
             };
-            string json = Newtonsoft.Json.JsonConvert.SerializeObject(saved, Newtonsoft.Json.Formatting.Indented);
-            string? dir = Path.GetDirectoryName(ConfigPath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-            File.WriteAllText(ConfigPath, json);
+            await AtomicFile.WriteJsonAsync(ConfigPath, saved);
 
             // 更新内存
             _loadedLlmConfig = new LlmConfig
