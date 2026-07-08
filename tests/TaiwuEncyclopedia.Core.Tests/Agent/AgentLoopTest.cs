@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,6 +12,7 @@ using TaiwuEncyclopedia.Core.Context;
 using TaiwuEncyclopedia.Core.Diagnostics;
 using TaiwuEncyclopedia.Core.Http;
 using TaiwuEncyclopedia.Core.Llm;
+using TaiwuEncyclopedia.Core.Skills;
 using TaiwuEncyclopedia.Core.Tools;
 using Xunit;
 
@@ -130,5 +132,75 @@ public class AgentLoopTest
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             { Content = new StringContent(Thinking, Encoding.UTF8, "application/json") });
         }
+    }
+
+    // --- BuildDisplayText tests (Task 2) ---
+
+    [Fact]
+    public void BuildDisplayText_LoadBackgroundSkill_Detail_ShowsSection()
+    {
+        var args = new Dictionary<string, object> { ["chapter"] = "产业", ["depth"] = "detail", ["section"] = "产业-产业-产业建设" };
+        var text = AgentLoop.BuildDisplayText("load_background_skill", args);
+        text.Should().Be("[百晓册] 产业-产业-产业建设");
+    }
+
+    [Fact]
+    public void BuildDisplayText_LoadBackgroundSkill_Overview_ShowsChapter()
+    {
+        var args = new Dictionary<string, object> { ["chapter"] = "产业" };
+        var text = AgentLoop.BuildDisplayText("load_background_skill", args);
+        text.Should().Be("[百晓册] 产业");
+    }
+
+    [Fact]
+    public void BuildDisplayText_LoadGuidanceSkill_UsesSkillName()
+    {
+        var args = new Dictionary<string, object> { ["skill"] = "战斗 build 指引" };
+        var text = AgentLoop.BuildDisplayText("load_guidance_skill", args);
+        text.Should().Contain("战斗 build 指引");
+    }
+
+    // --- Guidance directive with relevant_chapters (Task 2 Step 5) ---
+
+    [Fact]
+    public async Task LoadGuidanceSkill_Directive_IncludesRelevantChapters()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "yaolao-gd-" + System.Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(Path.Combine(dir, "registry.yaml"), @"
+guidance:
+  - id: 武学搭配
+    file: guidance/武学搭配.md
+    relevant_chapters: [修习, 战斗]
+");
+        Directory.CreateDirectory(Path.Combine(dir, "guidance"));
+        File.WriteAllText(Path.Combine(dir, "guidance", "武学搭配.md"), "# 武学搭配\n引导内容");
+        var sm = new SkillManager(dir);
+        var tool = new LoadGuidanceSkillTool(sm);
+        var result = await tool.ExecuteAsync(new Dictionary<string, object> { ["skill"] = "武学搭配" });
+        var content = result["content"].ToString()!;
+        content.Should().Contain("本骨架关联百晓册章节：修习、战斗");
+        content.Should().Contain("load_background_skill");
+    }
+
+    [Fact]
+    public async Task LoadGuidanceSkill_Directive_NoChaptersWhenEmpty()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "yaolao-gd-" + System.Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(Path.Combine(dir, "registry.yaml"), @"
+guidance:
+  - id: 问题诊断
+    file: guidance/问题诊断.md
+    relevant_chapters: []
+");
+        Directory.CreateDirectory(Path.Combine(dir, "guidance"));
+        File.WriteAllText(Path.Combine(dir, "guidance", "问题诊断.md"), "# 问题诊断\n引导内容");
+        var sm = new SkillManager(dir);
+        var tool = new LoadGuidanceSkillTool(sm);
+        var result = await tool.ExecuteAsync(new Dictionary<string, object> { ["skill"] = "问题诊断" });
+        var content = result["content"].ToString()!;
+        content.Should().Contain("引导内容");
+        content.Should().NotContain("本骨架关联百晓册章节");
     }
 }

@@ -16,13 +16,12 @@ public class LoadGuidanceSkillToolTest
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "registry.yaml"), @"
 guidance:
-  - id: combat-build
-    cn_name: 战斗 build 指引
-    file: guidance/combat-build.md
+  - id: 战斗 build 指引
+    file: guidance/战斗-build-指引.md
     relevant_chapters: []
 ");
         Directory.CreateDirectory(Path.Combine(dir, "guidance"));
-        File.WriteAllText(Path.Combine(dir, "guidance", "combat-build.md"), "# 战斗 build\n引导内容");
+        File.WriteAllText(Path.Combine(dir, "guidance", "战斗-build-指引.md"), "# 战斗 build\n引导内容");
         return new SkillManager(dir);
     }
 
@@ -32,7 +31,7 @@ guidance:
         var tool = new LoadGuidanceSkillTool(MakeSm());
         var result = await tool.ExecuteAsync(new Dictionary<string, object>
         {
-            ["skill"] = "combat-build",
+            ["skill"] = "战斗 build 指引",
         });
         result["content"].ToString().Should().Contain("引导内容");
     }

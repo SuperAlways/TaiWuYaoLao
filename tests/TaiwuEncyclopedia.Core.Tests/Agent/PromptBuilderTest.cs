@@ -19,17 +19,16 @@ public class PromptBuilderTest
 answer_rules_file: answer-rules.md
 output_style_file: output-style.md
 background:
-  - id: taiwu-wiki-zhan-dou
-    cn_name: 战斗
-    overview_file: background/zhan-dou/overview.md
-    detail_dir: background/zhan-dou/detail
+  - id: 战斗
+    overview_file: background/战斗/战斗概述.md
+    detail_dir: background/战斗/detail
 personas:
   - id: sword-will
     cn_name: 剑中虚影
     file: personas/sword-will.md
 ");
-        Directory.CreateDirectory(Path.Combine(dir, "background", "zhan-dou", "detail"));
-        File.WriteAllText(Path.Combine(dir, "background", "zhan-dou", "overview.md"), "# 战斗\n战斗系统概述");
+        Directory.CreateDirectory(Path.Combine(dir, "background", "战斗", "detail"));
+        File.WriteAllText(Path.Combine(dir, "background", "战斗", "战斗概述.md"), "# 战斗\n战斗系统概述");
         Directory.CreateDirectory(Path.Combine(dir, "personas"));
         File.WriteAllText(Path.Combine(dir, "personas", "sword-will.md"), "# 剑中虚影\n你是天道残识");
         File.WriteAllText(Path.Combine(dir, "answer-rules.md"), "# 通用回答规则\n规则内容");
@@ -76,17 +75,16 @@ personas:
 answer_rules_file: answer-rules.md
 output_style_file: output-style.md
 background:
-  - id: zhan-dou
-    cn_name: 战斗
-    overview_file: background/zhan-dou/overview.md
-    detail_dir: background/zhan-dou/detail
+  - id: 战斗
+    overview_file: background/战斗/战斗概述.md
+    detail_dir: background/战斗/detail
 personas:
   - id: sword-will
     cn_name: 剑中虚影
     file: personas/sword-will.md
 ");
-        Directory.CreateDirectory(Path.Combine(dir, "background", "zhan-dou", "detail"));
-        File.WriteAllText(Path.Combine(dir, "background", "zhan-dou", "overview.md"), "# 战斗\n章节概述");
+        Directory.CreateDirectory(Path.Combine(dir, "background", "战斗", "detail"));
+        File.WriteAllText(Path.Combine(dir, "background", "战斗", "战斗概述.md"), "# 战斗\n章节概述");
         File.WriteAllText(Path.Combine(dir, "background", "overview.md"), "# 百晓册总纲\n全书综述");
         Directory.CreateDirectory(Path.Combine(dir, "personas"));
         File.WriteAllText(Path.Combine(dir, "personas", "sword-will.md"), "# 剑中虚影");

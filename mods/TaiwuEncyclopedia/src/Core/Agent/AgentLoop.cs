@@ -319,12 +319,14 @@ public static class AgentLoop
     }
 
     /// <summary>生成工具调用的显示文本(纯文本,无 emoji)。</summary>
-    private static string BuildDisplayText(string toolName, Dictionary<string, object> args)
+    internal static string BuildDisplayText(string toolName, Dictionary<string, object> args)
     {
         return toolName switch
         {
             "retrieve_rag" => $"[检索] 查'{Short(args, "query", 40)}'相关",
-            "load_background_skill" => $"[百晓册] 加载{Str(args, "chapter")}",
+            "load_background_skill" => args.TryGetValue("section", out var s) && s is string sec && !string.IsNullOrEmpty(sec)
+                ? $"[百晓册] {sec}"
+                : $"[百晓册] {Str(args, "chapter")}",
             "load_guidance_skill" => $"[引导] 加载{Str(args, "skill")}",
             "lookup_concept" => $"[查询] 查概念'{Str(args, "name")}'",
             _ => $"[工具] {toolName}",

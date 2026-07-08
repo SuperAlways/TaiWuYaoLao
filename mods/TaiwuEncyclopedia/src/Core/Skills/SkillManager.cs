@@ -56,6 +56,12 @@ public class SkillManager
     /// <summary>引导 skill enum 列表（供 LoadGuidanceSkillTool 的 skill 参数 enum 约束）。</summary>
     public List<string> GetGuidanceEnum() => new(_guidanceCn.Keys);
 
+    /// <summary>获取引导 skill 清单条目。</summary>
+    /// <param name="skillId">引导 skill ID。</param>
+    /// <returns>引导 skill 清单条目，若未注册则返回 null。</returns>
+    public GuidanceSkillManifest? GetGuidanceEntry(string skillId) =>
+        _registry.Guidance.Find(x => x.Id == skillId);
+
     /// <summary>persona id 列表（供 ConfigPanel 下拉选择）。</summary>
     public List<string> GetPersonaIds() => new(_personaFile.Keys);
 

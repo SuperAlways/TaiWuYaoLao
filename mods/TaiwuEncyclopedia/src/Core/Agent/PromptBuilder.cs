@@ -23,7 +23,13 @@ public sealed class PromptBuilder
 - 不要重复检索相同内容。已检索到的资料直接用。
 - 正文中 [查:xxx] 标记处可调 lookup_concept 查询具体数值或相关章节。同一概念查一次即可。
 - 最终回答时以选中 persona 的口吻给出。
-- RAG 检索 (retrieve_rag) 的 mode / top_k 选择策略详见「通用回答规则」的「RAG 检索策略」段。";
+- RAG 检索 (retrieve_rag) 的 mode / top_k 选择策略详见「通用回答规则」的「RAG 检索策略」段。
+
+## 百晓册阅读策略
+- 判断玩家问题涉及的方向 → 调 load_background_skill(depth=""overview"") 加载章节概述
+- 概述末尾有子文件索引 → 根据索引用 depth=""detail"" + section 加载具体条目
+- 按需逐层深入，不要一次加载所有章节
+- 正文中 [查:xxx] 标记 → 调 lookup_concept 查询具体数值";
 
     /// <summary>构建引导 skill 索引段（10 个 skill，从 registry 动态生成）。</summary>
     private string BuildGuidanceIndex()

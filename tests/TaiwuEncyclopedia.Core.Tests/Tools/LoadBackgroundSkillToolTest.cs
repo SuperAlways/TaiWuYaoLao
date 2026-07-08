@@ -16,14 +16,13 @@ public class LoadBackgroundSkillToolTest
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "registry.yaml"), @"
 background:
-  - id: taiwu-wiki-zhan-dou
-    cn_name: 战斗
-    overview_file: background/zhan-dou/overview.md
-    detail_dir: background/zhan-dou/detail
+  - id: 战斗
+    overview_file: background/战斗/战斗概述.md
+    detail_dir: background/战斗/detail
 ");
-        Directory.CreateDirectory(Path.Combine(dir, "background", "zhan-dou", "detail"));
-        File.WriteAllText(Path.Combine(dir, "background", "zhan-dou", "overview.md"), "# 战斗\n概述");
-        File.WriteAllText(Path.Combine(dir, "background", "zhan-dou", "detail", "gong-fa.md"), "功法详尽");
+        Directory.CreateDirectory(Path.Combine(dir, "background", "战斗", "detail"));
+        File.WriteAllText(Path.Combine(dir, "background", "战斗", "战斗概述.md"), "# 战斗\n概述");
+        File.WriteAllText(Path.Combine(dir, "background", "战斗", "detail", "gong-fa.md"), "功法详尽");
         return new SkillManager(dir);
     }
 
@@ -33,7 +32,7 @@ background:
         var tool = new LoadBackgroundSkillTool(MakeSm());
         var result = await tool.ExecuteAsync(new Dictionary<string, object>
         {
-            ["chapter"] = "taiwu-wiki-zhan-dou",
+            ["chapter"] = "战斗",
             ["depth"] = "overview",
         });
         result["content"].ToString().Should().Contain("概述");
@@ -45,7 +44,7 @@ background:
         var tool = new LoadBackgroundSkillTool(MakeSm());
         var result = await tool.ExecuteAsync(new Dictionary<string, object>
         {
-            ["chapter"] = "taiwu-wiki-zhan-dou",
+            ["chapter"] = "战斗",
             ["depth"] = "detail",
             ["section"] = "gong-fa",
         });
