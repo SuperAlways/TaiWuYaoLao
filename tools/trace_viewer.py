@@ -37,7 +37,7 @@ def parse_trace(path: str) -> tuple[dict[str, dict], list[str], int]:
     order: list[str] = []
     bad = 0
     current: str | None = None
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, "r", encoding="utf-8-sig") as f:  # utf-8-sig strips BOM
         for line in f:
             line = line.strip()
             if not line:
@@ -180,7 +180,15 @@ function sel(i){{
     var common = diffPrefix(LAST_MSGS, msgs);
     d += '<div class="detail-h">LLM Call · '+esc(e.role)+' · '+esc(e.trigger)+'</div>';
     d += '<div class="detail-sub">messages: '+msgs.length+' · tools: '+(e.toolsCount||0)+' · iter: '+(e.iteration!=null?e.iteration:'-')+'</div>';
-    if(common > 0) d += '<div class="msg old">['+common+' msgs 与上轮相同，已折叠]</div>';
+    if(common > 0){{
+      d += '<div class="msg old" id="foldHeader" style="cursor:pointer" onclick="toggleFold()">['+common+' msgs 与上轮相同，点击展开]</div>';
+      d += '<div id="foldBody" style="display:none">';
+      for(var k=0;k<common;k++){{
+        var om = msgs[k];
+        d += '<div class="msg old"><span class="role">'+esc(om.role)+'</span><pre>'+esc(om.content)+'</pre></div>';
+      }}
+      d += '</div>';
+    }}
     for(var j=common;j<msgs.length;j++){{
       var m = msgs[j];
       d += '<div class="msg new"><span class="role">'+esc(m.role)+'</span><pre>'+esc(m.content)+'</pre></div>';
@@ -226,6 +234,18 @@ function updateButtons(){{
 
 function prev(){{ if(selIdx > 0){{ sel(tlItems[selIdx - 1]); }} }}
 function next(){{ if(selIdx < tlItems.length - 1){{ sel(tlItems[selIdx + 1]); }} }}
+function toggleFold(){{
+  var body = document.getElementById('foldBody');
+  var hdr = document.getElementById('foldHeader');
+  if(!body || !hdr) return;
+  if(body.style.display === 'none'){{
+    body.style.display = '';
+    hdr.innerHTML = hdr.innerHTML.replace('点击展开', '点击折叠');
+  }} else {{
+    body.style.display = 'none';
+    hdr.innerHTML = hdr.innerHTML.replace('点击折叠', '点击展开');
+  }}
+}}
 
 document.addEventListener('keydown', function(e){{
   if(e.key === 'ArrowLeft' || e.key === 'ArrowUp'){{ e.preventDefault(); prev(); }}
