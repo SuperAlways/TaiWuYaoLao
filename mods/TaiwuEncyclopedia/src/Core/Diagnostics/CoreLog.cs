@@ -17,6 +17,7 @@ public static class CoreLog
     /// <summary>写一条日志。tag 和 message 以 "[tag] message" 格式拼接。</summary>
     public static void Write(string tag, string message)
     {
-        OnLog?.Invoke($"[{tag}] {message}");
+        OnLog?.Invoke($"[{tag}] {message}");    // -> Unity Debug.Log
+        ModLog.Write(tag, "info", message);      // -> 内存环形缓冲（脱敏后）
     }
 }
