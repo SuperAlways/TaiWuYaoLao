@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace TaiwuEncyclopedia.Core.Storage;
 
 /// <summary>
-/// 原子文件读写工具：先写 .tmp 再 File.Move，防止写一半崩溃损坏文件。
+/// 原子文件读写工具：先写 .tmp 再 File.Replace（文件存在时）/ File.Move（新建时），单次 OS 原子操作，防止写一半崩溃损坏文件。
 /// 参照 jianghu-youling NpcMemoryStore.Save 模式。
 /// </summary>
 public static class AtomicFile
@@ -22,11 +22,17 @@ public static class AtomicFile
         var tmp = path + ".tmp";
         var json = JsonConvert.SerializeObject(data, Formatting.Indented);
         await File.WriteAllTextAsync(tmp, json);
-        if (File.Exists(path))
+        try
         {
-            File.Delete(path);
+            if (File.Exists(path))
+                File.Replace(tmp, path, null, ignoreMetadataErrors: true);
+            else
+                File.Move(tmp, path);
         }
-        File.Move(tmp, path);
+        finally
+        {
+            if (File.Exists(tmp)) File.Delete(tmp);
+        }
     }
 
     /// <summary>
