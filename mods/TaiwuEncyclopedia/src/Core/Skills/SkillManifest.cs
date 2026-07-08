@@ -9,9 +9,6 @@ public sealed class BackgroundChapterManifest
     /// <summary>章节唯一标识符。</summary>
     [YamlMember(Alias = "id")] public string Id { get; set; } = "";
 
-    /// <summary>章节中文名称。</summary>
-    [YamlMember(Alias = "cn_name")] public string CnName { get; set; } = "";
-
     /// <summary>章节概览文件相对路径。</summary>
     [YamlMember(Alias = "overview_file")] public string OverviewFile { get; set; } = "";
 
@@ -24,9 +21,6 @@ public sealed class GuidanceSkillManifest
 {
     /// <summary>引导 skill 唯一标识符。</summary>
     [YamlMember(Alias = "id")] public string Id { get; set; } = "";
-
-    /// <summary>引导 skill 中文名称。</summary>
-    [YamlMember(Alias = "cn_name")] public string CnName { get; set; } = "";
 
     /// <summary>引导 skill 文件相对路径。</summary>
     [YamlMember(Alias = "file")] public string File { get; set; } = "";

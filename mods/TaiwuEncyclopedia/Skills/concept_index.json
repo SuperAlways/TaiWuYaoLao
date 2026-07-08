@@ -1,246 +1,246 @@
 {
   "太吾传承": {
-    "path": "background/qi-cheng/detail/启程-太吾-太吾传承.md",
+    "path": "background/启程/detail/启程-太吾-太吾传承.md",
     "type": "section"
   },
   "生平遗惠": {
-    "path": "background/qi-cheng/detail/启程-太吾-太吾传承.md",
+    "path": "background/启程/detail/启程-太吾-太吾传承.md",
     "type": "section"
   },
   "命中属性": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "化解属性": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "次要属性": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "运功栏位": {
-    "path": "background/xiuxi/detail/修习-武学-运功.md",
+    "path": "background/修习/detail/修习-武学-运功.md",
     "type": "section"
   },
   "心法": {
-    "path": "background/xiuxi/detail/修习-武学-突破.md",
+    "path": "background/修习/detail/修习-武学-突破.md",
     "type": "section"
   },
   "外道": {
-    "path": "background/shijie/detail/世界-地图互动-敌人.md",
+    "path": "background/世界/detail/世界-地图互动-敌人.md",
     "type": "section"
   },
   "破冢": {
-    "path": "background/qi-cheng/detail/启程-相枢-剑冢.md",
+    "path": "background/启程/detail/启程-相枢-剑冢.md",
     "type": "section"
   },
   "执迷入邪": {
-    "path": "background/xiuxi/detail/修习-奇书宝典-奇书执迷.md",
+    "path": "background/修习/detail/修习-奇书宝典-奇书执迷.md",
     "type": "section"
   },
   "执迷化魔": {
-    "path": "background/xiuxi/detail/修习-奇书宝典-奇书执迷.md",
+    "path": "background/修习/detail/修习-奇书宝典-奇书执迷.md",
     "type": "section"
   },
   "奇书堕魔": {
-    "path": "background/xiuxi/detail/修习-奇书宝典-奇书执迷.md",
+    "path": "background/修习/detail/修习-奇书宝典-奇书执迷.md",
     "type": "section"
   },
   "地格资源": {
-    "path": "background/shijie/detail/世界-地图-地格.md",
+    "path": "background/世界/detail/世界-地图-地格.md",
     "type": "section"
   },
   "经营": {
-    "path": "background/chanye/detail/产业-产业-产业经营.md",
+    "path": "background/产业/detail/产业-产业-产业经营.md",
     "type": "section"
   },
   "交易": {
-    "path": "background/shijie/detail/世界-商会-商会.md",
+    "path": "background/世界/detail/世界-商会-商会.md",
     "type": "section"
   },
   "拆解": {
-    "path": "background/wupin/detail/物品-制造加工-拆解.md",
+    "path": "background/物品/detail/物品-制造加工-拆解.md",
     "type": "section"
   },
   "农户": {
-    "path": "background/chanye/detail/产业-太吾村民-农户.md",
+    "path": "background/产业/detail/产业-太吾村民-农户.md",
     "type": "section"
   },
   "库房": {
-    "path": "background/shijie/detail/世界-势力-库房.md",
+    "path": "background/世界/detail/世界-势力-库房.md",
     "type": "section"
   },
   "采集": {
-    "path": "background/shijie/detail/世界-地图互动-地格互动.md",
+    "path": "background/世界/detail/世界-地图互动-地格互动.md",
     "type": "section"
   },
   "好感": {
-    "path": "background/renwu/detail/人物-人物信息-好感.md",
+    "path": "background/人物/detail/人物-人物信息-好感.md",
     "type": "section"
   },
   "戒心": {
-    "path": "background/renwu/detail/人物-人物信息-好感.md",
+    "path": "background/人物/detail/人物-人物信息-好感.md",
     "type": "section"
   },
   "战利品": {
-    "path": "background/zhandou/detail/战斗-战斗基础-战斗流程.md",
+    "path": "background/战斗/detail/战斗-战斗基础-战斗流程.md",
     "type": "section"
   },
   "研读效率": {
-    "path": "background/xiuxi/detail/修习-修习方式-研读书籍.md",
+    "path": "background/修习/detail/修习-修习方式-研读书籍.md",
     "type": "section"
   },
   "连接成功率": {
-    "path": "background/xiuxi/detail/修习-武学-突破.md",
+    "path": "background/修习/detail/修习-武学-突破.md",
     "type": "section"
   },
   "周天运转": {
-    "path": "background/xiuxi/detail/修习-修习方式-周天运转.md",
+    "path": "background/修习/detail/修习-修习方式-周天运转.md",
     "type": "section"
   },
   "志向资历": {
-    "path": "background/youli/detail/游历-志向-志向.md",
+    "path": "background/游历/detail/游历-志向-志向.md",
     "type": "section"
   },
   "人口上限": {
-    "path": "background/qi-cheng/detail/启程-相枢-玄石火灰.md",
+    "path": "background/启程/detail/启程-相枢-玄石火灰.md",
     "type": "section"
   },
   "寿元": {
-    "path": "background/renwu/detail/人物-伤病-健康.md",
+    "path": "background/人物/detail/人物-伤病-健康.md",
     "type": "section"
   },
   "处世立场": {
-    "path": "background/renwu/detail/人物-人物信息-立场.md",
+    "path": "background/人物/detail/人物-人物信息-立场.md",
     "type": "section"
   },
   "州域": {
-    "path": "background/shijie/detail/世界-地图-州域与地区.md",
+    "path": "background/世界/detail/世界-地图-州域与地区.md",
     "type": "section"
   },
   "太吾村": {
-    "path": "background/qi-cheng/detail/启程-太吾-太吾传人.md",
+    "path": "background/启程/detail/启程-太吾-太吾传人.md",
     "type": "section"
   },
   "地区": {
-    "path": "background/shijie/detail/世界-地图-州域与地区.md",
+    "path": "background/世界/detail/世界-地图-州域与地区.md",
     "type": "section"
   },
   "太吾传人": {
-    "path": "background/qi-cheng/detail/启程-太吾-太吾传人.md",
+    "path": "background/启程/detail/启程-太吾-太吾传人.md",
     "type": "section"
   },
   "州府": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "门派": {
-    "path": "background/menpai/detail/门派-门派概述-门派.md",
+    "path": "background/门派/detail/门派-门派概述-门派.md",
     "type": "section"
   },
   "商会": {
-    "path": "background/shijie/detail/世界-商会-商会.md",
+    "path": "background/世界/detail/世界-商会-商会.md",
     "type": "section"
   },
   "大武魁商号": {
-    "path": "background/shijie/detail/世界-商会-商会.md",
+    "path": "background/世界/detail/世界-商会-商会.md",
     "type": "section"
   },
   "少林派": {
-    "path": "background/menpai/detail/门派-门派一览-少林派.md",
+    "path": "background/门派/detail/门派-门派一览-少林派.md",
     "type": "section"
   },
   "文山书海阁": {
-    "path": "background/shijie/detail/世界-商会-商会.md",
+    "path": "background/世界/detail/世界-商会-商会.md",
     "type": "section"
   },
   "峨眉派": {
-    "path": "background/menpai/detail/门派-门派一览-峨眉派.md",
+    "path": "background/门派/detail/门派-门派一览-峨眉派.md",
     "type": "section"
   },
   "回春堂": {
-    "path": "background/shijie/detail/世界-商会-商会.md",
+    "path": "background/世界/detail/世界-商会-商会.md",
     "type": "section"
   },
   "百花谷": {
-    "path": "background/menpai/detail/门派-门派一览-百花谷.md",
+    "path": "background/门派/detail/门派-门派一览-百花谷.md",
     "type": "section"
   },
   "武当派": {
-    "path": "background/menpai/detail/门派-门派一览-武当派.md",
+    "path": "background/门派/detail/门派-门派一览-武当派.md",
     "type": "section"
   },
   "服牛帮": {
-    "path": "background/shijie/detail/世界-商会-商会.md",
+    "path": "background/世界/detail/世界-商会-商会.md",
     "type": "section"
   },
   "元山派": {
-    "path": "background/menpai/detail/门派-门派一览-元山派.md",
+    "path": "background/门派/detail/门派-门派一览-元山派.md",
     "type": "section"
   },
   "狮相门": {
-    "path": "background/menpai/detail/门派-门派一览-狮相门.md",
+    "path": "background/门派/detail/门派-门派一览-狮相门.md",
     "type": "section"
   },
   "公输坊": {
-    "path": "background/shijie/detail/世界-商会-商会.md",
+    "path": "background/世界/detail/世界-商会-商会.md",
     "type": "section"
   },
   "然山派": {
-    "path": "background/menpai/detail/门派-门派一览-然山派.md",
+    "path": "background/门派/detail/门派-门派一览-然山派.md",
     "type": "section"
   },
   "奇货斋": {
-    "path": "background/shijie/detail/世界-商会-商会.md",
+    "path": "background/世界/detail/世界-商会-商会.md",
     "type": "section"
   },
   "璇女派": {
-    "path": "background/menpai/detail/门派-门派一览-璇女派.md",
+    "path": "background/门派/detail/门派-门派一览-璇女派.md",
     "type": "section"
   },
   "铸剑山庄": {
-    "path": "background/menpai/detail/门派-门派一览-铸剑山庄.md",
+    "path": "background/门派/detail/门派-门派一览-铸剑山庄.md",
     "type": "section"
   },
   "空桑派": {
-    "path": "background/menpai/detail/门派-门派一览-空桑派.md",
+    "path": "background/门派/detail/门派-门派一览-空桑派.md",
     "type": "section"
   },
   "金刚宗": {
-    "path": "background/menpai/detail/门派-门派一览-金刚宗.md",
+    "path": "background/门派/detail/门派-门派一览-金刚宗.md",
     "type": "section"
   },
   "五仙教": {
-    "path": "background/menpai/detail/门派-门派一览-五仙教.md",
+    "path": "background/门派/detail/门派-门派一览-五仙教.md",
     "type": "section"
   },
   "五湖商会": {
-    "path": "background/shijie/detail/世界-商会-商会.md",
+    "path": "background/世界/detail/世界-商会-商会.md",
     "type": "section"
   },
   "界青门": {
-    "path": "background/menpai/detail/门派-门派一览-界青门.md",
+    "path": "background/门派/detail/门派-门派一览-界青门.md",
     "type": "section"
   },
   "伏龙坛": {
-    "path": "background/menpai/detail/门派-门派一览-伏龙坛.md",
+    "path": "background/门派/detail/门派-门派一览-伏龙坛.md",
     "type": "section"
   },
   "血犼教": {
-    "path": "background/menpai/detail/门派-门派一览-血犼教.md",
+    "path": "background/门派/detail/门派-门派一览-血犼教.md",
     "type": "section"
   },
   "主要属性": {
-    "path": "background/renwu/detail/人物-属性-主要属性.md",
+    "path": "background/人物/detail/人物-属性-主要属性.md",
     "type": "section"
   },
   "资质": {
-    "path": "background/renwu/detail/人物-人物信息-资质.md",
+    "path": "background/人物/detail/人物-人物信息-资质.md",
     "type": "section"
   },
   "自然资源": {
-    "path": "background/chanye/detail/产业-产业-自然资源.md",
+    "path": "background/产业/detail/产业-产业-自然资源.md",
     "type": "section"
   },
   "开山辟路": {
@@ -280,7 +280,7 @@
     "type": "glossary"
   },
   "身心强健": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "七元炽盛": {
@@ -288,7 +288,7 @@
     "type": "glossary"
   },
   "七元赋性": {
-    "path": "background/renwu/detail/人物-属性-七元赋性.md",
+    "path": "background/人物/detail/人物-属性-七元赋性.md",
     "type": "section"
   },
   "谷中秘友": {
@@ -296,7 +296,7 @@
     "type": "glossary"
   },
   "通常特性": {
-    "path": "background/renwu/detail/人物-属性-特性.md",
+    "path": "background/人物/detail/人物-属性-特性.md",
     "type": "section"
   },
   "忠贞不渝": {
@@ -308,7 +308,7 @@
     "type": "glossary"
   },
   "倾诉爱意": {
-    "path": "background/jiaohu/detail/交互-人物互动-亲近.md",
+    "path": "background/交互/detail/交互-人物互动-亲近.md",
     "type": "section"
   },
   "白额灵蛇": {
@@ -316,7 +316,7 @@
     "type": "glossary"
   },
   "丹田内力": {
-    "path": "background/xiuxi/detail/修习-内力-内力.md",
+    "path": "background/修习/detail/修习-内力-内力.md",
     "type": "section"
   },
   "服芝食玉": {
@@ -328,7 +328,7 @@
     "type": "glossary"
   },
   "资源心材": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "十枚碎金": {
@@ -336,7 +336,7 @@
     "type": "glossary"
   },
   "银钱": {
-    "path": "background/wupin/detail/物品-物品与资源-资源.md",
+    "path": "background/物品/detail/物品-物品与资源-资源.md",
     "type": "section"
   },
   "桂酒椒浆": {
@@ -404,7 +404,7 @@
     "type": "glossary"
   },
   "促织缘": {
-    "path": "background/youli/detail/游历-促织-捕捉促织.md",
+    "path": "background/游历/detail/游历-促织-捕捉促织.md",
     "type": "section"
   },
   "玉泥洒金促织罐": {
@@ -432,7 +432,7 @@
     "type": "glossary"
   },
   "毒药": {
-    "path": "background/wupin/detail/物品-物品类型-药毒.md",
+    "path": "background/物品/detail/物品-物品类型-药毒.md",
     "type": "section"
   },
   "灰炉遗药": {
@@ -476,7 +476,7 @@
     "type": "glossary"
   },
   "商店等级": {
-    "path": "background/shijie/detail/世界-商会-商店等级.md",
+    "path": "background/世界/detail/世界-商会-商店等级.md",
     "type": "section"
   },
   "异果下凡": {
@@ -496,11 +496,11 @@
     "type": "glossary"
   },
   "建设空间": {
-    "path": "background/chanye/detail/产业-产业-产业建设.md",
+    "path": "background/产业/detail/产业-产业-产业建设.md",
     "type": "section"
   },
   "废弃地点": {
-    "path": "background/chanye/detail/产业-产业-自然资源.md",
+    "path": "background/产业/detail/产业-产业-自然资源.md",
     "type": "section"
   },
   "琴棋书画": {
@@ -508,11 +508,11 @@
     "type": "glossary"
   },
   "技艺书籍": {
-    "path": "background/wupin/detail/物品-物品类型-书籍.md",
+    "path": "background/物品/detail/物品-物品类型-书籍.md",
     "type": "section"
   },
   "完整": {
-    "path": "background/wupin/detail/物品-物品类型-书籍.md",
+    "path": "background/物品/detail/物品-物品类型-书籍.md",
     "type": "section"
   },
   "一任自然": {
@@ -532,15 +532,15 @@
     "type": "glossary"
   },
   "突破": {
-    "path": "background/xiuxi/detail/修习-武学-突破.md",
+    "path": "background/修习/detail/修习-武学-突破.md",
     "type": "section"
   },
   "天资上限": {
-    "path": "background/xiuxi/detail/修习-武学-突破.md",
+    "path": "background/修习/detail/修习-武学-突破.md",
     "type": "section"
   },
   "入魔上限": {
-    "path": "background/xiuxi/detail/修习-武学-突破.md",
+    "path": "background/修习/detail/修习-武学-突破.md",
     "type": "section"
   },
   "剑气刀光": {
@@ -568,7 +568,7 @@
     "type": "glossary"
   },
   "引子": {
-    "path": "background/wupin/detail/物品-物品类型-材料.md",
+    "path": "background/物品/detail/物品-物品类型-材料.md",
     "type": "section"
   },
   "先利其器": {
@@ -576,7 +576,7 @@
     "type": "glossary"
   },
   "工具": {
-    "path": "background/wupin/detail/物品-物品类型-工具.md",
+    "path": "background/物品/detail/物品-物品类型-工具.md",
     "type": "section"
   },
   "幽谷奇音": {
@@ -592,7 +592,7 @@
     "type": "glossary"
   },
   "万用栏位": {
-    "path": "background/xiuxi/detail/修习-武学-运功.md",
+    "path": "background/修习/detail/修习-武学-运功.md",
     "type": "section"
   },
   "古冢遗刻": {
@@ -600,139 +600,139 @@
     "type": "glossary"
   },
   "功法书籍": {
-    "path": "background/wupin/detail/物品-物品类型-书籍.md",
+    "path": "background/物品/detail/物品-物品类型-书籍.md",
     "type": "section"
   },
   "姓名": {
-    "path": "background/renwu/detail/人物-人物信息-姓名.md",
+    "path": "background/人物/detail/人物-人物信息-姓名.md",
     "type": "section"
   },
   "性别": {
-    "path": "background/renwu/detail/人物-人物信息-性别.md",
+    "path": "background/人物/detail/人物-人物信息-性别.md",
     "type": "section"
   },
   "年龄": {
-    "path": "background/renwu/detail/人物-人物信息-年龄.md",
+    "path": "background/人物/detail/人物-人物信息-年龄.md",
     "type": "section"
   },
   "生时": {
-    "path": "background/renwu/detail/人物-人物信息-生时.md",
+    "path": "background/人物/detail/人物-人物信息-生时.md",
     "type": "section"
   },
   "相貌": {
-    "path": "background/renwu/detail/人物-人物信息-魅力.md",
+    "path": "background/人物/detail/人物-人物信息-魅力.md",
     "type": "section"
   },
   "立场": {
-    "path": "background/renwu/detail/人物-人物信息-立场.md",
+    "path": "background/人物/detail/人物-人物信息-立场.md",
     "type": "section"
   },
   "内力属性": {
-    "path": "background/xiuxi/detail/修习-内力-内力.md",
+    "path": "background/修习/detail/修习-内力-内力.md",
     "type": "section"
   },
   "特性": {
-    "path": "background/renwu/detail/人物-属性-特性.md",
+    "path": "background/人物/detail/人物-属性-特性.md",
     "type": "section"
   },
   "生育": {
-    "path": "background/jiaohu/detail/交互-其他交互-生育.md",
+    "path": "background/交互/detail/交互-其他交互-生育.md",
     "type": "section"
   },
   "关系": {
-    "path": "background/jiaohu/detail/交互-交互信息-关系.md",
+    "path": "background/交互/detail/交互-交互信息-关系.md",
     "type": "section"
   },
   "魅力": {
-    "path": "background/renwu/detail/人物-人物信息-魅力.md",
+    "path": "background/人物/detail/人物-人物信息-魅力.md",
     "type": "section"
   },
   "铭刻": {
-    "path": "background/qi-cheng/detail/启程-太吾-太吾传人.md",
+    "path": "background/启程/detail/启程-太吾-太吾传人.md",
     "type": "section"
   },
   "世界演化": {
-    "path": "background/shijie/detail/世界-地图-月份更替.md",
+    "path": "background/世界/detail/世界-地图-月份更替.md",
     "type": "section"
   },
   "相枢": {
-    "path": "background/qi-cheng/detail/启程-相枢-相枢.md",
+    "path": "background/启程/detail/启程-相枢-相枢.md",
     "type": "section"
   },
   "产业": {
-    "path": "background/chanye/detail/产业-产业-产业视图.md",
+    "path": "background/产业/detail/产业-产业-产业视图.md",
     "type": "section"
   },
   "破冢化身": {
-    "path": "background/qi-cheng/detail/启程-相枢-剑冢.md",
+    "path": "background/启程/detail/启程-相枢-剑冢.md",
     "type": "section"
   },
   "失心人": {
-    "path": "background/qi-cheng/detail/启程-相枢-相枢.md",
+    "path": "background/启程/detail/启程-相枢-相枢.md",
     "type": "section"
   },
   "出身特质": {
-    "path": "background/qi-cheng/detail/启程-创建人物-出身特质.md",
+    "path": "background/启程/detail/启程-创建人物-出身特质.md",
     "type": "section"
   },
   "薪火相传": {
-    "path": "background/youli/detail/游历-志向-平民.md",
+    "path": "background/游历/detail/游历-志向-平民.md",
     "type": "section"
   },
   "玄灰": {
-    "path": "background/qi-cheng/detail/启程-相枢-玄石火灰.md",
+    "path": "background/启程/detail/启程-相枢-玄石火灰.md",
     "type": "section"
   },
   "精纯": {
-    "path": "background/xiuxi/detail/修习-内力-精纯境界.md",
+    "path": "background/修习/detail/修习-内力-精纯境界.md",
     "type": "section"
   },
   "石屋": {
-    "path": "background/chanye/detail/产业-特殊建筑-太吾村.md",
+    "path": "background/产业/detail/产业-特殊建筑-太吾村.md",
     "type": "section"
   },
   "同道": {
-    "path": "background/jiaohu/detail/交互-其他交互-同道.md",
+    "path": "background/交互/detail/交互-其他交互-同道.md",
     "type": "section"
   },
   "入魔": {
-    "path": "background/qi-cheng/detail/启程-相枢-相枢.md",
+    "path": "background/启程/detail/启程-相枢-相枢.md",
     "type": "section"
   },
   "婴儿": {
-    "path": "background/renwu/detail/人物-人物信息-年龄.md",
+    "path": "background/人物/detail/人物-人物信息-年龄.md",
     "type": "section"
   },
   "世界细节": {
-    "path": "background/qi-cheng/detail/启程-创建人物-世界细节.md",
+    "path": "background/启程/detail/启程-创建人物-世界细节.md",
     "type": "section"
   },
   "伏虞剑柄": {
-    "path": "background/qi-cheng/detail/启程-太吾-太吾传人.md",
+    "path": "background/启程/detail/启程-太吾-太吾传人.md",
     "type": "section"
   },
   "奇纹星斗": {
-    "path": "background/menpai/detail/门派-门派一览-界青门.md",
+    "path": "background/门派/detail/门派-门派一览-界青门.md",
     "type": "section"
   },
   "精纯境界": {
-    "path": "background/xiuxi/detail/修习-内力-精纯境界.md",
+    "path": "background/修习/detail/修习-内力-精纯境界.md",
     "type": "section"
   },
   "侵袭进度": {
-    "path": "background/qi-cheng/detail/启程-相枢-相枢.md",
+    "path": "background/启程/detail/启程-相枢-相枢.md",
     "type": "section"
   },
   "战败标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "神剑碎片": {
-    "path": "background/qi-cheng/detail/启程-相枢-剑冢.md",
+    "path": "background/启程/detail/启程-相枢-剑冢.md",
     "type": "section"
   },
   "剑冢见闻·实": {
-    "path": "background/jiaohu/detail/交互-交互信息-见闻.md",
+    "path": "background/交互/detail/交互-交互信息-见闻.md",
     "type": "section"
   },
   "神女还剑": {
@@ -1232,19 +1232,19 @@
     "type": "glossary"
   },
   "剑冢见闻·虚": {
-    "path": "background/jiaohu/detail/交互-交互信息-见闻.md",
+    "path": "background/交互/detail/交互-交互信息-见闻.md",
     "type": "section"
   },
   "死斗": {
-    "path": "background/zhandou/detail/战斗-战斗基础-战斗类型.md",
+    "path": "background/战斗/detail/战斗-战斗基础-战斗类型.md",
     "type": "section"
   },
   "护冢": {
-    "path": "background/chanye/detail/产业-太吾村民-护冢.md",
+    "path": "background/产业/detail/产业-太吾村民-护冢.md",
     "type": "section"
   },
   "西域珍宝": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "驼铃": {
@@ -1408,23 +1408,23 @@
     "type": "glossary"
   },
   "剑冢念影": {
-    "path": "background/qi-cheng/detail/启程-相枢-剑冢.md",
+    "path": "background/启程/detail/启程-相枢-剑冢.md",
     "type": "section"
   },
   "入魔程度": {
-    "path": "background/qi-cheng/detail/启程-相枢-相枢.md",
+    "path": "background/启程/detail/启程-相枢-相枢.md",
     "type": "section"
   },
   "心法效果": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "蓄式": {
-    "path": "background/zhandou/detail/战斗-战斗基础-施展功法.md",
+    "path": "background/战斗/detail/战斗-战斗基础-施展功法.md",
     "type": "section"
   },
   "招式": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-兵器攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-兵器攻击.md",
     "type": "section"
   },
   "刺": {
@@ -1492,27 +1492,27 @@
     "type": "glossary"
   },
   "势力": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "成年": {
-    "path": "background/renwu/detail/人物-人物信息-年龄.md",
+    "path": "background/人物/detail/人物-人物信息-年龄.md",
     "type": "section"
   },
   "命龄": {
-    "path": "background/renwu/detail/人物-人物信息-年龄.md",
+    "path": "background/人物/detail/人物-人物信息-年龄.md",
     "type": "section"
   },
   "太吾村民": {
-    "path": "background/chanye/detail/产业-太吾村民-村民.md",
+    "path": "background/产业/detail/产业-太吾村民-村民.md",
     "type": "section"
   },
   "未成年": {
-    "path": "background/renwu/detail/人物-人物信息-年龄.md",
+    "path": "background/人物/detail/人物-人物信息-年龄.md",
     "type": "section"
   },
   "怀孕": {
-    "path": "background/jiaohu/detail/交互-其他交互-生育.md",
+    "path": "background/交互/detail/交互-其他交互-生育.md",
     "type": "section"
   },
   "活死药": {
@@ -1532,27 +1532,27 @@
     "type": "glossary"
   },
   "伏虞心念": {
-    "path": "background/qi-cheng/detail/启程-太吾-太吾传人.md",
+    "path": "background/启程/detail/启程-太吾-太吾传人.md",
     "type": "section"
   },
   "鼎蛟淬身": {
-    "path": "background/menpai/detail/门派-门派一览-空桑派.md",
+    "path": "background/门派/detail/门派-门派一览-空桑派.md",
     "type": "section"
   },
   "剑冢": {
-    "path": "background/qi-cheng/detail/启程-相枢-剑冢.md",
+    "path": "background/启程/detail/启程-相枢-剑冢.md",
     "type": "section"
   },
   "支持度": {
-    "path": "background/menpai/detail/门派-门派概述-门派支持.md",
+    "path": "background/门派/detail/门派-门派概述-门派支持.md",
     "type": "section"
   },
   "商会好感": {
-    "path": "background/shijie/detail/世界-商会-商店等级.md",
+    "path": "background/世界/detail/世界-商会-商店等级.md",
     "type": "section"
   },
   "邀为同道": {
-    "path": "background/jiaohu/detail/交互-人物互动-亲近.md",
+    "path": "background/交互/detail/交互-人物互动-亲近.md",
     "type": "section"
   },
   "相枢入邪": {
@@ -1564,75 +1564,75 @@
     "type": "glossary"
   },
   "心情": {
-    "path": "background/renwu/detail/人物-人物信息-心情.md",
+    "path": "background/人物/detail/人物-人物信息-心情.md",
     "type": "section"
   },
   "袭击": {
-    "path": "background/jiaohu/detail/交互-人物互动-敌对.md",
+    "path": "background/交互/detail/交互-人物互动-敌对.md",
     "type": "section"
   },
   "血池秘法": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "三才护阵": {
-    "path": "background/menpai/detail/门派-门派一览-元山派.md",
+    "path": "background/门派/detail/门派-门派一览-元山派.md",
     "type": "section"
   },
   "石牢静坐": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "驱邪法事": {
-    "path": "background/youli/detail/游历-志向-道长.md",
+    "path": "background/游历/detail/游历-志向-道长.md",
     "type": "section"
   },
   "三魔乱阵": {
-    "path": "background/menpai/detail/门派-门派一览-元山派.md",
+    "path": "background/门派/detail/门派-门派一览-元山派.md",
     "type": "section"
   },
   "恩义": {
-    "path": "background/shijie/detail/世界-地图-州域与地区.md",
+    "path": "background/世界/detail/世界-地图-州域与地区.md",
     "type": "section"
   },
   "健康": {
-    "path": "background/renwu/detail/人物-伤病-健康.md",
+    "path": "background/人物/detail/人物-伤病-健康.md",
     "type": "section"
   },
   "监牢": {
-    "path": "background/shijie/detail/世界-势力-监牢.md",
+    "path": "background/世界/detail/世界-势力-监牢.md",
     "type": "section"
   },
   "驿站": {
-    "path": "background/shijie/detail/世界-地图-州域与地区.md",
+    "path": "background/世界/detail/世界-地图-州域与地区.md",
     "type": "section"
   },
   "晋升": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "法规": {
-    "path": "background/shijie/detail/世界-势力-法规.md",
+    "path": "background/世界/detail/世界-势力-法规.md",
     "type": "section"
   },
   "荐送弟子": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "退隐江湖": {
-    "path": "background/youli/detail/游历-志向-平民.md",
+    "path": "background/游历/detail/游历-志向-平民.md",
     "type": "section"
   },
   "门派支持度": {
-    "path": "background/menpai/detail/门派-门派概述-门派支持.md",
+    "path": "background/门派/detail/门派-门派概述-门派支持.md",
     "type": "section"
   },
   "扶助保荐": {
-    "path": "background/youli/detail/游历-志向-名门.md",
+    "path": "background/游历/detail/游历-志向-名门.md",
     "type": "section"
   },
   "贡献值": {
-    "path": "background/shijie/detail/世界-势力-库房.md",
+    "path": "background/世界/detail/世界-势力-库房.md",
     "type": "section"
   },
   "严阵以待": {
@@ -1648,115 +1648,115 @@
     "type": "glossary"
   },
   "任侠": {
-    "path": "background/shijie/detail/世界-地图互动-敌人.md",
+    "path": "background/世界/detail/世界-地图互动-敌人.md",
     "type": "section"
   },
   "势力值更新": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "贡献": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "门派兴衰": {
-    "path": "background/menpai/detail/门派-门派概述-地区故事.md",
+    "path": "background/门派/detail/门派-门派概述-地区故事.md",
     "type": "section"
   },
   "研读": {
-    "path": "background/xiuxi/detail/修习-修习方式-研读书籍.md",
+    "path": "background/修习/detail/修习-修习方式-研读书籍.md",
     "type": "section"
   },
   "周天": {
-    "path": "background/xiuxi/detail/修习-修习方式-周天运转.md",
+    "path": "background/修习/detail/修习-修习方式-周天运转.md",
     "type": "section"
   },
   "守卫": {
-    "path": "background/shijie/detail/世界-势力-守卫.md",
+    "path": "background/世界/detail/世界-势力-守卫.md",
     "type": "section"
   },
   "恶斗": {
-    "path": "background/zhandou/detail/战斗-战斗基础-战斗类型.md",
+    "path": "background/战斗/detail/战斗-战斗基础-战斗类型.md",
     "type": "section"
   },
   "悬赏": {
-    "path": "background/shijie/detail/世界-势力-法规.md",
+    "path": "background/世界/detail/世界-势力-法规.md",
     "type": "section"
   },
   "处罚": {
-    "path": "background/shijie/detail/世界-势力-法规.md",
+    "path": "background/世界/detail/世界-势力-法规.md",
     "type": "section"
   },
   "名誉": {
-    "path": "background/renwu/detail/人物-人物信息-名誉.md",
+    "path": "background/人物/detail/人物-人物信息-名誉.md",
     "type": "section"
   },
   "仇敌": {
-    "path": "background/jiaohu/detail/交互-交互信息-关系.md",
+    "path": "background/交互/detail/交互-交互信息-关系.md",
     "type": "section"
   },
   "门派支持": {
-    "path": "background/menpai/detail/门派-门派概述-门派支持.md",
+    "path": "background/门派/detail/门派-门派概述-门派支持.md",
     "type": "section"
   },
   "地区恩义": {
-    "path": "background/shijie/detail/世界-地图-州域与地区.md",
+    "path": "background/世界/detail/世界-地图-州域与地区.md",
     "type": "section"
   },
   "产业视图": {
-    "path": "background/chanye/detail/产业-产业-产业视图.md",
+    "path": "background/产业/detail/产业-产业-产业视图.md",
     "type": "section"
   },
   "交换优势": {
-    "path": "background/wupin/detail/物品-物品与资源-交换物资.md",
+    "path": "background/物品/detail/物品-物品与资源-交换物资.md",
     "type": "section"
   },
   "价值": {
-    "path": "background/wupin/detail/物品-物品与资源-物品.md",
+    "path": "background/物品/detail/物品-物品与资源-物品.md",
     "type": "section"
   },
   "上三阶": {
-    "path": "background/wupin/detail/物品-物品与资源-物品.md",
+    "path": "background/物品/detail/物品-物品与资源-物品.md",
     "type": "section"
   },
   "势力值": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "喜恶": {
-    "path": "background/renwu/detail/人物-人物信息-好感.md",
+    "path": "background/人物/detail/人物-人物信息-好感.md",
     "type": "section"
   },
   "州府法规": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "门派法规": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "使者": {
-    "path": "background/chanye/detail/产业-太吾村民-使者.md",
+    "path": "background/产业/detail/产业-太吾村民-使者.md",
     "type": "section"
   },
   "抓捕": {
-    "path": "background/zhandou/detail/战斗-指令与行为-战斗行为.md",
+    "path": "background/战斗/detail/战斗-指令与行为-战斗行为.md",
     "type": "section"
   },
   "送入监牢": {
-    "path": "background/shijie/detail/世界-势力-监牢.md",
+    "path": "background/世界/detail/世界-势力-监牢.md",
     "type": "section"
   },
   "敌对门派": {
-    "path": "background/menpai/detail/门派-门派概述-门派.md",
+    "path": "background/门派/detail/门派-门派概述-门派.md",
     "type": "section"
   },
   "威望": {
-    "path": "background/wupin/detail/物品-物品与资源-资源.md",
+    "path": "background/物品/detail/物品-物品与资源-资源.md",
     "type": "section"
   },
   "请教": {
-    "path": "background/jiaohu/detail/交互-人物互动-修习.md",
+    "path": "background/交互/detail/交互-人物互动-修习.md",
     "type": "section"
   },
   "蜀地失道": {
@@ -1764,19 +1764,19 @@
     "type": "glossary"
   },
   "真气": {
-    "path": "background/xiuxi/detail/修习-内力-真气.md",
+    "path": "background/修习/detail/修习-内力-真气.md",
     "type": "section"
   },
   "内力": {
-    "path": "background/xiuxi/detail/修习-内力-内力.md",
+    "path": "background/修习/detail/修习-内力-内力.md",
     "type": "section"
   },
   "周天真气": {
-    "path": "background/xiuxi/detail/修习-修习方式-周天运转.md",
+    "path": "background/修习/detail/修习-修习方式-周天运转.md",
     "type": "section"
   },
   "真气上限": {
-    "path": "background/xiuxi/detail/修习-内力-真气.md",
+    "path": "background/修习/detail/修习-内力-真气.md",
     "type": "section"
   },
   "金针刺脉": {
@@ -1800,7 +1800,7 @@
     "type": "glossary"
   },
   "内息紊乱": {
-    "path": "background/renwu/detail/人物-伤病-内息.md",
+    "path": "background/人物/detail/人物-伤病-内息.md",
     "type": "section"
   },
   "饥腹烧肠": {
@@ -1868,11 +1868,11 @@
     "type": "glossary"
   },
   "身龄": {
-    "path": "background/renwu/detail/人物-人物信息-年龄.md",
+    "path": "background/人物/detail/人物-人物信息-年龄.md",
     "type": "section"
   },
   "毒素": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "金刚玄法": {
@@ -1896,7 +1896,7 @@
     "type": "glossary"
   },
   "成蛊": {
-    "path": "background/renwu/detail/人物-伤病-蛊虫.md",
+    "path": "background/人物/detail/人物-伤病-蛊虫.md",
     "type": "section"
   },
   "无生有名": {
@@ -1940,327 +1940,327 @@
     "type": "glossary"
   },
   "伤势": {
-    "path": "background/renwu/detail/人物-伤病-伤势.md",
+    "path": "background/人物/detail/人物-伤病-伤势.md",
     "type": "section"
   },
   "剧痛": {
-    "path": "background/zhandou/detail/战斗-标记与状态-部位状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-部位状态.md",
     "type": "section"
   },
   "伤坏": {
-    "path": "background/zhandou/detail/战斗-标记与状态-部位状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-部位状态.md",
     "type": "section"
   },
   "篇章": {
-    "path": "background/wupin/detail/物品-物品类型-书籍.md",
+    "path": "background/物品/detail/物品-物品类型-书籍.md",
     "type": "section"
   },
   "俘虏": {
-    "path": "background/jiaohu/detail/交互-其他交互-俘虏.md",
+    "path": "background/交互/detail/交互-其他交互-俘虏.md",
     "type": "section"
   },
   "仗义行侠": {
-    "path": "background/youli/detail/游历-志向-武师.md",
+    "path": "background/游历/detail/游历-志向-武师.md",
     "type": "section"
   },
   "有教无类": {
-    "path": "background/youli/detail/游历-志向-名门.md",
+    "path": "background/游历/detail/游历-志向-名门.md",
     "type": "section"
   },
   "食物": {
-    "path": "background/wupin/detail/物品-物品类型-食物.md",
+    "path": "background/物品/detail/物品-物品类型-食物.md",
     "type": "section"
   },
   "驮兽": {
-    "path": "background/wupin/detail/物品-物品类型-行装.md",
+    "path": "background/物品/detail/物品-物品类型-行装.md",
     "type": "section"
   },
   "茶酒": {
-    "path": "background/wupin/detail/物品-物品类型-食物.md",
+    "path": "background/物品/detail/物品-物品类型-食物.md",
     "type": "section"
   },
   "口袋": {
-    "path": "background/wupin/detail/物品-物品类型-行装.md",
+    "path": "background/物品/detail/物品-物品类型-行装.md",
     "type": "section"
   },
   "绳索": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "武具": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "丹药": {
-    "path": "background/wupin/detail/物品-物品类型-药毒.md",
+    "path": "background/物品/detail/物品-物品类型-药毒.md",
     "type": "section"
   },
   "舟车": {
-    "path": "background/wupin/detail/物品-物品类型-行装.md",
+    "path": "background/物品/detail/物品-物品类型-行装.md",
     "type": "section"
   },
   "建筑心材": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "衣装": {
-    "path": "background/wupin/detail/物品-物品类型-行装.md",
+    "path": "background/物品/detail/物品-物品类型-行装.md",
     "type": "section"
   },
   "捕虫网": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "信鸽": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "验毒银针": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "促织罐": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "浏览货物": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "传承名谱": {
-    "path": "background/chanye/detail/产业-特殊建筑-太吾氏祠堂.md",
+    "path": "background/产业/detail/产业-特殊建筑-太吾氏祠堂.md",
     "type": "section"
   },
   "商人": {
-    "path": "background/chanye/detail/产业-太吾村民-商人.md",
+    "path": "background/产业/detail/产业-太吾村民-商人.md",
     "type": "section"
   },
   "诸会宝号": {
-    "path": "background/youli/detail/游历-志向-富商.md",
+    "path": "background/游历/detail/游历-志向-富商.md",
     "type": "section"
   },
   "安定": {
-    "path": "background/shijie/detail/世界-地图-地格.md",
+    "path": "background/世界/detail/世界-地图-地格.md",
     "type": "section"
   },
   "文化": {
-    "path": "background/shijie/detail/世界-地图-地格.md",
+    "path": "background/世界/detail/世界-地图-地格.md",
     "type": "section"
   },
   "聚宝纳福": {
-    "path": "background/youli/detail/游历-志向-富商.md",
+    "path": "background/游历/detail/游历-志向-富商.md",
     "type": "section"
   },
   "侵蚀地区": {
-    "path": "background/shijie/detail/世界-地图-州域与地区.md",
+    "path": "background/世界/detail/世界-地图-州域与地区.md",
     "type": "section"
   },
   "地格移动": {
-    "path": "background/shijie/detail/世界-地图-地格移动.md",
+    "path": "background/世界/detail/世界-地图-地格移动.md",
     "type": "section"
   },
   "视野": {
-    "path": "background/shijie/detail/世界-地图-地格移动.md",
+    "path": "background/世界/detail/世界-地图-地格移动.md",
     "type": "section"
   },
   "神木种子": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "代步": {
-    "path": "background/wupin/detail/物品-物品类型-行装.md",
+    "path": "background/物品/detail/物品-物品类型-行装.md",
     "type": "section"
   },
   "商队": {
-    "path": "background/shijie/detail/世界-商会-商队.md",
+    "path": "background/世界/detail/世界-商会-商队.md",
     "type": "section"
   },
   "开化地形": {
-    "path": "background/shijie/detail/世界-地图-地格.md",
+    "path": "background/世界/detail/世界-地图-地格.md",
     "type": "section"
   },
   "月份更替": {
-    "path": "background/shijie/detail/世界-地图-月份更替.md",
+    "path": "background/世界/detail/世界-地图-月份更替.md",
     "type": "section"
   },
   "迁移": {
-    "path": "background/chanye/detail/产业-太吾村民-农户.md",
+    "path": "background/产业/detail/产业-太吾村民-农户.md",
     "type": "section"
   },
   "天灾": {
-    "path": "background/shijie/detail/世界-地图互动-地格互动.md",
+    "path": "background/世界/detail/世界-地图互动-地格互动.md",
     "type": "section"
   },
   "精力": {
-    "path": "background/shijie/detail/世界-地图-月份更替.md",
+    "path": "background/世界/detail/世界-地图-月份更替.md",
     "type": "section"
   },
   "地形": {
-    "path": "background/shijie/detail/世界-地图-地格.md",
+    "path": "background/世界/detail/世界-地图-地格.md",
     "type": "section"
   },
   "行囊负重": {
-    "path": "background/wupin/detail/物品-物品与资源-行囊.md",
+    "path": "background/物品/detail/物品-物品与资源-行囊.md",
     "type": "section"
   },
   "绘制地图": {
-    "path": "background/youli/detail/游历-志向-旅人.md",
+    "path": "background/游历/detail/游历-志向-旅人.md",
     "type": "section"
   },
   "相枢爪牙": {
-    "path": "background/shijie/detail/世界-地图互动-敌人.md",
+    "path": "background/世界/detail/世界-地图互动-敌人.md",
     "type": "section"
   },
   "玄石": {
-    "path": "background/shijie/detail/世界-地图-地格.md",
+    "path": "background/世界/detail/世界-地图-地格.md",
     "type": "section"
   },
   "挖掘": {
-    "path": "background/shijie/detail/世界-地图互动-地格互动.md",
+    "path": "background/世界/detail/世界-地图互动-地格互动.md",
     "type": "section"
   },
   "敌人": {
-    "path": "background/shijie/detail/世界-地图互动-敌人.md",
+    "path": "background/世界/detail/世界-地图互动-敌人.md",
     "type": "section"
   },
   "亲友": {
-    "path": "background/jiaohu/detail/交互-交互信息-关系.md",
+    "path": "background/交互/detail/交互-交互信息-关系.md",
     "type": "section"
   },
   "历练": {
-    "path": "background/wupin/detail/物品-物品与资源-资源.md",
+    "path": "background/物品/detail/物品-物品与资源-资源.md",
     "type": "section"
   },
   "奇遇": {
-    "path": "background/shijie/detail/世界-地图互动-奇遇.md",
+    "path": "background/世界/detail/世界-地图互动-奇遇.md",
     "type": "section"
   },
   "库房交换": {
-    "path": "background/shijie/detail/世界-势力-库房.md",
+    "path": "background/世界/detail/世界-势力-库房.md",
     "type": "section"
   },
   "大夫": {
-    "path": "background/chanye/detail/产业-太吾村民-大夫.md",
+    "path": "background/产业/detail/产业-太吾村民-大夫.md",
     "type": "section"
   },
   "游医义诊": {
-    "path": "background/youli/detail/游历-志向-大夫.md",
+    "path": "background/游历/detail/游历-志向-大夫.md",
     "type": "section"
   },
   "身份互动": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "门派恩义互动": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "获取支持": {
-    "path": "background/jiaohu/detail/交互-人物互动-亲近.md",
+    "path": "background/交互/detail/交互-人物互动-亲近.md",
     "type": "section"
   },
   "内院库房": {
-    "path": "background/shijie/detail/世界-势力-库房.md",
+    "path": "background/世界/detail/世界-势力-库房.md",
     "type": "section"
   },
   "禁院库房": {
-    "path": "background/shijie/detail/世界-势力-库房.md",
+    "path": "background/世界/detail/世界-势力-库房.md",
     "type": "section"
   },
   "交换物资": {
-    "path": "background/wupin/detail/物品-物品与资源-交换物资.md",
+    "path": "background/物品/detail/物品-物品与资源-交换物资.md",
     "type": "section"
   },
   "身体部位": {
-    "path": "background/renwu/detail/人物-伤病-伤势.md",
+    "path": "background/人物/detail/人物-伤病-伤势.md",
     "type": "section"
   },
   "内伤": {
-    "path": "background/renwu/detail/人物-伤病-伤势.md",
+    "path": "background/人物/detail/人物-伤病-伤势.md",
     "type": "section"
   },
   "外伤": {
-    "path": "background/renwu/detail/人物-伤病-伤势.md",
+    "path": "background/人物/detail/人物-伤病-伤势.md",
     "type": "section"
   },
   "茶中岁月": {
-    "path": "background/youli/detail/游历-志向-贵客.md",
+    "path": "background/游历/detail/游历-志向-贵客.md",
     "type": "section"
   },
   "饮茶": {
-    "path": "background/wupin/detail/物品-物品类型-食物.md",
+    "path": "background/物品/detail/物品-物品类型-食物.md",
     "type": "section"
   },
   "见闻": {
-    "path": "background/jiaohu/detail/交互-交互信息-见闻.md",
+    "path": "background/交互/detail/交互-交互信息-见闻.md",
     "type": "section"
   },
   "秘闻": {
-    "path": "background/jiaohu/detail/交互-交互信息-秘闻.md",
+    "path": "background/交互/detail/交互-交互信息-秘闻.md",
     "type": "section"
   },
   "毁坏地格": {
-    "path": "background/shijie/detail/世界-地图-地格.md",
+    "path": "background/世界/detail/世界-地图-地格.md",
     "type": "section"
   },
   "坟墓": {
-    "path": "background/shijie/detail/世界-地图互动-坟墓.md",
+    "path": "background/世界/detail/世界-地图互动-坟墓.md",
     "type": "section"
   },
   "福缘": {
-    "path": "background/renwu/detail/人物-属性-七元赋性.md",
+    "path": "background/人物/detail/人物-属性-七元赋性.md",
     "type": "section"
   },
   "菜肴": {
-    "path": "background/wupin/detail/物品-物品类型-食物.md",
+    "path": "background/物品/detail/物品-物品类型-食物.md",
     "type": "section"
   },
   "水果": {
-    "path": "background/wupin/detail/物品-物品类型-食物.md",
+    "path": "background/物品/detail/物品-物品类型-食物.md",
     "type": "section"
   },
   "山野遗宝": {
-    "path": "background/youli/detail/游历-志向-山人.md",
+    "path": "background/游历/detail/游历-志向-山人.md",
     "type": "section"
   },
   "守墓": {
-    "path": "background/shijie/detail/世界-地图互动-地格互动.md",
+    "path": "background/世界/detail/世界-地图互动-地格互动.md",
     "type": "section"
   },
   "膂力": {
-    "path": "background/renwu/detail/人物-属性-主要属性.md",
+    "path": "background/人物/detail/人物-属性-主要属性.md",
     "type": "section"
   },
   "灵敏": {
-    "path": "background/renwu/detail/人物-属性-主要属性.md",
+    "path": "background/人物/detail/人物-属性-主要属性.md",
     "type": "section"
   },
   "定力": {
-    "path": "background/renwu/detail/人物-属性-主要属性.md",
+    "path": "background/人物/detail/人物-属性-主要属性.md",
     "type": "section"
   },
   "较艺": {
-    "path": "background/xiuxi/detail/修习-技艺-较艺.md",
+    "path": "background/修习/detail/修习-技艺-较艺.md",
     "type": "section"
   },
   "奇书执迷": {
-    "path": "background/xiuxi/detail/修习-奇书宝典-奇书执迷.md",
+    "path": "background/修习/detail/修习-奇书宝典-奇书执迷.md",
     "type": "section"
   },
   "蛊虫": {
-    "path": "background/renwu/detail/人物-伤病-蛊虫.md",
+    "path": "background/人物/detail/人物-伤病-蛊虫.md",
     "type": "section"
   },
   "混合毒素": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "灵光普照": {
-    "path": "background/youli/detail/游历-志向-云游僧.md",
+    "path": "background/游历/detail/游历-志向-云游僧.md",
     "type": "section"
   },
   "血露": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "闻恶声": {
@@ -2524,15 +2524,15 @@
     "type": "glossary"
   },
   "五圣秘浴": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "王蛊": {
-    "path": "background/menpai/detail/门派-门派一览-五仙教.md",
+    "path": "background/门派/detail/门派-门派一览-五仙教.md",
     "type": "section"
   },
   "影响范围": {
-    "path": "background/shijie/detail/世界-地图-地格.md",
+    "path": "background/世界/detail/世界-地图-地格.md",
     "type": "section"
   },
   "灵蛊巫书": {
@@ -2548,15 +2548,15 @@
     "type": "glossary"
   },
   "研读书籍": {
-    "path": "background/xiuxi/detail/修习-修习方式-研读书籍.md",
+    "path": "background/修习/detail/修习-修习方式-研读书籍.md",
     "type": "section"
   },
   "走火入魔": {
-    "path": "background/xiuxi/detail/修习-武学-突破.md",
+    "path": "background/修习/detail/修习-武学-突破.md",
     "type": "section"
   },
   "总纲": {
-    "path": "background/xiuxi/detail/修习-武学-突破.md",
+    "path": "background/修习/detail/修习-武学-突破.md",
     "type": "section"
   },
   "遍体火漆法": {
@@ -2740,11 +2740,11 @@
     "type": "glossary"
   },
   "龙岛忠仆": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "地区故事": {
-    "path": "background/menpai/detail/门派-门派概述-地区故事.md",
+    "path": "background/门派/detail/门派-门派概述-地区故事.md",
     "type": "section"
   },
   "神火仙尘": {
@@ -2760,15 +2760,15 @@
     "type": "glossary"
   },
   "元鸡": {
-    "path": "background/chanye/detail/产业-特殊建筑-元鸡舍.md",
+    "path": "background/产业/detail/产业-特殊建筑-元鸡舍.md",
     "type": "section"
   },
   "村民身份": {
-    "path": "background/chanye/detail/产业-太吾村民-村民.md",
+    "path": "background/产业/detail/产业-太吾村民-村民.md",
     "type": "section"
   },
   "精制": {
-    "path": "background/wupin/detail/物品-制造加工-精制.md",
+    "path": "background/物品/detail/物品-制造加工-精制.md",
     "type": "section"
   },
   "冷静元鸡羽": {
@@ -2976,23 +2976,23 @@
     "type": "glossary"
   },
   "助战同道": {
-    "path": "background/jiaohu/detail/交互-其他交互-同道.md",
+    "path": "background/交互/detail/交互-其他交互-同道.md",
     "type": "section"
   },
   "助战指令": {
-    "path": "background/zhandou/detail/战斗-指令与行为-助战指令.md",
+    "path": "background/战斗/detail/战斗-指令与行为-助战指令.md",
     "type": "section"
   },
   "战前准备": {
-    "path": "background/zhandou/detail/战斗-战斗基础-战斗流程.md",
+    "path": "background/战斗/detail/战斗-战斗基础-战斗流程.md",
     "type": "section"
   },
   "男生女相": {
-    "path": "background/renwu/detail/人物-人物信息-性别.md",
+    "path": "background/人物/detail/人物-人物信息-性别.md",
     "type": "section"
   },
   "女生男相": {
-    "path": "background/renwu/detail/人物-人物信息-性别.md",
+    "path": "background/人物/detail/人物-人物信息-性别.md",
     "type": "section"
   },
   "静禅功": {
@@ -3184,7 +3184,7 @@
     "type": "glossary"
   },
   "面壁阅经": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "残破僧履": {
@@ -3200,7 +3200,7 @@
     "type": "glossary"
   },
   "限时特性": {
-    "path": "background/renwu/detail/人物-属性-特性.md",
+    "path": "background/人物/detail/人物-属性-特性.md",
     "type": "section"
   },
   "坐鹿罗汉像": {
@@ -3276,15 +3276,15 @@
     "type": "glossary"
   },
   "参悟玄机": {
-    "path": "background/xiuxi/detail/修习-武学-玄机.md",
+    "path": "background/修习/detail/修习-武学-玄机.md",
     "type": "section"
   },
   "正练篇章": {
-    "path": "background/xiuxi/detail/修习-武学-突破.md",
+    "path": "background/修习/detail/修习-武学-突破.md",
     "type": "section"
   },
   "逆练篇章": {
-    "path": "background/xiuxi/detail/修习-武学-突破.md",
+    "path": "background/修习/detail/修习-武学-突破.md",
     "type": "section"
   },
   "丹田开合功": {
@@ -3508,7 +3508,7 @@
     "type": "glossary"
   },
   "天府之国": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "仙猿玉板": {
@@ -3716,11 +3716,11 @@
     "type": "glossary"
   },
   "七星调元": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "学艺许可": {
-    "path": "background/menpai/detail/门派-门派概述-门派.md",
+    "path": "background/门派/detail/门派-门派概述-门派.md",
     "type": "section"
   },
   "一明珏残镜": {
@@ -3732,11 +3732,11 @@
     "type": "glossary"
   },
   "突破格": {
-    "path": "background/xiuxi/detail/修习-武学-突破.md",
+    "path": "background/修习/detail/修习-武学-突破.md",
     "type": "section"
   },
   "实战领悟": {
-    "path": "background/xiuxi/detail/修习-修习方式-研读书籍.md",
+    "path": "background/修习/detail/修习-修习方式-研读书籍.md",
     "type": "section"
   },
   "养志法": {
@@ -3936,11 +3936,11 @@
     "type": "glossary"
   },
   "王禅典籍": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "奇书": {
-    "path": "background/xiuxi/detail/修习-奇书宝典-奇书.md",
+    "path": "background/修习/detail/修习-奇书宝典-奇书.md",
     "type": "section"
   },
   "青琅归玄印": {
@@ -3956,11 +3956,11 @@
     "type": "glossary"
   },
   "争夺奇书": {
-    "path": "background/xiuxi/detail/修习-奇书宝典-奇书.md",
+    "path": "background/修习/detail/修习-奇书宝典-奇书.md",
     "type": "section"
   },
   "生育能力": {
-    "path": "background/jiaohu/detail/交互-其他交互-生育.md",
+    "path": "background/交互/detail/交互-其他交互-生育.md",
     "type": "section"
   },
   "封口固气法": {
@@ -4132,11 +4132,11 @@
     "type": "glossary"
   },
   "散播威名": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "城镇村寨": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "万炼千痕": {
@@ -4344,7 +4344,7 @@
     "type": "glossary"
   },
   "玉镜沉思": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "药王万炼土": {
@@ -4356,11 +4356,11 @@
     "type": "glossary"
   },
   "动心": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "守心": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "前世遗闻": {
@@ -4556,7 +4556,7 @@
     "type": "glossary"
   },
   "孩童": {
-    "path": "background/renwu/detail/人物-人物信息-年龄.md",
+    "path": "background/人物/detail/人物-人物信息-年龄.md",
     "type": "section"
   },
   "界青四象图": {
@@ -4756,7 +4756,7 @@
     "type": "glossary"
   },
   "委托暗杀": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "星图残片": {
@@ -4768,7 +4768,7 @@
     "type": "glossary"
   },
   "门派正邪": {
-    "path": "background/menpai/detail/门派-门派概述-门派.md",
+    "path": "background/门派/detail/门派-门派概述-门派.md",
     "type": "section"
   },
   "铜人腧穴图经": {
@@ -4960,7 +4960,7 @@
     "type": "glossary"
   },
   "起死回生": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "金犼铁券": {
@@ -4972,7 +4972,7 @@
     "type": "glossary"
   },
   "内力五行": {
-    "path": "background/xiuxi/detail/修习-内力-内力.md",
+    "path": "background/修习/detail/修习-内力-内力.md",
     "type": "section"
   },
   "亢金命气": {
@@ -5252,7 +5252,7 @@
     "type": "glossary"
   },
   "秘药延寿": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "仙药残简": {
@@ -5472,7 +5472,7 @@
     "type": "glossary"
   },
   "威力": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "凤纹玉璜": {
@@ -5664,7 +5664,7 @@
     "type": "glossary"
   },
   "轮回台": {
-    "path": "background/chanye/detail/产业-特殊建筑-轮回台.md",
+    "path": "background/产业/detail/产业-特殊建筑-轮回台.md",
     "type": "section"
   },
   "圩魂夺魄珠": {
@@ -5892,11 +5892,11 @@
     "type": "glossary"
   },
   "欧冶古具": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "铸剑试炼": {
-    "path": "background/jiaohu/detail/交互-人物互动-门派恩义互动.md",
+    "path": "background/交互/detail/交互-人物互动-门派恩义互动.md",
     "type": "section"
   },
   "欧祖玉盆": {
@@ -5904,155 +5904,155 @@
     "type": "glossary"
   },
   "精制材料": {
-    "path": "background/wupin/detail/物品-物品类型-材料.md",
+    "path": "background/物品/detail/物品-物品类型-材料.md",
     "type": "section"
   },
   "兵器": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "护具": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "宝物": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "威力上限": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "玄字装备": {
-    "path": "background/wupin/detail/物品-物品类型-装备.md",
+    "path": "background/物品/detail/物品-物品类型-装备.md",
     "type": "section"
   },
   "武学": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "五行": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "领袖": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "门派请教": {
-    "path": "background/jiaohu/detail/交互-人物互动-修习.md",
+    "path": "background/交互/detail/交互-人物互动-修习.md",
     "type": "section"
   },
   "交换门派藏书": {
-    "path": "background/jiaohu/detail/交互-人物互动-修习.md",
+    "path": "background/交互/detail/交互-人物互动-修习.md",
     "type": "section"
   },
   "内院监牢": {
-    "path": "background/shijie/detail/世界-势力-监牢.md",
+    "path": "background/世界/detail/世界-势力-监牢.md",
     "type": "section"
   },
   "禁院监牢": {
-    "path": "background/shijie/detail/世界-势力-监牢.md",
+    "path": "background/世界/detail/世界-势力-监牢.md",
     "type": "section"
   },
   "初识好感": {
-    "path": "background/renwu/detail/人物-人物信息-好感.md",
+    "path": "background/人物/detail/人物-人物信息-好感.md",
     "type": "section"
   },
   "促织决斗": {
-    "path": "background/youli/detail/游历-促织-促织决斗.md",
+    "path": "background/游历/detail/游历-促织-促织决斗.md",
     "type": "section"
   },
   "见闻闲谈": {
-    "path": "background/jiaohu/detail/交互-人物互动-交谈.md",
+    "path": "background/交互/detail/交互-人物互动-交谈.md",
     "type": "section"
   },
   "赞颂夸奖": {
-    "path": "background/jiaohu/detail/交互-人物互动-交谈.md",
+    "path": "background/交互/detail/交互-人物互动-交谈.md",
     "type": "section"
   },
   "赠送礼物": {
-    "path": "background/jiaohu/detail/交互-人物互动-交谈.md",
+    "path": "background/交互/detail/交互-人物互动-交谈.md",
     "type": "section"
   },
   "居所": {
-    "path": "background/chanye/detail/产业-特殊建筑-居所.md",
+    "path": "background/产业/detail/产业-特殊建筑-居所.md",
     "type": "section"
   },
   "宴堂": {
-    "path": "background/chanye/detail/产业-特殊建筑-宴堂.md",
+    "path": "background/产业/detail/产业-特殊建筑-宴堂.md",
     "type": "section"
   },
   "江湖中人": {
-    "path": "background/youli/detail/游历-志向-武师.md",
+    "path": "background/游历/detail/游历-志向-武师.md",
     "type": "section"
   },
   "乡亲父老": {
-    "path": "background/youli/detail/游历-志向-平民.md",
+    "path": "background/游历/detail/游历-志向-平民.md",
     "type": "section"
   },
   "产业经营": {
-    "path": "background/chanye/detail/产业-产业-产业经营.md",
+    "path": "background/产业/detail/产业-产业-产业经营.md",
     "type": "section"
   },
   "敌对": {
-    "path": "background/jiaohu/detail/交互-人物互动-敌对.md",
+    "path": "background/交互/detail/交互-人物互动-敌对.md",
     "type": "section"
   },
   "城镇人物": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "门派人物": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "牵线搭桥": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "志向技能": {
-    "path": "background/youli/detail/游历-志向-志向.md",
+    "path": "background/游历/detail/游历-志向-志向.md",
     "type": "section"
   },
   "羞辱指责": {
-    "path": "background/jiaohu/detail/交互-人物互动-交谈.md",
+    "path": "background/交互/detail/交互-人物互动-交谈.md",
     "type": "section"
   },
   "代笔改名": {
-    "path": "background/youli/detail/游历-志向-才俊.md",
+    "path": "background/游历/detail/游历-志向-才俊.md",
     "type": "section"
   },
   "导恶向善": {
-    "path": "background/youli/detail/游历-志向-云游僧.md",
+    "path": "background/游历/detail/游历-志向-云游僧.md",
     "type": "section"
   },
   "天外游历": {
-    "path": "background/menpai/detail/门派-门派一览-璇女派.md",
+    "path": "background/门派/detail/门派-门派一览-璇女派.md",
     "type": "section"
   },
   "历灾渡劫": {
-    "path": "background/youli/detail/游历-志向-道长.md",
+    "path": "background/游历/detail/游历-志向-道长.md",
     "type": "section"
   },
   "化外逍遥": {
-    "path": "background/youli/detail/游历-志向-云游道.md",
+    "path": "background/游历/detail/游历-志向-云游道.md",
     "type": "section"
   },
   "互动": {
-    "path": "background/jiaohu/detail/交互-人物互动-人物互动.md",
+    "path": "background/交互/detail/交互-人物互动-人物互动.md",
     "type": "section"
   },
   "诗画怡情": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "天地为食": {
-    "path": "background/youli/detail/游历-志向-乞丐.md",
+    "path": "background/游历/detail/游历-志向-乞丐.md",
     "type": "section"
   },
   "先天命格": {
-    "path": "background/xiuxi/detail/修习-内力-内力.md",
+    "path": "background/修习/detail/修习-内力-内力.md",
     "type": "section"
   },
   "生于寅月": {
@@ -6104,7 +6104,7 @@
     "type": "glossary"
   },
   "封侯拜相": {
-    "path": "background/youli/detail/游历-志向-王公.md",
+    "path": "background/游历/detail/游历-志向-王公.md",
     "type": "section"
   },
   "《浑心无字诀》": {
@@ -6164,27 +6164,27 @@
     "type": "glossary"
   },
   "市井百态": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "造诣": {
-    "path": "background/renwu/detail/人物-人物信息-造诣.md",
+    "path": "background/人物/detail/人物-人物信息-造诣.md",
     "type": "section"
   },
   "城镇势力": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "门派见闻": {
-    "path": "background/jiaohu/detail/交互-交互信息-见闻.md",
+    "path": "background/交互/detail/交互-交互信息-见闻.md",
     "type": "section"
   },
   "地区故事见闻": {
-    "path": "background/jiaohu/detail/交互-交互信息-见闻.md",
+    "path": "background/交互/detail/交互-交互信息-见闻.md",
     "type": "section"
   },
   "野兽": {
-    "path": "background/shijie/detail/世界-地图互动-敌人.md",
+    "path": "background/世界/detail/世界-地图互动-敌人.md",
     "type": "section"
   },
   "天助善缘": {
@@ -6228,163 +6228,163 @@
     "type": "glossary"
   },
   "参考书籍": {
-    "path": "background/xiuxi/detail/修习-修习方式-研读书籍.md",
+    "path": "background/修习/detail/修习-修习方式-研读书籍.md",
     "type": "section"
   },
   "论据": {
-    "path": "background/xiuxi/detail/修习-技艺-较艺.md",
+    "path": "background/修习/detail/修习-技艺-较艺.md",
     "type": "section"
   },
   "发挥威力": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "诊疗": {
-    "path": "background/renwu/detail/人物-伤病-诊疗.md",
+    "path": "background/人物/detail/人物-伤病-诊疗.md",
     "type": "section"
   },
   "工作效率": {
-    "path": "background/chanye/detail/产业-产业-产业经营.md",
+    "path": "background/产业/detail/产业-产业-产业经营.md",
     "type": "section"
   },
   "制造加工": {
-    "path": "background/wupin/detail/物品-制造加工-制造建筑.md",
+    "path": "background/物品/detail/物品-制造加工-制造建筑.md",
     "type": "section"
   },
   "辅助内功": {
-    "path": "background/xiuxi/detail/修习-修习方式-周天运转.md",
+    "path": "background/修习/detail/修习-修习方式-周天运转.md",
     "type": "section"
   },
   "700,800) |\r\n| 2 | 龙姿（男）/凤仪（女） | [600,700) |\r\n| 1 | 瑾瑜（男）/瑶碧（女） | [500,600) |\r\n| 0 | 出众 | [400,500) |\r\n| -1 | 寻常 | [300,400) |\r\n| -2 | 不扬 | [200,300) |\r\n| -3 | 可憎 | [100,200) |\r\n| -4 | 非人 | [0,100) |\r\n\r\n\r\n### 相貌\r\n\r\n相貌决定人物的基础魅力。\r\n\r\n相貌会随着[身龄": {
-    "path": "background/renwu/detail/人物-人物信息-年龄.md",
+    "path": "background/人物/detail/人物-人物信息-年龄.md",
     "type": "section"
   },
   "梳头修面": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "重创": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "伤势标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "内伤强健": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "外伤强健": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "诊疗伤病": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "重金诊疗": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "驱使古鼎": {
-    "path": "background/menpai/detail/门派-门派一览-空桑派.md",
+    "path": "background/门派/detail/门派-门派一览-空桑派.md",
     "type": "section"
   },
   "看诊施药": {
-    "path": "background/youli/detail/游历-志向-大夫.md",
+    "path": "background/游历/detail/游历-志向-大夫.md",
     "type": "section"
   },
   "内息": {
-    "path": "background/renwu/detail/人物-伤病-内息.md",
+    "path": "background/人物/detail/人物-伤病-内息.md",
     "type": "section"
   },
   "健康标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "服食延年": {
-    "path": "background/youli/detail/游历-志向-大夫.md",
+    "path": "background/游历/detail/游历-志向-大夫.md",
     "type": "section"
   },
   "金针渡命": {
-    "path": "background/youli/detail/游历-志向-大夫.md",
+    "path": "background/游历/detail/游历-志向-大夫.md",
     "type": "section"
   },
   "反噬": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "补充真气": {
-    "path": "background/zhandou/detail/战斗-标记与状态-真气状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-真气状态.md",
     "type": "section"
   },
   "毒素抵抗": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "调息吐纳": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "内息标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "治疗丹药": {
-    "path": "background/wupin/detail/物品-物品类型-药毒.md",
+    "path": "background/物品/detail/物品-物品类型-药毒.md",
     "type": "section"
   },
   "体质": {
-    "path": "background/renwu/detail/人物-属性-主要属性.md",
+    "path": "background/人物/detail/人物-属性-主要属性.md",
     "type": "section"
   },
   "药毒": {
-    "path": "background/wupin/detail/物品-物品类型-药毒.md",
+    "path": "background/物品/detail/物品-物品类型-药毒.md",
     "type": "section"
   },
   "淬毒": {
-    "path": "background/wupin/detail/物品-制造加工-淬毒.md",
+    "path": "background/物品/detail/物品-制造加工-淬毒.md",
     "type": "section"
   },
   "毒素标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "临时毒素": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "旧时毒素": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "兵器攻击": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-兵器攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-兵器攻击.md",
     "type": "section"
   },
   "移动": {
-    "path": "background/zhandou/detail/战斗-距离与移动-移动.md",
+    "path": "background/战斗/detail/战斗-距离与移动-移动.md",
     "type": "section"
   },
   "架势": {
-    "path": "background/zhandou/detail/战斗-战斗基础-施展功法.md",
+    "path": "background/战斗/detail/战斗-战斗基础-施展功法.md",
     "type": "section"
   },
   "提气": {
-    "path": "background/zhandou/detail/战斗-战斗基础-施展功法.md",
+    "path": "background/战斗/detail/战斗-战斗基础-施展功法.md",
     "type": "section"
   },
   "中毒等级": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "重创标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "轻灵栏位": {
-    "path": "background/xiuxi/detail/修习-武学-运功.md",
+    "path": "background/修习/detail/修习-武学-运功.md",
     "type": "section"
   },
   "空手": {
@@ -6392,243 +6392,243 @@
     "type": "glossary"
   },
   "摧破栏位": {
-    "path": "background/xiuxi/detail/修习-武学-运功.md",
+    "path": "background/修习/detail/修习-武学-运功.md",
     "type": "section"
   },
   "损害状态": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战斗状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战斗状态.md",
     "type": "section"
   },
   "窃取": {
-    "path": "background/jiaohu/detail/交互-人物互动-敌对.md",
+    "path": "background/交互/detail/交互-人物互动-敌对.md",
     "type": "section"
   },
   "夺取": {
-    "path": "background/jiaohu/detail/交互-人物互动-敌对.md",
+    "path": "background/交互/detail/交互-人物互动-敌对.md",
     "type": "section"
   },
   "唬骗": {
-    "path": "background/jiaohu/detail/交互-人物互动-敌对.md",
+    "path": "background/交互/detail/交互-人物互动-敌对.md",
     "type": "section"
   },
   "欺侮": {
-    "path": "background/jiaohu/detail/交互-其他交互-生育.md",
+    "path": "background/交互/detail/交互-其他交互-生育.md",
     "type": "section"
   },
   "脚力": {
-    "path": "background/zhandou/detail/战斗-战斗基础-施展功法.md",
+    "path": "background/战斗/detail/战斗-战斗基础-施展功法.md",
     "type": "section"
   },
   "旧时外伤": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "破绽": {
-    "path": "background/zhandou/detail/战斗-标记与状态-部位状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-部位状态.md",
     "type": "section"
   },
   "失神标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "旧时内伤": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "封穴": {
-    "path": "background/zhandou/detail/战斗-标记与状态-部位状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-部位状态.md",
     "type": "section"
   },
   "奇窍栏位": {
-    "path": "background/xiuxi/detail/修习-武学-运功.md",
+    "path": "background/修习/detail/修习-武学-运功.md",
     "type": "section"
   },
   "护体栏位": {
-    "path": "background/xiuxi/detail/修习-武学-运功.md",
+    "path": "background/修习/detail/修习-武学-运功.md",
     "type": "section"
   },
   "威力成数": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-摧破功法.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-摧破功法.md",
     "type": "section"
   },
   "追击": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-兵器攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-兵器攻击.md",
     "type": "section"
   },
   "摧破攻击": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-摧破功法.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-摧破功法.md",
     "type": "section"
   },
   "失神伤害": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "使用物品": {
-    "path": "background/zhandou/detail/战斗-指令与行为-战斗行为.md",
+    "path": "background/战斗/detail/战斗-指令与行为-战斗行为.md",
     "type": "section"
   },
   "毒害": {
-    "path": "background/jiaohu/detail/交互-人物互动-敌对.md",
+    "path": "background/交互/detail/交互-人物互动-敌对.md",
     "type": "section"
   },
   "服食栏位": {
-    "path": "background/renwu/detail/人物-伤病-服食汲饮.md",
+    "path": "background/人物/detail/人物-伤病-服食汲饮.md",
     "type": "section"
   },
   "蛊虫标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "命中几率": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-攻击.md",
     "type": "section"
   },
   "饮酒": {
-    "path": "background/wupin/detail/物品-物品类型-食物.md",
+    "path": "background/物品/detail/物品-物品类型-食物.md",
     "type": "section"
   },
   "毒发": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "入邪": {
-    "path": "background/qi-cheng/detail/启程-相枢-相枢.md",
+    "path": "background/启程/detail/启程-相枢-相枢.md",
     "type": "section"
   },
   "治疗伤势": {
-    "path": "background/zhandou/detail/战斗-指令与行为-战斗行为.md",
+    "path": "background/战斗/detail/战斗-指令与行为-战斗行为.md",
     "type": "section"
   },
   "驱除毒素": {
-    "path": "background/zhandou/detail/战斗-指令与行为-战斗行为.md",
+    "path": "background/战斗/detail/战斗-指令与行为-战斗行为.md",
     "type": "section"
   },
   "摧破功法": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-摧破功法.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-摧破功法.md",
     "type": "section"
   },
   "直接伤害": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "封禁": {
-    "path": "background/zhandou/detail/战斗-标记与状态-封禁.md",
+    "path": "background/战斗/detail/战斗-标记与状态-封禁.md",
     "type": "section"
   },
   "正练": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "逆练": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "培养": {
-    "path": "background/chanye/detail/产业-产业-产业经营.md",
+    "path": "background/产业/detail/产业-产业-产业经营.md",
     "type": "section"
   },
   "力道": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "卸力": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "装备负重": {
-    "path": "background/wupin/detail/物品-物品类型-装备.md",
+    "path": "background/物品/detail/物品-物品类型-装备.md",
     "type": "section"
   },
   "迅疾": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "闪避": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "破体": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "御体": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "破气": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "御气": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "精妙": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "拆招": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "功法": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "凝聚真气": {
-    "path": "background/xiuxi/detail/修习-内力-真气.md",
+    "path": "background/修习/detail/修习-内力-真气.md",
     "type": "section"
   },
   "摧破真气": {
-    "path": "background/xiuxi/detail/修习-内力-真气.md",
+    "path": "background/修习/detail/修习-内力-真气.md",
     "type": "section"
   },
   "护体真气": {
-    "path": "background/xiuxi/detail/修习-内力-真气.md",
+    "path": "background/修习/detail/修习-内力-真气.md",
     "type": "section"
   },
   "命中方式": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-攻击.md",
     "type": "section"
   },
   "命中要害": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-攻击.md",
     "type": "section"
   },
   "奇窍真气": {
-    "path": "background/xiuxi/detail/修习-内力-真气.md",
+    "path": "background/修习/detail/修习-内力-真气.md",
     "type": "section"
   },
   "轻灵真气": {
-    "path": "background/xiuxi/detail/修习-内力-真气.md",
+    "path": "background/修习/detail/修习-内力-真气.md",
     "type": "section"
   },
   "施展功法": {
-    "path": "background/zhandou/detail/战斗-战斗基础-施展功法.md",
+    "path": "background/战斗/detail/战斗-战斗基础-施展功法.md",
     "type": "section"
   },
   "攻击耗时": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-兵器攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-兵器攻击.md",
     "type": "section"
   },
   "武具效果": {
-    "path": "background/wupin/detail/物品-物品类型-装备.md",
+    "path": "background/物品/detail/物品-物品类型-装备.md",
     "type": "section"
   },
   "切换兵器": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-兵器攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-兵器攻击.md",
     "type": "section"
   },
   "真气消散": {
-    "path": "background/zhandou/detail/战斗-标记与状态-真气状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-真气状态.md",
     "type": "section"
   },
   "遗传": {
-    "path": "background/jiaohu/detail/交互-其他交互-生育.md",
+    "path": "background/交互/detail/交互-其他交互-生育.md",
     "type": "section"
   },
   "抓周事件": {
-    "path": "background/jiaohu/detail/交互-其他交互-生育.md",
+    "path": "background/交互/detail/交互-其他交互-生育.md",
     "type": "section"
   },
   "无根之人": {
@@ -6644,7 +6644,7 @@
     "type": "glossary"
   },
   "血亲": {
-    "path": "background/jiaohu/detail/交互-交互信息-关系.md",
+    "path": "background/交互/detail/交互-交互信息-关系.md",
     "type": "section"
   },
   "先天畸形": {
@@ -6652,11 +6652,11 @@
     "type": "glossary"
   },
   "采擢荐进": {
-    "path": "background/youli/detail/游历-志向-名门.md",
+    "path": "background/游历/detail/游历-志向-名门.md",
     "type": "section"
   },
   "易天改命": {
-    "path": "background/youli/detail/游历-志向-云游道.md",
+    "path": "background/游历/detail/游历-志向-云游道.md",
     "type": "section"
   },
   "良才美玉": {
@@ -7376,19 +7376,19 @@
     "type": "glossary"
   },
   "聚精会神": {
-    "path": "background/xiuxi/detail/修习-修习方式-周天运转.md",
+    "path": "background/修习/detail/修习-修习方式-周天运转.md",
     "type": "section"
   },
   "实战周天": {
-    "path": "background/xiuxi/detail/修习-修习方式-周天运转.md",
+    "path": "background/修习/detail/修习-修习方式-周天运转.md",
     "type": "section"
   },
   "拾取遗宝": {
-    "path": "background/shijie/detail/世界-地图互动-地格互动.md",
+    "path": "background/世界/detail/世界-地图互动-地格互动.md",
     "type": "section"
   },
   "自强不息": {
-    "path": "background/youli/detail/游历-志向-武师.md",
+    "path": "background/游历/detail/游历-志向-武师.md",
     "type": "section"
   },
   "沛然诀": {
@@ -7396,39 +7396,39 @@
     "type": "glossary"
   },
   "战斗评价": {
-    "path": "background/zhandou/detail/战斗-战斗基础-战斗流程.md",
+    "path": "background/战斗/detail/战斗-战斗基础-战斗流程.md",
     "type": "section"
   },
   "较艺评价": {
-    "path": "background/xiuxi/detail/修习-技艺-较艺.md",
+    "path": "background/修习/detail/修习-技艺-较艺.md",
     "type": "section"
   },
   "专心致志": {
-    "path": "background/xiuxi/detail/修习-修习方式-研读书籍.md",
+    "path": "background/修习/detail/修习-修习方式-研读书籍.md",
     "type": "section"
   },
   "博古通今": {
-    "path": "background/youli/detail/游历-志向-才俊.md",
+    "path": "background/游历/detail/游历-志向-才俊.md",
     "type": "section"
   },
   "研读策略": {
-    "path": "background/xiuxi/detail/修习-修习方式-研读书籍.md",
+    "path": "background/修习/detail/修习-修习方式-研读书籍.md",
     "type": "section"
   },
   "产业建筑": {
-    "path": "background/chanye/detail/产业-产业-建筑.md",
+    "path": "background/产业/detail/产业-产业-建筑.md",
     "type": "section"
   },
   "发挥需求": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "天人感应": {
-    "path": "background/xiuxi/detail/修习-修习方式-周天运转.md",
+    "path": "background/修习/detail/修习-修习方式-周天运转.md",
     "type": "section"
   },
   "周天策略": {
-    "path": "background/xiuxi/detail/修习-修习方式-周天运转.md",
+    "path": "background/修习/detail/修习-修习方式-周天运转.md",
     "type": "section"
   },
   "金刚·金缺则弱": {
@@ -7472,75 +7472,75 @@
     "type": "glossary"
   },
   "战斗属性": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "攻击属性": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "武具运用": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "内功发挥": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "烈毒抵抗": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "防御属性": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "架势恢复": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "移动速度": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "攻击速度": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "郁毒抵抗": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "步伐稳健": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "引气冲关": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "寒毒抵抗": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "赤毒抵抗": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "提气恢复": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "施展速度": {
-    "path": "background/renwu/detail/人物-属性-战斗属性.md",
+    "path": "background/人物/detail/人物-属性-战斗属性.md",
     "type": "section"
   },
   "腐毒抵抗": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "幻毒抵抗": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "金刚·金沉则活": {
@@ -7684,15 +7684,15 @@
     "type": "glossary"
   },
   "寄托奇书": {
-    "path": "background/menpai/detail/门派-门派一览-然山派.md",
+    "path": "background/门派/detail/门派-门派一览-然山派.md",
     "type": "section"
   },
   "奇书断执": {
-    "path": "background/menpai/detail/门派-门派一览-然山派.md",
+    "path": "background/门派/detail/门派-门派一览-然山派.md",
     "type": "section"
   },
   "相枢化身": {
-    "path": "background/qi-cheng/detail/启程-相枢-剑冢.md",
+    "path": "background/启程/detail/启程-相枢-剑冢.md",
     "type": "section"
   },
   "执迷残引": {
@@ -7700,43 +7700,43 @@
     "type": "glossary"
   },
   "建筑": {
-    "path": "background/chanye/detail/产业-产业-建筑.md",
+    "path": "background/产业/detail/产业-产业-建筑.md",
     "type": "section"
   },
   "技艺见闻": {
-    "path": "background/jiaohu/detail/交互-交互信息-见闻.md",
+    "path": "background/交互/detail/交互-交互信息-见闻.md",
     "type": "section"
   },
   "较艺策略": {
-    "path": "background/xiuxi/detail/修习-技艺-较艺.md",
+    "path": "background/修习/detail/修习-技艺-较艺.md",
     "type": "section"
   },
   "下三品": {
-    "path": "background/wupin/detail/物品-物品与资源-物品.md",
+    "path": "background/物品/detail/物品-物品与资源-物品.md",
     "type": "section"
   },
   "中三品": {
-    "path": "background/wupin/detail/物品-物品与资源-物品.md",
+    "path": "background/物品/detail/物品-物品与资源-物品.md",
     "type": "section"
   },
   "上三品": {
-    "path": "background/wupin/detail/物品-物品与资源-物品.md",
+    "path": "background/物品/detail/物品-物品与资源-物品.md",
     "type": "section"
   },
   "队伍机略": {
-    "path": "background/jiaohu/detail/交互-其他交互-同道.md",
+    "path": "background/交互/detail/交互-其他交互-同道.md",
     "type": "section"
   },
   "运功效果": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "身法": {
-    "path": "background/zhandou/detail/战斗-距离与移动-身法.md",
+    "path": "background/战斗/detail/战斗-距离与移动-身法.md",
     "type": "section"
   },
   "护体功法": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-护体功法.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-护体功法.md",
     "type": "section"
   },
   "小纵跃功": {
@@ -7752,179 +7752,179 @@
     "type": "glossary"
   },
   "玄机": {
-    "path": "background/xiuxi/detail/修习-武学-玄机.md",
+    "path": "background/修习/detail/修习-武学-玄机.md",
     "type": "section"
   },
   "重伤": {
-    "path": "background/zhandou/detail/战斗-标记与状态-部位状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-部位状态.md",
     "type": "section"
   },
   "施展时间": {
-    "path": "background/zhandou/detail/战斗-战斗基础-施展功法.md",
+    "path": "background/战斗/detail/战斗-战斗基础-施展功法.md",
     "type": "section"
   },
   "残毁": {
-    "path": "background/zhandou/detail/战斗-标记与状态-部位状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-部位状态.md",
     "type": "section"
   },
   "练习功法": {
-    "path": "background/chanye/detail/产业-特殊建筑-练功房.md",
+    "path": "background/产业/detail/产业-特殊建筑-练功房.md",
     "type": "section"
   },
   "罗汉开悟": {
-    "path": "background/menpai/detail/门派-门派一览-少林派.md",
+    "path": "background/门派/detail/门派-门派一览-少林派.md",
     "type": "section"
   },
   "失神强健": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "重创强健": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "攻击范围": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-攻击.md",
     "type": "section"
   },
   "反击": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-护体功法.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-护体功法.md",
     "type": "section"
   },
   "反震": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-护体功法.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-护体功法.md",
     "type": "section"
   },
   "内外功比例": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "修习效果": {
-    "path": "background/menpai/detail/门派-门派概述-门派.md",
+    "path": "background/门派/detail/门派-门派概述-门派.md",
     "type": "section"
   },
   "改正修逆": {
-    "path": "background/menpai/detail/门派-门派一览-武当派.md",
+    "path": "background/门派/detail/门派-门派一览-武当派.md",
     "type": "section"
   },
   "玄机格": {
-    "path": "background/xiuxi/detail/修习-武学-玄机.md",
+    "path": "background/修习/detail/修习-武学-玄机.md",
     "type": "section"
   },
   "移宫易穴": {
-    "path": "background/menpai/detail/门派-门派一览-武当派.md",
+    "path": "background/门派/detail/门派-门派一览-武当派.md",
     "type": "section"
   },
   "50%，100%），天资上限 = 15 × 人物资质 ÷ 资质要求\r\n\r\n- 若人物资质未达到功法资质要求的50%，天资上限 = 10 × 人物资质 ÷ 资质要求\r\n\r\n\r\n### 走火入魔\r\n\r\n当连接突破格的次数超过天资上限后，本次突破将进入走火入魔的状态。\r\n\r\n走火入魔状态下，每次连接突破格都会受到[伤势": {
-    "path": "background/renwu/detail/人物-伤病-伤势.md",
+    "path": "background/人物/detail/人物-伤病-伤势.md",
     "type": "section"
   },
   "内功": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "奇窍功法": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "志向": {
-    "path": "background/youli/detail/游历-志向-志向.md",
+    "path": "background/游历/detail/游历-志向-志向.md",
     "type": "section"
   },
   "九世轮回": {
-    "path": "background/renwu/detail/人物-人物信息-轮回.md",
+    "path": "background/人物/detail/人物-人物信息-轮回.md",
     "type": "section"
   },
   "奇书效果": {
-    "path": "background/xiuxi/detail/修习-奇书宝典-解读奇书.md",
+    "path": "background/修习/detail/修习-奇书宝典-解读奇书.md",
     "type": "section"
   },
   "服食": {
-    "path": "background/renwu/detail/人物-伤病-服食汲饮.md",
+    "path": "background/人物/detail/人物-伤病-服食汲饮.md",
     "type": "section"
   },
   "修理": {
-    "path": "background/wupin/detail/物品-制造加工-修理.md",
+    "path": "background/物品/detail/物品-制造加工-修理.md",
     "type": "section"
   },
   "运功": {
-    "path": "background/xiuxi/detail/修习-武学-运功.md",
+    "path": "background/修习/detail/修习-武学-运功.md",
     "type": "section"
   },
   "投降": {
-    "path": "background/zhandou/detail/战斗-指令与行为-战斗行为.md",
+    "path": "background/战斗/detail/战斗-指令与行为-战斗行为.md",
     "type": "section"
   },
   "切磋武功": {
-    "path": "background/jiaohu/detail/交互-人物互动-比试.md",
+    "path": "background/交互/detail/交互-人物互动-比试.md",
     "type": "section"
   },
   "发起挑战": {
-    "path": "background/jiaohu/detail/交互-人物互动-比试.md",
+    "path": "background/交互/detail/交互-人物互动-比试.md",
     "type": "section"
   },
   "处决": {
-    "path": "background/zhandou/detail/战斗-指令与行为-战斗行为.md",
+    "path": "background/战斗/detail/战斗-指令与行为-战斗行为.md",
     "type": "section"
   },
   "战斗行为": {
-    "path": "background/zhandou/detail/战斗-指令与行为-战斗行为.md",
+    "path": "background/战斗/detail/战斗-指令与行为-战斗行为.md",
     "type": "section"
   },
   "内功比例": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "化解": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-攻击.md",
     "type": "section"
   },
   "落空": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-攻击.md",
     "type": "section"
   },
   "外功比例": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "腿法": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "施展需要": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "特性倾向": {
-    "path": "background/renwu/detail/人物-属性-特性.md",
+    "path": "background/人物/detail/人物-属性-特性.md",
     "type": "section"
   },
   "统筹方略": {
-    "path": "background/menpai/detail/门派-门派一览-狮相门.md",
+    "path": "background/门派/detail/门派-门派一览-狮相门.md",
     "type": "section"
   },
   "徒手": {
-    "path": "background/wupin/detail/物品-物品类型-工具.md",
+    "path": "background/物品/detail/物品-物品类型-工具.md",
     "type": "section"
   },
   "战败条件": {
-    "path": "background/zhandou/detail/战斗-战斗基础-战斗流程.md",
+    "path": "background/战斗/detail/战斗-战斗基础-战斗流程.md",
     "type": "section"
   },
   "临时伤势": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "距离": {
-    "path": "background/zhandou/detail/战斗-距离与移动-距离.md",
+    "path": "background/战斗/detail/战斗-距离与移动-距离.md",
     "type": "section"
   },
   "驾驭野兽": {
-    "path": "background/youli/detail/游历-志向-猎户.md",
+    "path": "background/游历/detail/游历-志向-猎户.md",
     "type": "section"
   },
   "真气状态": {
-    "path": "background/zhandou/detail/战斗-标记与状态-真气状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-真气状态.md",
     "type": "section"
   },
   "掷": {
@@ -7976,43 +7976,43 @@
     "type": "glossary"
   },
   "变招积蓄": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "追击概率": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "临机兵器": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "非直接伤害": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "伤害": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "施展部位": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "攻击准备": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-兵器攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-兵器攻击.md",
     "type": "section"
   },
   "旧伤": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "天枢玄铸": {
-    "path": "background/menpai/detail/门派-门派一览-铸剑山庄.md",
+    "path": "background/门派/detail/门派-门派一览-铸剑山庄.md",
     "type": "section"
   },
   "装备特性": {
-    "path": "background/wupin/detail/物品-物品类型-装备.md",
+    "path": "background/物品/detail/物品-物品类型-装备.md",
     "type": "section"
   },
   "扫霞棍": {
@@ -8040,59 +8040,59 @@
     "type": "glossary"
   },
   "战斗状态": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战斗状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战斗状态.md",
     "type": "section"
   },
   "状态标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "内伤伤害": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "外伤伤害": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "重创伤害": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-伤害.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-伤害.md",
     "type": "section"
   },
   "若蛊": {
-    "path": "background/renwu/detail/人物-伤病-蛊虫.md",
+    "path": "background/人物/detail/人物-伤病-蛊虫.md",
     "type": "section"
   },
   "蛊引": {
-    "path": "background/renwu/detail/人物-伤病-蛊虫.md",
+    "path": "background/人物/detail/人物-伤病-蛊虫.md",
     "type": "section"
   },
   "茶": {
-    "path": "background/wupin/detail/物品-物品类型-食物.md",
+    "path": "background/物品/detail/物品-物品类型-食物.md",
     "type": "section"
   },
   "增益状态": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战斗状态.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战斗状态.md",
     "type": "section"
   },
   "健康状况": {
-    "path": "background/renwu/detail/人物-伤病-健康.md",
+    "path": "background/人物/detail/人物-伤病-健康.md",
     "type": "section"
   },
   "真气标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "变招": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-兵器攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-兵器攻击.md",
     "type": "section"
   },
   "破绽标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "封穴标记": {
-    "path": "background/zhandou/detail/战斗-标记与状态-战败标记.md",
+    "path": "background/战斗/detail/战斗-标记与状态-战败标记.md",
     "type": "section"
   },
   "眼耳剧痛": {
@@ -8136,83 +8136,83 @@
     "type": "glossary"
   },
   "移动间隔": {
-    "path": "background/zhandou/detail/战斗-距离与移动-移动.md",
+    "path": "background/战斗/detail/战斗-距离与移动-移动.md",
     "type": "section"
   },
   "蓄力移动": {
-    "path": "background/zhandou/detail/战斗-距离与移动-移动.md",
+    "path": "background/战斗/detail/战斗-距离与移动-移动.md",
     "type": "section"
   },
   "安居乐业": {
-    "path": "background/youli/detail/游历-志向-平民.md",
+    "path": "background/游历/detail/游历-志向-平民.md",
     "type": "section"
   },
   "使用秘闻": {
-    "path": "background/jiaohu/detail/交互-人物互动-交谈.md",
+    "path": "background/交互/detail/交互-人物互动-交谈.md",
     "type": "section"
   },
   "打探秘闻": {
-    "path": "background/jiaohu/detail/交互-人物互动-交谈.md",
+    "path": "background/交互/detail/交互-人物互动-交谈.md",
     "type": "section"
   },
   "理想门派": {
-    "path": "background/renwu/detail/人物-人物信息-身份.md",
+    "path": "background/人物/detail/人物-人物信息-身份.md",
     "type": "section"
   },
   "技艺": {
-    "path": "background/xiuxi/detail/修习-技艺-技艺.md",
+    "path": "background/修习/detail/修习-技艺-技艺.md",
     "type": "section"
   },
   "茶马帮": {
-    "path": "background/chanye/detail/产业-特殊建筑-茶马帮.md",
+    "path": "background/产业/detail/产业-特殊建筑-茶马帮.md",
     "type": "section"
   },
   "门派戒律": {
-    "path": "background/menpai/detail/门派-门派概述-门派.md",
+    "path": "background/门派/detail/门派-门派概述-门派.md",
     "type": "section"
   },
   "爱慕": {
-    "path": "background/jiaohu/detail/交互-交互信息-关系.md",
+    "path": "background/交互/detail/交互-交互信息-关系.md",
     "type": "section"
   },
   "交谈": {
-    "path": "background/jiaohu/detail/交互-人物互动-交谈.md",
+    "path": "background/交互/detail/交互-人物互动-交谈.md",
     "type": "section"
   },
   "比试": {
-    "path": "background/jiaohu/detail/交互-人物互动-比试.md",
+    "path": "background/交互/detail/交互-人物互动-比试.md",
     "type": "section"
   },
   "修习": {
-    "path": "background/jiaohu/detail/交互-人物互动-修习.md",
+    "path": "background/交互/detail/交互-人物互动-修习.md",
     "type": "section"
   },
   "亲近": {
-    "path": "background/jiaohu/detail/交互-人物互动-亲近.md",
+    "path": "background/交互/detail/交互-人物互动-亲近.md",
     "type": "section"
   },
   "化解仇怨": {
-    "path": "background/jiaohu/detail/交互-交互信息-关系.md",
+    "path": "background/交互/detail/交互-交互信息-关系.md",
     "type": "section"
   },
   "研读进度": {
-    "path": "background/xiuxi/detail/修习-修习方式-研读书籍.md",
+    "path": "background/修习/detail/修习-修习方式-研读书籍.md",
     "type": "section"
   },
   "书籍": {
-    "path": "background/wupin/detail/物品-物品类型-书籍.md",
+    "path": "background/物品/detail/物品-物品类型-书籍.md",
     "type": "section"
   },
   "定居点": {
-    "path": "background/shijie/detail/世界-地图-地格.md",
+    "path": "background/世界/detail/世界-地图-地格.md",
     "type": "section"
   },
   "切磋": {
-    "path": "background/zhandou/detail/战斗-战斗基础-战斗类型.md",
+    "path": "background/战斗/detail/战斗-战斗基础-战斗类型.md",
     "type": "section"
   },
   "代制": {
-    "path": "background/wupin/detail/物品-制造加工-代制.md",
+    "path": "background/物品/detail/物品-制造加工-代制.md",
     "type": "section"
   },
   "神采照人": {
@@ -8228,15 +8228,15 @@
     "type": "glossary"
   },
   "城镇法规": {
-    "path": "background/shijie/detail/世界-势力-法规.md",
+    "path": "background/世界/detail/世界-势力-法规.md",
     "type": "section"
   },
   "罪行程度": {
-    "path": "background/shijie/detail/世界-势力-法规.md",
+    "path": "background/世界/detail/世界-势力-法规.md",
     "type": "section"
   },
   "灵光一闪": {
-    "path": "background/xiuxi/detail/修习-修习方式-研读书籍.md",
+    "path": "background/修习/detail/修习-修习方式-研读书籍.md",
     "type": "section"
   },
   "摇天秘法": {
@@ -8264,35 +8264,35 @@
     "type": "glossary"
   },
   "真名": {
-    "path": "background/renwu/detail/人物-人物信息-姓名.md",
+    "path": "background/人物/detail/人物-人物信息-姓名.md",
     "type": "section"
   },
   "勇壮": {
-    "path": "background/renwu/detail/人物-属性-七元赋性.md",
+    "path": "background/人物/detail/人物-属性-七元赋性.md",
     "type": "section"
   },
   "装备": {
-    "path": "background/wupin/detail/物品-物品类型-装备.md",
+    "path": "background/物品/detail/物品-物品类型-装备.md",
     "type": "section"
   },
   "机略": {
-    "path": "background/renwu/detail/人物-属性-特性.md",
+    "path": "background/人物/detail/人物-属性-特性.md",
     "type": "section"
   },
   "较艺主题": {
-    "path": "background/xiuxi/detail/修习-技艺-较艺.md",
+    "path": "background/修习/detail/修习-技艺-较艺.md",
     "type": "section"
   },
   "共结连理": {
-    "path": "background/jiaohu/detail/交互-人物互动-亲近.md",
+    "path": "background/交互/detail/交互-人物互动-亲近.md",
     "type": "section"
   },
   "夫妻": {
-    "path": "background/jiaohu/detail/交互-交互信息-关系.md",
+    "path": "background/交互/detail/交互-交互信息-关系.md",
     "type": "section"
   },
   "相互爱慕": {
-    "path": "background/jiaohu/detail/交互-交互信息-关系.md",
+    "path": "background/交互/detail/交互-交互信息-关系.md",
     "type": "section"
   },
   "身怀六甲": {
@@ -8300,47 +8300,47 @@
     "type": "glossary"
   },
   "了悟轮回": {
-    "path": "background/youli/detail/游历-志向-高僧.md",
+    "path": "background/游历/detail/游历-志向-高僧.md",
     "type": "section"
   },
   "心材": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "信誓等级": {
-    "path": "background/chanye/detail/产业-特殊建筑-太吾村.md",
+    "path": "background/产业/detail/产业-特殊建筑-太吾村.md",
     "type": "section"
   },
   "仓库": {
-    "path": "background/chanye/detail/产业-特殊建筑-仓库.md",
+    "path": "background/产业/detail/产业-特殊建筑-仓库.md",
     "type": "section"
   },
   "资源效果": {
-    "path": "background/chanye/detail/产业-产业-自然资源.md",
+    "path": "background/产业/detail/产业-产业-自然资源.md",
     "type": "section"
   },
   "扩展建筑": {
-    "path": "background/chanye/detail/产业-产业-建筑.md",
+    "path": "background/产业/detail/产业-产业-建筑.md",
     "type": "section"
   },
   "依赖": {
-    "path": "background/chanye/detail/产业-产业-建筑.md",
+    "path": "background/产业/detail/产业-产业-建筑.md",
     "type": "section"
   },
   "村民": {
-    "path": "background/chanye/detail/产业-太吾村民-村民.md",
+    "path": "background/产业/detail/产业-太吾村民-村民.md",
     "type": "section"
   },
   "练习": {
-    "path": "background/chanye/detail/产业-特殊建筑-练功房.md",
+    "path": "background/产业/detail/产业-特殊建筑-练功房.md",
     "type": "section"
   },
   "特有功能": {
-    "path": "background/menpai/detail/门派-门派概述-地区故事.md",
+    "path": "background/门派/detail/门派-门派概述-地区故事.md",
     "type": "section"
   },
   "资源": {
-    "path": "background/wupin/detail/物品-物品与资源-资源.md",
+    "path": "background/物品/detail/物品-物品与资源-资源.md",
     "type": "section"
   },
   "水精": {
@@ -8712,7 +8712,7 @@
     "type": "glossary"
   },
   "遗惠点数": {
-    "path": "background/qi-cheng/detail/启程-太吾-太吾传承.md",
+    "path": "background/启程/detail/启程-太吾-太吾传承.md",
     "type": "section"
   },
   "生香泥金炉": {
@@ -8784,7 +8784,7 @@
     "type": "glossary"
   },
   "木人战斗": {
-    "path": "background/chanye/detail/产业-特殊建筑-练功房.md",
+    "path": "background/产业/detail/产业-特殊建筑-练功房.md",
     "type": "section"
   },
   "炼神九试": {
@@ -8852,7 +8852,7 @@
     "type": "glossary"
   },
   "蛰室": {
-    "path": "background/chanye/detail/产业-特殊建筑-太吾村.md",
+    "path": "background/产业/detail/产业-特殊建筑-太吾村.md",
     "type": "section"
   },
   "太吾族谱": {
@@ -8868,11 +8868,11 @@
     "type": "glossary"
   },
   "资源建筑": {
-    "path": "background/chanye/detail/产业-产业-建筑.md",
+    "path": "background/产业/detail/产业-产业-建筑.md",
     "type": "section"
   },
   "撤除": {
-    "path": "background/chanye/detail/产业-产业-产业建设.md",
+    "path": "background/产业/detail/产业-产业-产业建设.md",
     "type": "section"
   },
   "太吾遣使": {
@@ -8884,11 +8884,11 @@
     "type": "glossary"
   },
   "主事": {
-    "path": "background/chanye/detail/产业-产业-产业经营.md",
+    "path": "background/产业/detail/产业-产业-产业经营.md",
     "type": "section"
   },
   "调遣元鸡": {
-    "path": "background/menpai/detail/门派-门派一览-伏龙坛.md",
+    "path": "background/门派/detail/门派-门派一览-伏龙坛.md",
     "type": "section"
   },
   "济世资材": {
@@ -8908,7 +8908,7 @@
     "type": "glossary"
   },
   "公库": {
-    "path": "background/chanye/detail/产业-特殊建筑-仓库.md",
+    "path": "background/产业/detail/产业-特殊建筑-仓库.md",
     "type": "section"
   },
   "四方亨通": {
@@ -8920,7 +8920,7 @@
     "type": "glossary"
   },
   "货仓": {
-    "path": "background/chanye/detail/产业-特殊建筑-仓库.md",
+    "path": "background/产业/detail/产业-特殊建筑-仓库.md",
     "type": "section"
   },
   "悬壶义诊": {
@@ -8940,7 +8940,7 @@
     "type": "glossary"
   },
   "剑冢见闻": {
-    "path": "background/jiaohu/detail/交互-交互信息-见闻.md",
+    "path": "background/交互/detail/交互-交互信息-见闻.md",
     "type": "section"
   },
   "莫女衣冢": {
@@ -8988,31 +8988,31 @@
     "type": "glossary"
   },
   "产业建设": {
-    "path": "background/chanye/detail/产业-产业-产业建设.md",
+    "path": "background/产业/detail/产业-产业-产业建设.md",
     "type": "section"
   },
   "邀请回村": {
-    "path": "background/jiaohu/detail/交互-人物互动-亲近.md",
+    "path": "background/交互/detail/交互-人物互动-亲近.md",
     "type": "section"
   },
   "村民衣装": {
-    "path": "background/wupin/detail/物品-物品类型-行装.md",
+    "path": "background/物品/detail/物品-物品类型-行装.md",
     "type": "section"
   },
   "文人": {
-    "path": "background/chanye/detail/产业-太吾村民-文人.md",
+    "path": "background/产业/detail/产业-太吾村民-文人.md",
     "type": "section"
   },
   "匠人": {
-    "path": "background/chanye/detail/产业-太吾村民-匠人.md",
+    "path": "background/产业/detail/产业-太吾村民-匠人.md",
     "type": "section"
   },
   "重量": {
-    "path": "background/wupin/detail/物品-物品与资源-物品.md",
+    "path": "background/物品/detail/物品-物品与资源-物品.md",
     "type": "section"
   },
   "收养元鸡": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "大王赐啼": {
@@ -9272,35 +9272,35 @@
     "type": "glossary"
   },
   "促织": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "鸣虫": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "决斗战绩": {
-    "path": "background/youli/detail/游历-促织-促织决斗.md",
+    "path": "background/游历/detail/游历-促织-促织决斗.md",
     "type": "section"
   },
   "扩建": {
-    "path": "background/chanye/detail/产业-产业-产业建设.md",
+    "path": "background/产业/detail/产业-产业-产业建设.md",
     "type": "section"
   },
   "致谢书": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "实战发挥": {
-    "path": "background/xiuxi/detail/修习-武学-功法.md",
+    "path": "background/修习/detail/修习-武学-功法.md",
     "type": "section"
   },
   "紫竹化身": {
-    "path": "background/qi-cheng/detail/启程-相枢-剑冢.md",
+    "path": "background/启程/detail/启程-相枢-剑冢.md",
     "type": "section"
   },
   "身份品阶": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "傍生轮回": {
@@ -9328,99 +9328,99 @@
     "type": "glossary"
   },
   "制造建筑": {
-    "path": "background/wupin/detail/物品-制造加工-制造建筑.md",
+    "path": "background/物品/detail/物品-制造加工-制造建筑.md",
     "type": "section"
   },
   "坚韧": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "破甲": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "破刃": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "药霜": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "毒砂": {
-    "path": "background/wupin/detail/物品-物品类型-武具.md",
+    "path": "background/物品/detail/物品-物品类型-武具.md",
     "type": "section"
   },
   "服食效果": {
-    "path": "background/renwu/detail/人物-伤病-服食汲饮.md",
+    "path": "background/人物/detail/人物-伤病-服食汲饮.md",
     "type": "section"
   },
   "验毒": {
-    "path": "background/wupin/detail/物品-制造加工-验毒.md",
+    "path": "background/物品/detail/物品-制造加工-验毒.md",
     "type": "section"
   },
   "毒素类型": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "毒素等级": {
-    "path": "background/renwu/detail/人物-伤病-毒素.md",
+    "path": "background/人物/detail/人物-伤病-毒素.md",
     "type": "section"
   },
   "画龙点睛": {
-    "path": "background/youli/detail/游历-志向-匠人.md",
+    "path": "background/游历/detail/游历-志向-匠人.md",
     "type": "section"
   },
   "支持": {
-    "path": "background/menpai/detail/门派-门派概述-门派支持.md",
+    "path": "background/门派/detail/门派-门派概述-门派支持.md",
     "type": "section"
   },
   "材料": {
-    "path": "background/wupin/detail/物品-物品类型-材料.md",
+    "path": "background/物品/detail/物品-物品类型-材料.md",
     "type": "section"
   },
   "杂物": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "赠送": {
-    "path": "background/jiaohu/detail/交互-人物互动-交谈.md",
+    "path": "background/交互/detail/交互-人物互动-交谈.md",
     "type": "section"
   },
   "慧眼识珠": {
-    "path": "background/youli/detail/游历-志向-富商.md",
+    "path": "background/游历/detail/游历-志向-富商.md",
     "type": "section"
   },
   "身份": {
-    "path": "background/shijie/detail/世界-势力-势力.md",
+    "path": "background/世界/detail/世界-势力-势力.md",
     "type": "section"
   },
   "价格": {
-    "path": "background/shijie/detail/世界-商会-商会.md",
+    "path": "background/世界/detail/世界-商会-商会.md",
     "type": "section"
   },
   "投喂": {
-    "path": "background/wupin/detail/物品-物品类型-行装.md",
+    "path": "background/物品/detail/物品-物品类型-行装.md",
     "type": "section"
   },
   "元鸡舍": {
-    "path": "background/chanye/detail/产业-特殊建筑-元鸡舍.md",
+    "path": "background/产业/detail/产业-特殊建筑-元鸡舍.md",
     "type": "section"
   },
   "制造": {
-    "path": "background/wupin/detail/物品-制造加工-制造.md",
+    "path": "background/物品/detail/物品-制造加工-制造.md",
     "type": "section"
   },
   "建造": {
-    "path": "background/chanye/detail/产业-产业-产业建设.md",
+    "path": "background/产业/detail/产业-产业-产业建设.md",
     "type": "section"
   },
   "交换藏书": {
-    "path": "background/jiaohu/detail/交互-人物互动-修习.md",
+    "path": "background/交互/detail/交互-人物互动-修习.md",
     "type": "section"
   },
   "解读奇书": {
-    "path": "background/xiuxi/detail/修习-奇书宝典-解读奇书.md",
+    "path": "background/修习/detail/修习-奇书宝典-解读奇书.md",
     "type": "section"
   },
   "《蔡氏五弄》": {
@@ -12936,7 +12936,7 @@
     "type": "glossary"
   },
   "换取工具": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "青铜铸炉": {
@@ -13156,11 +13156,11 @@
     "type": "glossary"
   },
   "解毒": {
-    "path": "background/wupin/detail/物品-制造加工-解毒.md",
+    "path": "background/物品/detail/物品-制造加工-解毒.md",
     "type": "section"
   },
   "改制": {
-    "path": "background/wupin/detail/物品-制造加工-改制.md",
+    "path": "background/物品/detail/物品-制造加工-改制.md",
     "type": "section"
   },
   "长绳": {
@@ -13444,23 +13444,23 @@
     "type": "glossary"
   },
   "培育": {
-    "path": "background/chanye/detail/产业-产业-产业建设.md",
+    "path": "background/产业/detail/产业-产业-产业建设.md",
     "type": "section"
   },
   "捕捉促织": {
-    "path": "background/youli/detail/游历-促织-捕捉促织.md",
+    "path": "background/游历/detail/游历-促织-捕捉促织.md",
     "type": "section"
   },
   "野外地形": {
-    "path": "background/shijie/detail/世界-地图-地格.md",
+    "path": "background/世界/detail/世界-地图-地格.md",
     "type": "section"
   },
   "休养生息": {
-    "path": "background/youli/detail/游历-志向-山人.md",
+    "path": "background/游历/detail/游历-志向-山人.md",
     "type": "section"
   },
   "精挑细选": {
-    "path": "background/wupin/detail/物品-物品与资源-资源.md",
+    "path": "background/物品/detail/物品-物品与资源-资源.md",
     "type": "section"
   },
   "小麦": {
@@ -17096,11 +17096,11 @@
     "type": "glossary"
   },
   "独具匠心": {
-    "path": "background/youli/detail/游历-志向-匠人.md",
+    "path": "background/游历/detail/游历-志向-匠人.md",
     "type": "section"
   },
   "变招进度": {
-    "path": "background/zhandou/detail/战斗-攻击与防御-兵器攻击.md",
+    "path": "background/战斗/detail/战斗-攻击与防御-兵器攻击.md",
     "type": "section"
   },
   "头陀铁箍": {
@@ -21156,7 +21156,7 @@
     "type": "glossary"
   },
   "字诀": {
-    "path": "background/wupin/detail/物品-制造加工-制造.md",
+    "path": "background/物品/detail/物品-制造加工-制造.md",
     "type": "section"
   },
   "布口袋": {
@@ -21380,15 +21380,15 @@
     "type": "glossary"
   },
   "旅行": {
-    "path": "background/shijie/detail/世界-地图-州域与地区.md",
+    "path": "background/世界/detail/世界-地图-州域与地区.md",
     "type": "section"
   },
   "暗渊": {
-    "path": "background/shijie/detail/世界-地图-地格.md",
+    "path": "background/世界/detail/世界-地图-地格.md",
     "type": "section"
   },
   "旅行事件": {
-    "path": "background/shijie/detail/世界-地图-州域与地区.md",
+    "path": "background/世界/detail/世界-地图-州域与地区.md",
     "type": "section"
   },
   "骡子": {
@@ -21496,19 +21496,19 @@
     "type": "glossary"
   },
   "关押栏位": {
-    "path": "background/jiaohu/detail/交互-其他交互-俘虏.md",
+    "path": "background/交互/detail/交互-其他交互-俘虏.md",
     "type": "section"
   },
   "万兽升灵": {
-    "path": "background/youli/detail/游历-志向-猎户.md",
+    "path": "background/游历/detail/游历-志向-猎户.md",
     "type": "section"
   },
   "行装": {
-    "path": "background/wupin/detail/物品-物品类型-行装.md",
+    "path": "background/物品/detail/物品-物品类型-行装.md",
     "type": "section"
   },
   "采买鲜果": {
-    "path": "background/jiaohu/detail/交互-人物互动-身份互动.md",
+    "path": "background/交互/detail/交互-人物互动-身份互动.md",
     "type": "section"
   },
   "生煎豆腐": {
@@ -22292,27 +22292,27 @@
     "type": "glossary"
   },
   "浸彻三魂": {
-    "path": "background/youli/detail/游历-志向-贵客.md",
+    "path": "background/游历/detail/游历-志向-贵客.md",
     "type": "section"
   },
   "千杯不醉": {
-    "path": "background/youli/detail/游历-志向-豪客.md",
+    "path": "background/游历/detail/游历-志向-豪客.md",
     "type": "section"
   },
   "酒中真仙": {
-    "path": "background/youli/detail/游历-志向-豪客.md",
+    "path": "background/游历/detail/游历-志向-豪客.md",
     "type": "section"
   },
   "鉴别促织": {
-    "path": "background/youli/detail/游历-志向-王公.md",
+    "path": "background/游历/detail/游历-志向-王公.md",
     "type": "section"
   },
   "百蜕仙灵": {
-    "path": "background/youli/detail/游历-志向-王公.md",
+    "path": "background/游历/detail/游历-志向-王公.md",
     "type": "section"
   },
   "万民来朝": {
-    "path": "background/youli/detail/游历-志向-王公.md",
+    "path": "background/游历/detail/游历-志向-王公.md",
     "type": "section"
   },
   "百衲衣": {
@@ -22320,11 +22320,11 @@
     "type": "glossary"
   },
   "下三阶": {
-    "path": "background/wupin/detail/物品-物品与资源-物品.md",
+    "path": "background/物品/detail/物品-物品与资源-物品.md",
     "type": "section"
   },
   "朋友": {
-    "path": "background/jiaohu/detail/交互-交互信息-关系.md",
+    "path": "background/交互/detail/交互-交互信息-关系.md",
     "type": "section"
   },
   "坏色僧衣": {
@@ -22332,15 +22332,15 @@
     "type": "glossary"
   },
   "地方见闻": {
-    "path": "background/jiaohu/detail/交互-交互信息-见闻.md",
+    "path": "background/交互/detail/交互-交互信息-见闻.md",
     "type": "section"
   },
   "西域见闻": {
-    "path": "background/jiaohu/detail/交互-交互信息-见闻.md",
+    "path": "background/交互/detail/交互-交互信息-见闻.md",
     "type": "section"
   },
   "悟性": {
-    "path": "background/renwu/detail/人物-属性-主要属性.md",
+    "path": "background/人物/detail/人物-属性-主要属性.md",
     "type": "section"
   },
   "老君袍": {
@@ -22368,11 +22368,11 @@
     "type": "glossary"
   },
   "材质": {
-    "path": "background/wupin/detail/物品-物品类型-装备.md",
+    "path": "background/物品/detail/物品-物品类型-装备.md",
     "type": "section"
   },
   "精制效果": {
-    "path": "background/wupin/detail/物品-制造加工-精制.md",
+    "path": "background/物品/detail/物品-制造加工-精制.md",
     "type": "section"
   },
   "绛纱金装": {
@@ -22380,7 +22380,7 @@
     "type": "glossary"
   },
   "求情": {
-    "path": "background/shijie/detail/世界-势力-监牢.md",
+    "path": "background/世界/detail/世界-势力-监牢.md",
     "type": "section"
   },
   "纹绣深衣": {
@@ -22388,7 +22388,7 @@
     "type": "glossary"
   },
   "伤病": {
-    "path": "background/renwu/detail/人物-伤病-健康.md",
+    "path": "background/人物/detail/人物-伤病-健康.md",
     "type": "section"
   },
   "福禄锦衣": {
@@ -22396,11 +22396,11 @@
     "type": "glossary"
   },
   "遇劫": {
-    "path": "background/shijie/detail/世界-商会-商队.md",
+    "path": "background/世界/detail/世界-商会-商队.md",
     "type": "section"
   },
   "额外商品": {
-    "path": "background/shijie/detail/世界-商会-商会.md",
+    "path": "background/世界/detail/世界-商会-商会.md",
     "type": "section"
   },
   "山野竖褐": {
@@ -22408,7 +22408,7 @@
     "type": "glossary"
   },
   "神木": {
-    "path": "background/wupin/detail/物品-物品类型-杂物.md",
+    "path": "background/物品/detail/物品-物品类型-杂物.md",
     "type": "section"
   },
   "布衣素裳": {
@@ -22416,35 +22416,35 @@
     "type": "glossary"
   },
   "中三阶": {
-    "path": "background/wupin/detail/物品-物品与资源-物品.md",
+    "path": "background/物品/detail/物品-物品与资源-物品.md",
     "type": "section"
   },
   "调停恩怨": {
-    "path": "background/jiaohu/detail/交互-人物互动-亲近.md",
+    "path": "background/交互/detail/交互-人物互动-亲近.md",
     "type": "section"
   },
   "推朋荐友": {
-    "path": "background/jiaohu/detail/交互-人物互动-亲近.md",
+    "path": "background/交互/detail/交互-人物互动-亲近.md",
     "type": "section"
   },
   "男媒女妁": {
-    "path": "background/jiaohu/detail/交互-人物互动-亲近.md",
+    "path": "background/交互/detail/交互-人物互动-亲近.md",
     "type": "section"
   },
   "山人": {
-    "path": "background/youli/detail/游历-志向-山人.md",
+    "path": "background/游历/detail/游历-志向-山人.md",
     "type": "section"
   },
   "山水难阻": {
-    "path": "background/youli/detail/游历-志向-山人.md",
+    "path": "background/游历/detail/游历-志向-山人.md",
     "type": "section"
   },
   "因地制宜": {
-    "path": "background/youli/detail/游历-志向-山人.md",
+    "path": "background/游历/detail/游历-志向-山人.md",
     "type": "section"
   },
   "猎户": {
-    "path": "background/youli/detail/游历-志向-猎户.md",
+    "path": "background/游历/detail/游历-志向-猎户.md",
     "type": "section"
   },
   "猎户装": {
@@ -22452,23 +22452,23 @@
     "type": "glossary"
   },
   "狩猎野兽": {
-    "path": "background/youli/detail/游历-志向-猎户.md",
+    "path": "background/游历/detail/游历-志向-猎户.md",
     "type": "section"
   },
   "追踪野兽": {
-    "path": "background/youli/detail/游历-志向-猎户.md",
+    "path": "background/游历/detail/游历-志向-猎户.md",
     "type": "section"
   },
   "匠心巧手": {
-    "path": "background/youli/detail/游历-志向-匠人.md",
+    "path": "background/游历/detail/游历-志向-匠人.md",
     "type": "section"
   },
   "行规用矩": {
-    "path": "background/youli/detail/游历-志向-匠人.md",
+    "path": "background/游历/detail/游历-志向-匠人.md",
     "type": "section"
   },
   "武师": {
-    "path": "background/youli/detail/游历-志向-武师.md",
+    "path": "background/游历/detail/游历-志向-武师.md",
     "type": "section"
   },
   "练功服": {
@@ -22476,11 +22476,11 @@
     "type": "glossary"
   },
   "风卷残云": {
-    "path": "background/youli/detail/游历-志向-武师.md",
+    "path": "background/游历/detail/游历-志向-武师.md",
     "type": "section"
   },
   "才俊": {
-    "path": "background/youli/detail/游历-志向-才俊.md",
+    "path": "background/游历/detail/游历-志向-才俊.md",
     "type": "section"
   },
   "锦衫": {
@@ -22488,15 +22488,15 @@
     "type": "glossary"
   },
   "金口玉言": {
-    "path": "background/youli/detail/游历-志向-才俊.md",
+    "path": "background/游历/detail/游历-志向-才俊.md",
     "type": "section"
   },
   "谈天说地": {
-    "path": "background/youli/detail/游历-志向-才俊.md",
+    "path": "background/游历/detail/游历-志向-才俊.md",
     "type": "section"
   },
   "道长": {
-    "path": "background/youli/detail/游历-志向-道长.md",
+    "path": "background/游历/detail/游历-志向-道长.md",
     "type": "section"
   },
   "天师大氅": {
@@ -22504,15 +22504,15 @@
     "type": "glossary"
   },
   "炼气调元": {
-    "path": "background/youli/detail/游历-志向-道长.md",
+    "path": "background/游历/detail/游历-志向-道长.md",
     "type": "section"
   },
   "天劫符箓": {
-    "path": "background/youli/detail/游历-志向-道长.md",
+    "path": "background/游历/detail/游历-志向-道长.md",
     "type": "section"
   },
   "高僧": {
-    "path": "background/youli/detail/游历-志向-高僧.md",
+    "path": "background/游历/detail/游历-志向-高僧.md",
     "type": "section"
   },
   "纳宝锦裘": {
@@ -22520,19 +22520,19 @@
     "type": "glossary"
   },
   "坐禅清心": {
-    "path": "background/youli/detail/游历-志向-高僧.md",
+    "path": "background/游历/detail/游历-志向-高僧.md",
     "type": "section"
   },
   "传法度人": {
-    "path": "background/youli/detail/游历-志向-高僧.md",
+    "path": "background/游历/detail/游历-志向-高僧.md",
     "type": "section"
   },
   "超度法会": {
-    "path": "background/youli/detail/游历-志向-高僧.md",
+    "path": "background/游历/detail/游历-志向-高僧.md",
     "type": "section"
   },
   "豪客": {
-    "path": "background/youli/detail/游历-志向-豪客.md",
+    "path": "background/游历/detail/游历-志向-豪客.md",
     "type": "section"
   },
   "将军披挂": {
@@ -22540,43 +22540,43 @@
     "type": "glossary"
   },
   "拼豪斗酒": {
-    "path": "background/youli/detail/游历-志向-豪客.md",
+    "path": "background/游历/detail/游历-志向-豪客.md",
     "type": "section"
   },
   "豪侠研武": {
-    "path": "background/youli/detail/游历-志向-豪客.md",
+    "path": "background/游历/detail/游历-志向-豪客.md",
     "type": "section"
   },
   "名门": {
-    "path": "background/youli/detail/游历-志向-名门.md",
+    "path": "background/游历/detail/游历-志向-名门.md",
     "type": "section"
   },
   "显赫一方": {
-    "path": "background/youli/detail/游历-志向-名门.md",
+    "path": "background/游历/detail/游历-志向-名门.md",
     "type": "section"
   },
   "乞丐": {
-    "path": "background/youli/detail/游历-志向-乞丐.md",
+    "path": "background/游历/detail/游历-志向-乞丐.md",
     "type": "section"
   },
   "托钵行乞": {
-    "path": "background/youli/detail/游历-志向-乞丐.md",
+    "path": "background/游历/detail/游历-志向-乞丐.md",
     "type": "section"
   },
   "芜行俚语": {
-    "path": "background/youli/detail/游历-志向-乞丐.md",
+    "path": "background/游历/detail/游历-志向-乞丐.md",
     "type": "section"
   },
   "万千兄弟": {
-    "path": "background/youli/detail/游历-志向-乞丐.md",
+    "path": "background/游历/detail/游历-志向-乞丐.md",
     "type": "section"
   },
   "平民": {
-    "path": "background/youli/detail/游历-志向-平民.md",
+    "path": "background/游历/detail/游历-志向-平民.md",
     "type": "section"
   },
   "旅人": {
-    "path": "background/youli/detail/游历-志向-旅人.md",
+    "path": "background/游历/detail/游历-志向-旅人.md",
     "type": "section"
   },
   "劲衣": {
@@ -22584,51 +22584,51 @@
     "type": "glossary"
   },
   "餐风露宿": {
-    "path": "background/youli/detail/游历-志向-旅人.md",
+    "path": "background/游历/detail/游历-志向-旅人.md",
     "type": "section"
   },
   "山水秘径": {
-    "path": "background/youli/detail/游历-志向-旅人.md",
+    "path": "background/游历/detail/游历-志向-旅人.md",
     "type": "section"
   },
   "世外仙府": {
-    "path": "background/youli/detail/游历-志向-旅人.md",
+    "path": "background/游历/detail/游历-志向-旅人.md",
     "type": "section"
   },
   "云游僧": {
-    "path": "background/youli/detail/游历-志向-云游僧.md",
+    "path": "background/游历/detail/游历-志向-云游僧.md",
     "type": "section"
   },
   "禅心明净": {
-    "path": "background/youli/detail/游历-志向-云游僧.md",
+    "path": "background/游历/detail/游历-志向-云游僧.md",
     "type": "section"
   },
   "无量浮屠": {
-    "path": "background/youli/detail/游历-志向-云游僧.md",
+    "path": "background/游历/detail/游历-志向-云游僧.md",
     "type": "section"
   },
   "云游道": {
-    "path": "background/youli/detail/游历-志向-云游道.md",
+    "path": "background/游历/detail/游历-志向-云游道.md",
     "type": "section"
   },
   "自在无为": {
-    "path": "background/youli/detail/游历-志向-云游道.md",
+    "path": "background/游历/detail/游历-志向-云游道.md",
     "type": "section"
   },
   "占卜凶吉": {
-    "path": "background/youli/detail/游历-志向-云游道.md",
+    "path": "background/游历/detail/游历-志向-云游道.md",
     "type": "section"
   },
   "富商": {
-    "path": "background/youli/detail/游历-志向-富商.md",
+    "path": "background/游历/detail/游历-志向-富商.md",
     "type": "section"
   },
   "召集商队": {
-    "path": "background/youli/detail/游历-志向-富商.md",
+    "path": "background/游历/detail/游历-志向-富商.md",
     "type": "section"
   },
   "贵客": {
-    "path": "background/youli/detail/游历-志向-贵客.md",
+    "path": "background/游历/detail/游历-志向-贵客.md",
     "type": "section"
   },
   "玉带紫袍": {
@@ -22636,15 +22636,15 @@
     "type": "glossary"
   },
   "评水品茗": {
-    "path": "background/youli/detail/游历-志向-贵客.md",
+    "path": "background/游历/detail/游历-志向-贵客.md",
     "type": "section"
   },
   "仙人泼墨": {
-    "path": "background/youli/detail/游历-志向-贵客.md",
+    "path": "background/游历/detail/游历-志向-贵客.md",
     "type": "section"
   },
   "王公": {
-    "path": "background/youli/detail/游历-志向-王公.md",
+    "path": "background/游历/detail/游历-志向-王公.md",
     "type": "section"
   },
   "衮龙黄袍": {
@@ -22652,11 +22652,11 @@
     "type": "glossary"
   },
   "志向经验": {
-    "path": "background/jiaohu/detail/交互-人物互动-修习.md",
+    "path": "background/交互/detail/交互-人物互动-修习.md",
     "type": "section"
   },
   "志向见闻": {
-    "path": "background/jiaohu/detail/交互-交互信息-见闻.md",
+    "path": "background/交互/detail/交互-交互信息-见闻.md",
     "type": "section"
   },
   "积善余庆": {
@@ -22700,43 +22700,43 @@
     "type": "glossary"
   },
   "秘闻等级": {
-    "path": "background/jiaohu/detail/交互-交互信息-秘闻.md",
+    "path": "background/交互/detail/交互-交互信息-秘闻.md",
     "type": "section"
   },
   "关联人物": {
-    "path": "background/jiaohu/detail/交互-交互信息-秘闻.md",
+    "path": "background/交互/detail/交互-交互信息-秘闻.md",
     "type": "section"
   },
   "传播来源": {
-    "path": "background/jiaohu/detail/交互-交互信息-秘闻.md",
+    "path": "background/交互/detail/交互-交互信息-秘闻.md",
     "type": "section"
   },
   "内力增长": {
-    "path": "background/xiuxi/detail/修习-修习方式-周天运转.md",
+    "path": "background/修习/detail/修习-修习方式-周天运转.md",
     "type": "section"
   },
   "野兽代步": {
-    "path": "background/wupin/detail/物品-物品类型-行装.md",
+    "path": "background/物品/detail/物品-物品类型-行装.md",
     "type": "section"
   },
   "神采非凡": {
-    "path": "background/youli/detail/游历-促织-促织属性.md",
+    "path": "background/游历/detail/游历-促织-促织属性.md",
     "type": "section"
   },
   "元色": {
-    "path": "background/youli/detail/游历-促织-促织.md",
+    "path": "background/游历/detail/游历-促织-促织.md",
     "type": "section"
   },
   "称号": {
-    "path": "background/renwu/detail/人物-人物信息-称号.md",
+    "path": "background/人物/detail/人物-人物信息-称号.md",
     "type": "section"
   },
   "蛰龄": {
-    "path": "background/youli/detail/游历-促织-促织属性.md",
+    "path": "background/游历/detail/游历-促织-促织属性.md",
     "type": "section"
   },
   "根骨": {
-    "path": "background/renwu/detail/人物-属性-主要属性.md",
+    "path": "background/人物/detail/人物-属性-主要属性.md",
     "type": "section"
   },
   "一九人劫": {

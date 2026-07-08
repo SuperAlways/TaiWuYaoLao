@@ -28,8 +28,8 @@ public class SkillManager
     {
         _skillsDir = skillsDir;
         _registry = LoadRegistry(Path.Combine(skillsDir, "registry.yaml"));
-        foreach (var ch in _registry.Background) _chapterCn[ch.Id] = ch.CnName;
-        foreach (var g in _registry.Guidance) _guidanceCn[g.Id] = g.CnName;
+        foreach (var ch in _registry.Background) _chapterCn[ch.Id] = ch.Id;
+        foreach (var g in _registry.Guidance) _guidanceCn[g.Id] = g.Id;
         foreach (var p in _registry.Personas)
         {
             _personaFile[p.Id] = p.File;

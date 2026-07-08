@@ -1,91 +1,70 @@
 answer_rules_file: answer-rules.md
 output_style_file: output-style.md
 background:
-  - id: qi-cheng
-    cn_name: 启程
-    overview_file: background/qi-cheng/overview.md
-    detail_dir: background/qi-cheng/detail
-  - id: shijie
-    cn_name: 世界
-    overview_file: background/shijie/overview.md
-    detail_dir: background/shijie/detail
-  - id: menpai
-    cn_name: 门派
-    overview_file: background/menpai/overview.md
-    detail_dir: background/menpai/detail
-  - id: renwu
-    cn_name: 人物
-    overview_file: background/renwu/overview.md
-    detail_dir: background/renwu/detail
-  - id: xiuxi
-    cn_name: 修习
-    overview_file: background/xiuxi/overview.md
-    detail_dir: background/xiuxi/detail
-  - id: zhandou
-    cn_name: 战斗
-    overview_file: background/zhandou/overview.md
-    detail_dir: background/zhandou/detail
-  - id: jiaohu
-    cn_name: 交互
-    overview_file: background/jiaohu/overview.md
-    detail_dir: background/jiaohu/detail
-  - id: chanye
-    cn_name: 产业
-    overview_file: background/chanye/overview.md
-    detail_dir: background/chanye/detail
-  - id: wupin
-    cn_name: 物品
-    overview_file: background/wupin/overview.md
-    detail_dir: background/wupin/detail
-  - id: youli
-    cn_name: 游历
-    overview_file: background/youli/overview.md
-    detail_dir: background/youli/detail
+  - id: 启程
+    overview_file: background/启程/启程概述.md
+    detail_dir: background/启程/detail
+  - id: 世界
+    overview_file: background/世界/世界概述.md
+    detail_dir: background/世界/detail
+  - id: 门派
+    overview_file: background/门派/门派概述.md
+    detail_dir: background/门派/detail
+  - id: 人物
+    overview_file: background/人物/人物概述.md
+    detail_dir: background/人物/detail
+  - id: 修习
+    overview_file: background/修习/修习概述.md
+    detail_dir: background/修习/detail
+  - id: 战斗
+    overview_file: background/战斗/战斗概述.md
+    detail_dir: background/战斗/detail
+  - id: 交互
+    overview_file: background/交互/交互概述.md
+    detail_dir: background/交互/detail
+  - id: 产业
+    overview_file: background/产业/产业概述.md
+    detail_dir: background/产业/detail
+  - id: 物品
+    overview_file: background/物品/物品概述.md
+    detail_dir: background/物品/detail
+  - id: 游历
+    overview_file: background/游历/游历概述.md
+    detail_dir: background/游历/detail
 
 guidance:
-  - id: combat-build
-    cn_name: 战斗 build 指引
-    file: guidance/combat-build.md
-    relevant_chapters: [zhandou]
-  - id: village-planning
-    cn_name: 产业规划
-    file: guidance/village-planning.md
-    relevant_chapters: [chanye]
-  - id: martial-arts-build
-    cn_name: 武学搭配
-    file: guidance/martial-arts-build.md
-    relevant_chapters: [xiuxi, zhandou]
-  - id: jianzhong-attack
-    cn_name: 剑冢攻略
-    file: guidance/jianzhong-attack.md
-    relevant_chapters: [qi-cheng]
-  - id: combat-tactics
-    cn_name: 战斗指导
-    file: guidance/combat-tactics.md
-    relevant_chapters: [zhandou]
-  - id: npc-interaction
-    cn_name: NPC互动
-    file: guidance/npc-interaction.md
-    relevant_chapters: [jiaohu, renwu]
-  - id: char-creation
-    cn_name: 开局选择
-    file: guidance/char-creation.md
-    relevant_chapters: [qi-cheng]
-  - id: sect-exploration
-    cn_name: 门派探索
-    file: guidance/sect-exploration.md
-    relevant_chapters: [menpai]
-  - id: problem-diagnosis
-    cn_name: 问题诊断
-    file: guidance/problem-diagnosis.md
+  - id: 战斗 build 指引
+    file: guidance/战斗-build-指引.md
+    relevant_chapters: [战斗]
+  - id: 产业规划
+    file: guidance/产业规划.md
+    relevant_chapters: [产业]
+  - id: 武学搭配
+    file: guidance/武学搭配.md
+    relevant_chapters: [修习, 战斗]
+  - id: 剑冢攻略
+    file: guidance/剑冢攻略.md
+    relevant_chapters: [启程]
+  - id: 战斗指导
+    file: guidance/战斗指导.md
+    relevant_chapters: [战斗]
+  - id: NPC互动
+    file: guidance/NPC互动.md
+    relevant_chapters: [交互, 人物]
+  - id: 开局选择
+    file: guidance/开局选择.md
+    relevant_chapters: [启程]
+  - id: 门派探索
+    file: guidance/门派探索.md
+    relevant_chapters: [门派]
+  - id: 问题诊断
+    file: guidance/问题诊断.md
     relevant_chapters: []
-  - id: mechanism-explain
-    cn_name: 机制解释
-    file: guidance/mechanism-explain.md
+  - id: 机制解释
+    file: guidance/机制解释.md
     relevant_chapters: []
-  - id: risk-warning
-    cn_name: 风险预判
-    file: guidance/risk-warning.md
+  - id: 风险预判
+    file: guidance/风险预判.md
     relevant_chapters: []
 
 personas:
