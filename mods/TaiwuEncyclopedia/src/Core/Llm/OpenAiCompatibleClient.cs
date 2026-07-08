@@ -11,7 +11,7 @@ namespace TaiwuEncyclopedia.Core.Llm;
 /// <summary>
 /// OpenAI 兼容 LLM 客户端。支持 FC（tool_calls）+ 流式。
 /// HttpClient 用 HttpMessageHandler 可 mock（spec 第 486 行）。
-/// LLM 失败重试 1 次（spec 第 429 行），仅对 5xx / 网络错误重试，4xx 不重试。
+/// LLM 失败按 ApiRetryPolicy 重试（指数退避+jitter，前景 MAX_RETRIES 次，背景不重试）；4xx 鉴权/参数错误立即抛 ApiException，可重试错误退避后重试。
 /// </summary>
 public sealed class OpenAiCompatibleClient
 {
@@ -22,6 +22,9 @@ public sealed class OpenAiCompatibleClient
 
     /// <summary>StreamChat 最近一次调用的 usage（末尾 chunk 填充）。Chat 用 LlmResponse.Usage。</summary>
     public TokenUsage? LastStreamUsage { get; private set; }
+
+    /// <summary>测试缝：覆盖退避延迟（测试置 1ms 避免真实指数延迟）。null 时用 ApiRetryPolicy.GetDelay。</summary>
+    internal Func<int, TimeSpan>? RetryDelayOverride { get; set; }
 
     // 静态共享 HttpClient（非 mock 场景）。构造函数传 handler=null 时用此实例。
     private static readonly HttpClient _sharedHttp = new() { Timeout = System.TimeSpan.FromSeconds(120) };
@@ -53,7 +56,7 @@ public sealed class OpenAiCompatibleClient
         var body = BuildRequestBody(config.Model, messages, stream: false, tools: tools, toolChoice: toolChoice);
         // 连接测试只需验证 auth+模型可达,限制 max_tokens=1 避免模型生成完整回复拖慢测试。
         if (role == AgentLLMRole.Testing) body["max_tokens"] = 1;
-        var resp = await SendWithRetry(config, body);
+        var resp = await SendWithRetry(config, body, role);
         var json = await resp.Content.ReadAsStringAsync();
         return ParseChatResponse(json, role);
     }
@@ -70,7 +73,7 @@ public sealed class OpenAiCompatibleClient
     {
         LastStreamUsage = null;
         var body = BuildRequestBody(config.Model, messages, stream: true);
-        var resp = await SendWithRetry(config, body);
+        var resp = await SendWithRetry(config, body, role);
         using var stream = await resp.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);
 
@@ -129,58 +132,51 @@ public sealed class OpenAiCompatibleClient
         return body;
     }
 
-    /// <summary>发送请求并在 5xx 错误时重试一次。</summary>
+    /// <summary>发送请求并按 ApiRetryPolicy 重试。前景重试到 MAX_RETRIES，背景首次错误即抛。</summary>
     /// <param name="config">LLM 配置。</param>
     /// <param name="body">请求体。</param>
+    /// <param name="role">调用角色。</param>
     /// <returns>HTTP 响应。</returns>
-    private async Task<HttpResponseMessage> SendWithRetry(LlmConfig config, Dictionary<string, object> body)
+    private async Task<HttpResponseMessage> SendWithRetry(
+        LlmConfig config, Dictionary<string, object> body, AgentLLMRole role)
     {
         var url = config.BaseUrl.TrimEnd('/') + "/chat/completions";
         var json = Newtonsoft.Json.JsonConvert.SerializeObject(body);
+        var foreground = ApiRetryPolicy.IsForeground(role);
+        int consecutive529s = 0;
 
-        HttpResponseMessage? resp = null;
-        for (int attempt = 0; attempt < 2; attempt++)
+        for (int attempt = 0; attempt <= ApiRetryPolicy.MAX_RETRIES; attempt++)
         {
-            // StringContent 只能被一个 request 消费，每次迭代重建
-            using var req = new HttpRequestMessage(HttpMethod.Post, url);
-            req.Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            req.Headers.Add("Authorization", "Bearer " + config.ApiKey);
-
+            ApiErrorType error;
+            HttpResponseMessage resp;
             try
             {
+                using var req = new HttpRequestMessage(HttpMethod.Post, url);
+                req.Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                req.Headers.Add("Authorization", "Bearer " + config.ApiKey);
                 resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
+                if (resp.IsSuccessStatusCode) return resp;
+                error = ApiRetryPolicy.ClassifyStatus((int)resp.StatusCode);
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException) { error = ApiErrorType.NetworkError; }
+            catch (System.Threading.Tasks.TaskCanceledException) { error = ApiErrorType.Timeout; }
+
+            // 4xx 鉴权/参数错误：不可重试，立即抛 ApiException（不走退避，避免被误判为可重试）
+            if (error == ApiErrorType.AuthError || error == ApiErrorType.ClientError)
             {
-                // 网络错误：第 0 次重试，第 1 次直接抛出
-                if (attempt == 1)
-                {
-                    throw;
-                }
-                // 指数退避（500ms）
-                await Task.Delay(500);
-                continue;
+                throw new ApiException(error, ApiRetryPolicy.GetFailMessage(error), "error");
             }
 
-            // 4xx 不重试（配置错误/鉴权失败，重试无用）
-            if ((int)resp.StatusCode >= 400 && (int)resp.StatusCode < 500)
-            {
-                return resp;
-            }
-            // 5xx 或成功 → 重试后返回
-            if (resp.IsSuccessStatusCode)
-            {
-                return resp;
-            }
-            // 5xx：第 0 次重试，第 1 次直接返回（不再重试）
-            if (attempt == 1)
-            {
-                return resp;
-            }
-            // 指数退避（500ms）
-            await Task.Delay(500);
+            var (decision, msg, level) = ApiRetryPolicy.Evaluate(error, attempt, ref consecutive529s, foreground);
+            if (decision == RetryDecision.Fail || decision == RetryDecision.TellPlayer)
+                throw new ApiException(error, msg, level);
+
+            // Retry：指数退避 + jitter（测试可经 RetryDelayOverride 置零加速）
+            var delay = RetryDelayOverride?.Invoke(attempt) ?? ApiRetryPolicy.GetDelay(attempt);
+            await System.Threading.Tasks.Task.Delay(delay);
         }
-        return resp!;
+
+        throw new ApiException(ApiErrorType.Unknown, ApiRetryPolicy.GetFailMessage(ApiErrorType.Unknown), "error");
     }
 
     /// <summary>解析非流式响应。</summary>
