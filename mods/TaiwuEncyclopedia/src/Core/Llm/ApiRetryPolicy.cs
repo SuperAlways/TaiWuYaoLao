@@ -14,6 +14,7 @@ public static class ApiRetryPolicy
     private const int BASE_DELAY_MS = 500;
     public const int MAX_RETRIES = 4;
     public const int MAX_529_RETRIES = 3;
+    private static readonly object _rngLock = new();
     private static readonly Random _rng = new();
 
     /// <summary>判断角色是否为前景（用户等待，重试）。背景 Intent/Testing 不重试。</summary>
@@ -41,7 +42,11 @@ public static class ApiRetryPolicy
     /// <summary>指数退避延迟 = BASE * 2^attempt × random(0.75~1.0)。</summary>
     public static TimeSpan GetDelay(int attempt)
     {
-        var jitter = BASE_DELAY_MS * Math.Pow(2, attempt) * (_rng.NextDouble() * 0.25 + 0.75);
+        double jitter;
+        lock (_rngLock)
+        {
+            jitter = BASE_DELAY_MS * Math.Pow(2, attempt) * (_rng.NextDouble() * 0.25 + 0.75);
+        }
         return TimeSpan.FromMilliseconds(jitter);
     }
 
