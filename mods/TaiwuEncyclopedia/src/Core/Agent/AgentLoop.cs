@@ -54,8 +54,9 @@ public static class AgentLoop
         for (int iteration = 0; iteration < maxIter; iteration++)
         {
             // 4.1 THINKING 调用（非流式，带 tools）
-            LlmResponse response;
+            LlmResponse response = null!;
             TokenUsage? thinkingUsage = null;
+            ApiException? pendingError = null;
             try
             {
                 var llmSw = System.Diagnostics.Stopwatch.StartNew();
@@ -67,18 +68,31 @@ public static class AgentLoop
                     "", response.Usage, (int)llmSw.ElapsedMilliseconds);
                 thinkingUsage = response.Usage;
             }
-            catch
+            catch (ApiException ex)
             {
-                // force_compress 重试
-                var llmSw2 = System.Diagnostics.Stopwatch.StartNew();
-                trace.LlmCall(iteration, "thinking", "thinking_force_compress_retry", messages, toolsSchema);
-                messages = ctx.ForceCompress(messages);
-                response = await llmClient.Chat(
-                    AgentLLMRole.Thinking, messages, llmConfig, tools: toolsSchema);
-                llmSw2.Stop();
-                trace.LlmResponse(iteration, "thinking", response.Content, response.ToolCalls,
-                    "", response.Usage, (int)llmSw2.ElapsedMilliseconds);
-                thinkingUsage = response.Usage;
+                if (ex.ErrorType == ApiErrorType.Overload || ex.ErrorType == ApiErrorType.Timeout)
+                {
+                    // 可能 token 超限 -> force_compress 后重试一次。重试若仍失败会再次抛 ApiException 直接传播。
+                    var llmSw2 = System.Diagnostics.Stopwatch.StartNew();
+                    trace.LlmCall(iteration, "thinking", "thinking_force_compress_retry", messages, toolsSchema);
+                    messages = ctx.ForceCompress(messages);
+                    response = await llmClient.Chat(
+                        AgentLLMRole.Thinking, messages, llmConfig, tools: toolsSchema);
+                    llmSw2.Stop();
+                    trace.LlmResponse(iteration, "thinking", response.Content, response.ToolCalls,
+                        "", response.Usage, (int)llmSw2.ElapsedMilliseconds);
+                    thinkingUsage = response.Usage;
+                }
+                else
+                {
+                    // AuthError/Network/RateLimit/Client/Server：不压缩不重试，收集后出 catch 再 yield + 抛出
+                    pendingError = ex;
+                }
+            }
+            if (pendingError != null)
+            {
+                yield return new StatusEvent { Message = pendingError.Message, Level = pendingError.Level };
+                throw pendingError;   // 传播到 AgentRunner.RunAsync（无 try/catch）-> AgentRunnerHost.IsFaulted
             }
 
             if (thinkingUsage != null)
