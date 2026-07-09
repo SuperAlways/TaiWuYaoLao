@@ -45,7 +45,7 @@ public sealed class ChatInputBar : MonoBehaviour
         _input.selectionColor = new Color(0.45f, 0.55f, 0.75f, 0.45f);
         TextMeshProUGUI ph = NewText("Placeholder", inputGo.transform, 20, TextAlignmentOptions.TopLeft);
         Anchor(ph.rectTransform, Vector2.zero, Vector2.one, new Vector2(10, 6), new Vector2(-10, -6));
-        ph.text = "在此提问…(回车发送)";
+        ph.text = "在此提问...(回车发送)";
         ph.color = new Color(0.6f, 0.6f, 0.56f, 0.7f);
         ph.raycastTarget = false;
         _input.placeholder = ph;
