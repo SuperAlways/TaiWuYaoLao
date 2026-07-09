@@ -79,13 +79,56 @@ public sealed class OverlayDropdown : MonoBehaviour
         _isOpen = false;
     }
 
-    private void PositionList(RectTransform listRt, RectTransform trigger, RectTransform canvasRoot, int itemCount)
+    private static void PositionList(RectTransform listRt, RectTransform trigger,
+        RectTransform canvasRoot, int itemCount)
     {
-        // Placeholder: 简单定位在 trigger 下方
-        // Task 3 会做完整定位 + 向上展开逻辑
-        listRt.anchorMin = listRt.anchorMax = listRt.pivot = new Vector2(0, 1);
-        listRt.anchoredPosition = new Vector2(0, 0);
-        listRt.sizeDelta = new Vector2(200, 0);  // placeholder width
+        // trigger 在 Canvas 空间中的世界坐标
+        Vector3[] corners = new Vector3[4];
+        trigger.GetWorldCorners(corners);
+        // corners: [0]=左上, [1]=左下, [2]=右下, [3]=右上
+        Vector2 triggerBottomLeft = corners[1];   // trigger 左下角
+        Vector2 triggerBottomRight = corners[2];  // trigger 右下角
+
+        // 转为 canvasRoot 的局部坐标
+        Vector2 localBottomLeft;
+        Vector2 localBottomRight;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRoot, triggerBottomLeft, null, out localBottomLeft);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRoot, triggerBottomRight, null, out localBottomRight);
+
+        float triggerWidth = localBottomRight.x - localBottomLeft.x;
+        float triggerX = localBottomLeft.x;
+
+        // 估算列表高度：每项 34px + spacing(2)* (N-1) + padding(8)
+        float estimatedHeight = itemCount * 34f + (itemCount - 1) * 2f + 8f;
+        float maxListHeight = Mathf.Min(estimatedHeight + 8f, 300f + 8f);  // 含 padding
+
+        // canvasRoot 底部 Y（最底部）
+        float canvasBottom = -canvasRoot.rect.height / 2f;
+        float triggerBottomY = localBottomLeft.y;
+
+        // 默认向下展开：列表 pivot 为左上角 (0,1)
+        listRt.pivot = new Vector2(0, 1);
+        listRt.anchorMin = listRt.anchorMax = new Vector2(0, 1);
+        listRt.sizeDelta = new Vector2(triggerWidth, 0);  // 高度由 ContentSizeFitter 控制
+
+        if (triggerBottomY - maxListHeight < canvasBottom)
+        {
+            // 底部空间不足，改为向上展开
+            // pivot 设为左下角 (0,0)，锚定 trigger 顶部
+            listRt.pivot = new Vector2(0, 0);
+            Vector2 localTopLeft;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvasRoot, corners[0], null, out localTopLeft);
+            float triggerTopY = localTopLeft.y;
+            listRt.anchoredPosition = new Vector2(triggerX, triggerTopY);
+        }
+        else
+        {
+            // 向下展开
+            listRt.anchoredPosition = new Vector2(triggerX, triggerBottomY);
+        }
     }
 
     private const int ScrollThreshold = 8;
