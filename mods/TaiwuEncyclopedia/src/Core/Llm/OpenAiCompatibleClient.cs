@@ -140,7 +140,8 @@ public sealed class OpenAiCompatibleClient
     private async Task<HttpResponseMessage> SendWithRetry(
         LlmConfig config, Dictionary<string, object> body, AgentLLMRole role)
     {
-        var url = config.BaseUrl.TrimEnd('/') + "/chat/completions";
+        var url = EndpointResolver.BuildChatCompletionsUrl(config.BaseUrl)
+                  ?? "https://api.deepseek.com/v1/chat/completions";  // 兜底
         var json = Newtonsoft.Json.JsonConvert.SerializeObject(body);
         var foreground = ApiRetryPolicy.IsForeground(role);
         int consecutive529s = 0;
