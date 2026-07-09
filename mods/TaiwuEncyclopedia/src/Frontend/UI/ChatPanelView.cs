@@ -59,7 +59,7 @@ public sealed class ChatPanelView : MonoBehaviour
         _title.color = new Color(0.95f, 0.92f, 0.82f, 1f);
 
         // 设置按钮
-        GameObject settingsGo = NewButton("SettingsBtn", panel.transform, "⚙ 设置", 20, out Button sBtn);
+        GameObject settingsGo = NewButton("SettingsBtn", panel.transform, "设置", 20, out Button sBtn);
         RectTransform srt = settingsGo.GetComponent<RectTransform>();
         srt.anchorMin = srt.anchorMax = srt.pivot = new Vector2(1, 1);
         srt.anchoredPosition = new Vector2(-54, -10);
@@ -67,7 +67,7 @@ public sealed class ChatPanelView : MonoBehaviour
         sBtn.onClick.AddListener(() => ConfigPanel.Open(_font));
 
         // 关闭按钮
-        GameObject closeGo = NewButton("CloseBtn", panel.transform, "✕", 22, out Button cBtn);
+        GameObject closeGo = NewButton("CloseBtn", panel.transform, "X", 22, out Button cBtn);
         RectTransform crt = closeGo.GetComponent<RectTransform>();
         crt.anchorMin = crt.anchorMax = crt.pivot = new Vector2(1, 1);
         crt.anchoredPosition = new Vector2(-10, -10);
