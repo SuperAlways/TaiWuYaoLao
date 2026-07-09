@@ -56,11 +56,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
     private bool _testingConnection;
 
     // 区域2: 对话风格
-    private Button? _personaButton;
-    private TextMeshProUGUI? _personaBtnLabel;
-    private int _currentPersonaIdx;
-    private TextMeshProUGUI? _personaPreviewText;
-    private List<string>? _personaIdList;
+    private PersonaSection? _personaSection;
 
     // 区域3: 历史对话
     private RectTransform? _historyListContent;
@@ -178,7 +174,9 @@ public class ConfigPanel : MonoBehaviour, IPanel
         BuildLlmSection(contentRt);
 
         // 区域2: 对话风格
-        BuildPersonaSection(contentRt);
+        _personaSection = gameObject.AddComponent<PersonaSection>();
+        _personaSection.Build(contentRt, _font, _root.GetComponent<RectTransform>());
+        _personaSection.OnConfigChanged += delegate { OnConfigChanged(invalidateTest: false); };
 
         // 区域3: 历史对话
         BuildHistorySection(contentRt);
@@ -245,65 +243,6 @@ public class ConfigPanel : MonoBehaviour, IPanel
         LayoutElement sle = _testStatusText.gameObject.AddComponent<LayoutElement>();
         sle.flexibleWidth = 1f;
         sle.preferredHeight = 36;
-    }
-
-    private void BuildPersonaSection(Transform parent)
-    {
-        GameObject section = CreateSection(parent, "对话风格 (Persona)");
-        Transform content = section.transform.Find("Content")!;
-
-        // 风格选择行 (循环按钮:点一下切到下一个 persona,规避程序化 TMP_Dropdown 模板的脆弱性)
-        GameObject dropRow = new GameObject("DropRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
-        dropRow.transform.SetParent(content, false);
-        HorizontalLayoutGroup hlg = dropRow.GetComponent<HorizontalLayoutGroup>();
-        hlg.childForceExpandWidth = false;
-        hlg.childForceExpandHeight = false;
-        hlg.childControlWidth = true;
-        hlg.childControlHeight = true;
-        hlg.spacing = 10f;
-        hlg.padding = new RectOffset(0, 0, 4, 4);
-
-        TextMeshProUGUI label = NewText("Label", dropRow.transform, 18, TextAlignmentOptions.Left);
-        label.text = "选择风格：";
-        label.color = new Color(0.80f, 0.78f, 0.70f, 1f);
-        LayoutElement lle = label.gameObject.AddComponent<LayoutElement>();
-        lle.preferredWidth = 100;
-        lle.preferredHeight = 36;
-
-        // 风格按钮(显示当前 persona 名 + ▶,点击循环)
-        GameObject btnGo = NewButton("PersonaBtn", dropRow.transform, "", 18, out _personaButton);
-        btnGo.GetComponent<Image>().color = new Color(1, 1, 1, 0.12f);
-        LayoutElement dle = btnGo.AddComponent<LayoutElement>();
-        dle.flexibleWidth = 1f;
-        dle.preferredHeight = 36;
-        _personaBtnLabel = btnGo.GetComponentInChildren<TextMeshProUGUI>();
-        if (_personaButton != null) _personaButton.onClick.AddListener(OnPersonaCycle);
-
-        // 预览区
-        GameObject previewBox = new GameObject("PreviewBox", typeof(RectTransform), typeof(Image));
-        previewBox.transform.SetParent(content, false);
-        previewBox.GetComponent<Image>().color = new Color(0, 0, 0, 0.18f);
-        LayoutElement pble = previewBox.AddComponent<LayoutElement>();
-        pble.preferredHeight = 120;
-
-        TextMeshProUGUI previewTitle = NewText("PreviewTitle", previewBox.transform, 16, TextAlignmentOptions.Left);
-        previewTitle.text = "当前风格预览：";
-        previewTitle.color = new Color(0.65f, 0.68f, 0.70f, 1f);
-        Anchor(previewTitle.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -26), new Vector2(-10, -6));
-
-        _personaPreviewText = NewText("PreviewText", previewBox.transform, 17, TextAlignmentOptions.TopLeft);
-        _personaPreviewText.text = "加载中...";
-        _personaPreviewText.color = new Color(0.85f, 0.83f, 0.78f, 1f);
-        _personaPreviewText.enableWordWrapping = true;
-        // 溢出时省略号截断,防止文本超出 PreviewBox 与下方区域重叠。
-        _personaPreviewText.overflowMode = TextOverflowModes.Ellipsis;
-        Anchor(_personaPreviewText.rectTransform, new Vector2(0, 0), new Vector2(1, 1), new Vector2(10, 6), new Vector2(-10, -32));
-
-        // 提示文本
-        TextMeshProUGUI hint = NewText("Hint", content, 15, TextAlignmentOptions.Left);
-        hint.text = "切换后下一条消息生效，历史消息不改写";
-        hint.color = new Color(0.55f, 0.58f, 0.60f, 1f);
-        hint.enableWordWrapping = true;
     }
 
     private void BuildHistorySection(Transform parent)
@@ -586,7 +525,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
     {
         // 从 FrontendServices 加载配置
         RefreshLlmInputs();
-        RefreshPersonaList();
+        if (_personaSection != null) _personaSection.Refresh();
         RefreshHistoryList();
         RefreshRuntimePath();
         RefreshSoulProfile();
@@ -605,44 +544,6 @@ public class ConfigPanel : MonoBehaviour, IPanel
         if (_apiKeyInput != null) _apiKeyInput.text = config.ApiKey;
         if (_modelInput != null) _modelInput.text = config.Model;
         if (_testStatusText != null) _testStatusText.text = "";
-    }
-
-    private void RefreshPersonaList()
-    {
-        if (_personaButton == null) return;
-
-        _personaIdList = new List<string>();
-
-        SkillManager? sm = FrontendServices.SkillManager;
-        if (sm == null)
-        {
-            if (_personaBtnLabel != null) _personaBtnLabel.text = "(技能目录未就绪)";
-            _personaButton.interactable = false;
-            if (_personaPreviewText != null) _personaPreviewText.text = "进入游戏后可选择对话风格";
-            return;
-        }
-
-        List<string> personaIds = sm.GetPersonaIds();
-        if (personaIds.Count == 0)
-        {
-            if (_personaBtnLabel != null) _personaBtnLabel.text = "(无可用 Persona)";
-            _personaButton.interactable = false;
-            if (_personaPreviewText != null) _personaPreviewText.text = "请检查 Skills/registry.yaml 配置";
-            return;
-        }
-
-        _personaButton.interactable = true;
-        _personaIdList.AddRange(personaIds);
-
-        // 选中当前保存的 persona，找不到时默认 sword-will
-        string savedPersona = FrontendServices.SelectedPersonaId;
-        int idx = _personaIdList.IndexOf(savedPersona);
-        if (idx < 0) idx = _personaIdList.IndexOf("sword-will");
-        if (idx < 0 && _personaIdList.Count > 0) idx = 0;
-        _currentPersonaIdx = idx;
-        UpdatePersonaButtonLabel();
-
-        OnPersonaChanged(_currentPersonaIdx);
     }
 
 
@@ -816,72 +717,6 @@ public class ConfigPanel : MonoBehaviour, IPanel
         if (_validationText != null) _validationText.text = "";
         // 实时校验所有字段
         ValidateFieldsInline();
-    }
-
-    private void OnPersonaCycle()
-    {
-        if (_personaIdList == null || _personaIdList.Count == 0) return;
-        _currentPersonaIdx = (_currentPersonaIdx + 1) % _personaIdList.Count;
-        UnityEngine.Debug.Log("[ConfigPanel] OnPersonaCycle: idx=" + _currentPersonaIdx + " id=" + _personaIdList[_currentPersonaIdx]);
-        UpdatePersonaButtonLabel();
-        OnPersonaChanged(_currentPersonaIdx);
-        OnConfigChanged(invalidateTest: false);
-    }
-
-    private void UpdatePersonaButtonLabel()
-    {
-        if (_personaBtnLabel == null || _personaIdList == null) return;
-        if (_currentPersonaIdx < 0 || _currentPersonaIdx >= _personaIdList.Count) return;
-        SkillManager? sm = FrontendServices.SkillManager;
-        string cn = sm != null ? sm.PersonaCnName(_personaIdList[_currentPersonaIdx]) : _personaIdList[_currentPersonaIdx];
-        _personaBtnLabel.text = cn + "  >>";
-    }
-
-    private void OnPersonaChanged(int idx)
-    {
-        UnityEngine.Debug.Log("[ConfigPanel] OnPersonaChanged: idx=" + idx);
-        if (_personaIdList == null || idx < 0 || idx >= _personaIdList.Count) return;
-
-        string personaId = _personaIdList[idx];
-        UnityEngine.Debug.Log("[ConfigPanel] OnPersonaChanged: personaId=" + personaId);
-        SkillManager? sm = FrontendServices.SkillManager;
-
-        if (_personaPreviewText != null)
-        {
-            if (sm == null)
-            {
-                _personaPreviewText.text = "(技能管理器未就绪)";
-            }
-            else
-            {
-                // 优先用 registry 的 description 字段(独立简介);缺省再从全文提取。
-                string desc = sm.PersonaDescription(personaId);
-                string preview = !string.IsNullOrWhiteSpace(desc)
-                    ? desc
-                    : ExtractPersonaSummary(sm.LoadPersona(personaId) ?? "");
-                _personaPreviewText.text = preview;
-            }
-        }
-    }
-
-    /// <summary>从 persona markdown 提取简介:跳过标题行,取首段实际内容,限 120 字。</summary>
-    private static string ExtractPersonaSummary(string markdown)
-    {
-        var lines = markdown.Replace("\r\n", "\n").Split('\n');
-        var sb = new System.Text.StringBuilder();
-        foreach (var raw in lines)
-        {
-            var line = raw.Trim();
-            if (line.Length == 0) { if (sb.Length > 0) break; continue; }      // 空行:首段结束
-            if (line.StartsWith('#')) continue;                                // 跳过标题
-            if (line.StartsWith('-')) continue;                                // 跳过列表项
-            if (sb.Length > 0) sb.Append(' ');
-            sb.Append(line);
-            if (sb.Length >= 120) break;
-        }
-        string summary = sb.ToString().Trim();
-        if (summary.Length > 120) summary = summary.Substring(0, 120) + "...";
-        return string.IsNullOrEmpty(summary) ? "(无简介)" : summary;
     }
 
     private void OnTestConnection()
@@ -1189,9 +1024,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         string baseUrl = (_baseUrlInput?.text ?? "").Trim();
         string apiKey = (_apiKeyInput?.text ?? "").Trim();
         string model = (_modelInput?.text ?? "").Trim();
-        string personaId = (_personaIdList != null && _currentPersonaIdx >= 0 && _currentPersonaIdx < _personaIdList.Count)
-            ? _personaIdList[_currentPersonaIdx]
-            : "";
+        string personaId = _personaSection?.SelectedPersonaId ?? "";
 
         // 字段校验
         var errors = new List<string>();
@@ -1218,8 +1051,12 @@ public class ConfigPanel : MonoBehaviour, IPanel
         }
 
         // persona 默认值兜底
-        if (string.IsNullOrWhiteSpace(personaId) && _personaIdList != null && _personaIdList.Contains("sword-will"))
-            personaId = "sword-will";
+        if (string.IsNullOrWhiteSpace(personaId) && _personaSection != null)
+        {
+            var ids = FrontendServices.SkillManager?.GetPersonaIds();
+            if (ids != null && ids.Contains("sword-will"))
+                personaId = "sword-will";
+        }
 
         // 保存配置
         await FrontendServices.SaveLlmConfig(baseUrl, apiKey, model, personaId);
