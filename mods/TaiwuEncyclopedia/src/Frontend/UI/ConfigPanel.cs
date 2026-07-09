@@ -133,11 +133,11 @@ public class ConfigPanel : MonoBehaviour, IPanel
 
         TextMeshProUGUI titleText = NewText("Title", panel.transform, 26, TextAlignmentOptions.Center);
         Anchor(titleText.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(48, -48), new Vector2(-96, -8));
-        titleText.text = "⚙ 设置";
+        titleText.text = "设置";
         titleText.color = new Color(0.95f, 0.92f, 0.82f, 1f);
 
         // 关闭按钮
-        GameObject closeGo = NewButton("CloseBtn", panel.transform, "✕", 22, out Button closeBtn);
+        GameObject closeGo = NewButton("CloseBtn", panel.transform, "X", 22, out Button closeBtn);
         RectTransform crt = closeGo.GetComponent<RectTransform>();
         crt.anchorMin = crt.anchorMax = crt.pivot = new Vector2(1, 1);
         crt.anchoredPosition = new Vector2(-10, -10);
@@ -292,7 +292,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         Anchor(previewTitle.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -26), new Vector2(-10, -6));
 
         _personaPreviewText = NewText("PreviewText", previewBox.transform, 17, TextAlignmentOptions.TopLeft);
-        _personaPreviewText.text = "加载中…";
+        _personaPreviewText.text = "加载中...";
         _personaPreviewText.color = new Color(0.85f, 0.83f, 0.78f, 1f);
         _personaPreviewText.enableWordWrapping = true;
         // 溢出时省略号截断,防止文本超出 PreviewBox 与下方区域重叠。
@@ -301,7 +301,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
 
         // 提示文本
         TextMeshProUGUI hint = NewText("Hint", content, 15, TextAlignmentOptions.Left);
-        hint.text = "ℹ 切换后下一条消息生效，历史消息不改写";
+        hint.text = "切换后下一条消息生效，历史消息不改写";
         hint.color = new Color(0.55f, 0.58f, 0.60f, 1f);
         hint.enableWordWrapping = true;
     }
@@ -353,7 +353,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
 
         // 路径显示
         _runtimePathText = NewText("PathText", content, 15, TextAlignmentOptions.Left);
-        _runtimePathText.text = "存档目录：加载中…";
+        _runtimePathText.text = "存档目录：加载中...";
         _runtimePathText.color = new Color(0.55f, 0.58f, 0.60f, 1f);
         _runtimePathText.enableWordWrapping = true;
 
@@ -431,7 +431,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         hle.preferredHeight = 26;
 
         TextMeshProUGUI headerText = NewText("HeaderText", headerGo.transform, 17, TextAlignmentOptions.Left);
-        headerText.text = $"▸ {title}";
+        headerText.text = $"{title} >>展开";
         headerText.color = new Color(0.70f, 0.72f, 0.75f, 1f);
         Anchor(headerText.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
@@ -441,7 +441,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         contentGo.SetActive(false);
 
         TextMeshProUGUI bodyText = NewText("BodyText", contentGo.transform, 15, TextAlignmentOptions.TopLeft);
-        bodyText.text = "加载中…";
+        bodyText.text = "加载中...";
         bodyText.color = new Color(0.75f, 0.78f, 0.82f, 1f);
         bodyText.enableWordWrapping = true;
         LayoutElement ble = bodyText.gameObject.AddComponent<LayoutElement>();
@@ -457,14 +457,14 @@ public class ConfigPanel : MonoBehaviour, IPanel
             {
                 _soulProfileExpanded = !_soulProfileExpanded;
                 contentGo.SetActive(_soulProfileExpanded);
-                headerText.text = (_soulProfileExpanded ? "▾ " : "▸ ") + title;
+                headerText.text = title + (_soulProfileExpanded ? " >>收起" : " >>展开");
                 if (_soulProfileExpanded) RefreshSoulProfile();
             }
             else
             {
                 _soulWorldExpanded = !_soulWorldExpanded;
                 contentGo.SetActive(_soulWorldExpanded);
-                headerText.text = (_soulWorldExpanded ? "▾ " : "▸ ") + title;
+                headerText.text = title + (_soulWorldExpanded ? " >>收起" : " >>展开");
                 if (_soulWorldExpanded) RefreshSoulWorld();
             }
         });
@@ -516,7 +516,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
 
         // 标题
         TextMeshProUGUI titleText = NewText("SectionTitle", section.transform, 20, TextAlignmentOptions.Left);
-        titleText.text = $"—— {title} ——";
+        titleText.text = $"-- {title} --";
         titleText.color = new Color(0.75f, 0.78f, 0.82f, 1f);
 
         // 内容容器
@@ -558,7 +558,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         if (password)
         {
             input.contentType = TMP_InputField.ContentType.Password;
-            input.asteriskChar = '•';
+            input.asteriskChar = '*';
         }
         else
         {
@@ -808,7 +808,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
             _testState = TestState.Invalidated;
             if (_testStatusText != null)
             {
-                _testStatusText.text = "⚠ 配置已修改，请重新测试";
+                _testStatusText.text = "[!] 配置已修改，请重新测试";
                 _testStatusText.color = new Color(0.85f, 0.75f, 0.45f, 1f);
             }
         }
@@ -834,7 +834,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         if (_currentPersonaIdx < 0 || _currentPersonaIdx >= _personaIdList.Count) return;
         SkillManager? sm = FrontendServices.SkillManager;
         string cn = sm != null ? sm.PersonaCnName(_personaIdList[_currentPersonaIdx]) : _personaIdList[_currentPersonaIdx];
-        _personaBtnLabel.text = cn + "  ▶";
+        _personaBtnLabel.text = cn + "  >>";
     }
 
     private void OnPersonaChanged(int idx)
@@ -880,7 +880,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
             if (sb.Length >= 120) break;
         }
         string summary = sb.ToString().Trim();
-        if (summary.Length > 120) summary = summary.Substring(0, 120) + "…";
+        if (summary.Length > 120) summary = summary.Substring(0, 120) + "...";
         return string.IsNullOrEmpty(summary) ? "(无简介)" : summary;
     }
 
@@ -906,7 +906,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         _testState = TestState.Testing;
         _testingConnection = true;
         if (_testBtn != null) _testBtn.interactable = false;
-        SetTestStatus("测试中…", isError: false);
+        SetTestStatus("测试中...", isError: false);
 
         StartCoroutine(TestConnectionCoroutine(baseUrl, apiKey, model));
     }
@@ -952,17 +952,17 @@ public class ConfigPanel : MonoBehaviour, IPanel
         if (fault != null)
         {
             _testState = TestState.NotTested;
-            SetTestStatus($"✗ 连接失败 ({sw.ElapsedMilliseconds}ms): {fault.Message}", isError: true);
+            SetTestStatus($"X 连接失败 ({sw.ElapsedMilliseconds}ms): {fault.Message}", isError: true);
         }
         else if (task != null && task.Result != null)
         {
             _testState = TestState.Passed;
-            SetTestStatus($"✓ 连接正常 ({sw.ElapsedMilliseconds}ms)", isError: false);
+            SetTestStatus($"OK 连接正常 ({sw.ElapsedMilliseconds}ms)", isError: false);
         }
         else
         {
             _testState = TestState.NotTested;
-            SetTestStatus("✗ 未知错误", isError: true);
+            SetTestStatus("X 未知错误", isError: true);
         }
 
         _testingConnection = false;
