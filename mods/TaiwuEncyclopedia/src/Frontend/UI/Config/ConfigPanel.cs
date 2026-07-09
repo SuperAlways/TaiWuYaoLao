@@ -4,10 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
-using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Skills;
-using TaiwuEncyclopedia.Core.Soul;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -61,11 +58,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
     private HistorySection? _historySection;
 
     // 区域4: 数据与日志
-    private TextMeshProUGUI? _runtimePathText;
-    private TextMeshProUGUI? _soulProfileText;
-    private TextMeshProUGUI? _soulWorldText;
-    private bool _soulProfileExpanded;
-    private bool _soulWorldExpanded;
+    private DataSection? _dataSection;
 
     // 底部按钮
     private Button? _saveBtn;
@@ -181,7 +174,9 @@ public class ConfigPanel : MonoBehaviour, IPanel
         _historySection.Build(contentRt, _font);
 
         // 区域4: 数据与日志
-        BuildDataSection(contentRt);
+        _dataSection = gameObject.AddComponent<DataSection>();
+        _dataSection.Build(contentRt, _font);
+        _dataSection.OnOpenLog += delegate { OpenLogsDir(); };
 
         // 验证文本
         _validationText = NewText("ValidationText", contentRt, 16, TextAlignmentOptions.Center);
@@ -242,130 +237,6 @@ public class ConfigPanel : MonoBehaviour, IPanel
         LayoutElement sle = _testStatusText.gameObject.AddComponent<LayoutElement>();
         sle.flexibleWidth = 1f;
         sle.preferredHeight = 36;
-    }
-
-    private void BuildDataSection(Transform parent)
-    {
-        GameObject section = CreateSection(parent, "数据与日志");
-        Transform content = section.transform.Find("Content")!;
-
-        // 路径显示
-        _runtimePathText = NewText("PathText", content, 15, TextAlignmentOptions.Left);
-        _runtimePathText.text = "存档目录：加载中...";
-        _runtimePathText.color = new Color(0.55f, 0.58f, 0.60f, 1f);
-        _runtimePathText.enableWordWrapping = true;
-
-        // 按钮行
-        GameObject btnRow1 = new GameObject("BtnRow1", typeof(RectTransform), typeof(HorizontalLayoutGroup));
-        btnRow1.transform.SetParent(content, false);
-        HorizontalLayoutGroup hlg1 = btnRow1.GetComponent<HorizontalLayoutGroup>();
-        hlg1.childForceExpandWidth = false;
-        hlg1.childForceExpandHeight = false;
-        hlg1.childControlWidth = true;
-        hlg1.childControlHeight = true;
-        hlg1.spacing = 10f;
-        hlg1.padding = new RectOffset(0, 0, 6, 6);
-
-        GameObject openDirGo = NewButton("OpenDirBtn", btnRow1.transform, "打开存档目录", 17, out Button openDirBtn);
-        LayoutElement odle = openDirGo.AddComponent<LayoutElement>();
-        odle.preferredWidth = 150;
-        odle.preferredHeight = 34;
-        openDirBtn.onClick.AddListener(OnOpenRuntimeDir);
-
-        GameObject openLogGo = NewButton("OpenLogBtn", btnRow1.transform, "打开日志", 17, out Button openLogBtn);
-        LayoutElement olle = openLogGo.AddComponent<LayoutElement>();
-        olle.preferredWidth = 110;
-        olle.preferredHeight = 34;
-        openLogBtn.onClick.AddListener(OnOpenLogsDir);
-
-        // SoulProfile (可折叠)
-        BuildSoulCollapsible(content, "SoulProfile (跨档全局)", isProfile: true);
-
-        // SoulWorld (可折叠)
-        BuildSoulCollapsible(content, "SoulWorld (当前档)", isProfile: false);
-
-        // 底部按钮行
-        GameObject btnRow2 = new GameObject("BtnRow2", typeof(RectTransform), typeof(HorizontalLayoutGroup));
-        btnRow2.transform.SetParent(content, false);
-        HorizontalLayoutGroup hlg2 = btnRow2.GetComponent<HorizontalLayoutGroup>();
-        hlg2.childForceExpandWidth = false;
-        hlg2.childForceExpandHeight = false;
-        hlg2.childControlWidth = true;
-        hlg2.childControlHeight = true;
-        hlg2.spacing = 10f;
-        hlg2.padding = new RectOffset(0, 0, 6, 2);
-
-        GameObject resetProfileGo = NewButton("ResetProfileBtn", btnRow2.transform, "重置 SoulProfile", 17, out Button resetProfileBtn);
-        LayoutElement rple = resetProfileGo.AddComponent<LayoutElement>();
-        rple.preferredWidth = 160;
-        rple.preferredHeight = 34;
-        resetProfileBtn.onClick.AddListener(OnResetSoulProfile);
-
-        GameObject clearHistoryGo = NewButton("ClearHistoryBtn", btnRow2.transform, "清除当前对话历史", 17, out Button clearHistoryBtn);
-        LayoutElement chle = clearHistoryGo.AddComponent<LayoutElement>();
-        chle.preferredWidth = 170;
-        chle.preferredHeight = 34;
-        clearHistoryBtn.onClick.AddListener(OnClearCurrentHistory);
-    }
-
-    private void BuildSoulCollapsible(Transform parent, string title, bool isProfile)
-    {
-        GameObject box = new GameObject(isProfile ? "SoulProfileBox" : "SoulWorldBox", typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup));
-        box.transform.SetParent(parent, false);
-        box.GetComponent<Image>().color = new Color(0, 0, 0, 0.12f);
-        VerticalLayoutGroup vlg = box.GetComponent<VerticalLayoutGroup>();
-        vlg.childForceExpandWidth = true;
-        vlg.childForceExpandHeight = false;
-        vlg.childControlWidth = true;
-        vlg.childControlHeight = true;
-        vlg.spacing = 4f;
-        vlg.padding = new RectOffset(8, 8, 6, 8);
-
-        // 标题 (可点击)
-        GameObject headerGo = new GameObject("Header", typeof(RectTransform), typeof(Button));
-        headerGo.transform.SetParent(box.transform, false);
-        Button headerBtn = headerGo.GetComponent<Button>();
-        LayoutElement hle = headerGo.AddComponent<LayoutElement>();
-        hle.preferredHeight = 26;
-
-        TextMeshProUGUI headerText = NewText("HeaderText", headerGo.transform, 17, TextAlignmentOptions.Left);
-        headerText.text = $"{title} >>展开";
-        headerText.color = new Color(0.70f, 0.72f, 0.75f, 1f);
-        Anchor(headerText.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-
-        // 内容 (初始隐藏)
-        GameObject contentGo = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup));
-        contentGo.transform.SetParent(box.transform, false);
-        contentGo.SetActive(false);
-
-        TextMeshProUGUI bodyText = NewText("BodyText", contentGo.transform, 15, TextAlignmentOptions.TopLeft);
-        bodyText.text = "加载中...";
-        bodyText.color = new Color(0.75f, 0.78f, 0.82f, 1f);
-        bodyText.enableWordWrapping = true;
-        LayoutElement ble = bodyText.gameObject.AddComponent<LayoutElement>();
-        ble.minHeight = 60;
-
-        if (isProfile)
-            _soulProfileText = bodyText;
-        else
-            _soulWorldText = bodyText;
-
-        headerBtn.onClick.AddListener(delegate {
-            if (isProfile)
-            {
-                _soulProfileExpanded = !_soulProfileExpanded;
-                contentGo.SetActive(_soulProfileExpanded);
-                headerText.text = title + (_soulProfileExpanded ? " >>收起" : " >>展开");
-                if (_soulProfileExpanded) RefreshSoulProfile();
-            }
-            else
-            {
-                _soulWorldExpanded = !_soulWorldExpanded;
-                contentGo.SetActive(_soulWorldExpanded);
-                headerText.text = title + (_soulWorldExpanded ? " >>收起" : " >>展开");
-                if (_soulWorldExpanded) RefreshSoulWorld();
-            }
-        });
     }
 
     private void BuildBottomBar(Transform parent)
@@ -486,9 +357,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         RefreshLlmInputs();
         if (_personaSection != null) _personaSection.Refresh();
         if (_historySection != null) _historySection.Refresh();
-        RefreshRuntimePath();
-        RefreshSoulProfile();
-        RefreshSoulWorld();
+        if (_dataSection != null) _dataSection.Refresh();
         _hasUnsavedChanges = false;
         _testingConnection = false;
         _testState = TestState.NotTested;
@@ -505,71 +374,6 @@ public class ConfigPanel : MonoBehaviour, IPanel
         if (_testStatusText != null) _testStatusText.text = "";
     }
 
-
-    private void RefreshRuntimePath()
-    {
-        if (_runtimePathText != null)
-            _runtimePathText.text = $"存档目录：{Bootstrap.RuntimeRoot}";
-    }
-
-    private void RefreshSoulProfile()
-    {
-        if (_soulProfileText == null) return;
-
-        StartCoroutine(LoadSoulProfileCoroutine());
-    }
-
-    private IEnumerator LoadSoulProfileCoroutine()
-    {
-        var store = FrontendServices.SoulStore;
-        var task = store.LoadProfileAsync();
-        yield return new WaitUntil(() => task.IsCompleted);
-
-        if (task.IsFaulted || task.IsCanceled || _soulProfileText == null) yield break;
-
-        SoulProfile profile = task.Result;
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine("跨档全局 SoulProfile：");
-        sb.AppendLine($"  玩法偏好：{(string.IsNullOrEmpty(profile.Playstyle) ? "(未设置)" : profile.Playstyle)}");
-        sb.AppendLine($"  技术水平：{(string.IsNullOrEmpty(profile.TechnicalLevel) ? "(未设置)" : profile.TechnicalLevel)}");
-        sb.AppendLine($"  提问习惯：{(string.IsNullOrEmpty(profile.QuestionHabits) ? "(未设置)" : profile.QuestionHabits)}");
-        sb.AppendLine($"  保护字段：{(profile.ProtectedFields.Count == 0 ? "(无)" : string.Join(", ", profile.ProtectedFields))}");
-
-        _soulProfileText.text = sb.ToString();
-    }
-
-    private void RefreshSoulWorld()
-    {
-        if (_soulWorldText == null) return;
-
-        int worldId = WorldIdReader.CurrentWorldId();
-        if (worldId == SessionManager.PregameWorldId)
-        {
-            _soulWorldText.text = "进入存档后可用";
-            return;
-        }
-
-        StartCoroutine(LoadSoulWorldCoroutine(worldId));
-    }
-
-    private IEnumerator LoadSoulWorldCoroutine(int worldId)
-    {
-        var store = FrontendServices.SoulStore;
-        var task = store.LoadWorldAsync(worldId);
-        yield return new WaitUntil(() => task.IsCompleted);
-
-        if (task.IsFaulted || task.IsCanceled || _soulWorldText == null) yield break;
-
-        SoulWorld world = task.Result;
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine($"当前档 SoulWorld (WorldId#{worldId})：");
-        sb.AppendLine($"  门派：{(string.IsNullOrEmpty(world.Sect) ? "(未设置)" : world.Sect)}");
-        sb.AppendLine($"  阶段：{(string.IsNullOrEmpty(world.Stage) ? "(未设置)" : world.Stage)}");
-        sb.AppendLine($"  失败经历：{(string.IsNullOrEmpty(world.Failures) ? "(未设置)" : world.Failures)}");
-        sb.AppendLine($"  历史摘要：{(string.IsNullOrEmpty(world.Summary) ? "(未设置)" : world.Summary)}");
-
-        _soulWorldText.text = sb.ToString();
-    }
 
     // ========== 事件处理 ==========
     private void OnConfigChanged(bool invalidateTest = true)
@@ -683,21 +487,8 @@ public class ConfigPanel : MonoBehaviour, IPanel
         _testStatusText.color = isError ? UiTheme.ErrorText : new Color(0.70f, 0.84f, 0.66f, 1f);
     }
 
-    private void OnOpenRuntimeDir()
-    {
-        try
-        {
-            string path = Bootstrap.RuntimeRoot;
-            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-            Application.OpenURL(path);
-        }
-        catch (Exception e)
-        {
-            UnityEngine.Debug.LogError($"[TaiwuEncyclopedia] Failed to open runtime dir: {e}");
-        }
-    }
-
-    private void OnOpenLogsDir()
+    /// <summary>打开日志目录 (Task 8 将改为调用 PlayerLogViewer)。</summary>
+    private void OpenLogsDir()
     {
         try
         {
@@ -709,44 +500,6 @@ public class ConfigPanel : MonoBehaviour, IPanel
         {
             UnityEngine.Debug.LogError($"[TaiwuEncyclopedia] Failed to open logs dir: {e}");
         }
-    }
-
-    private void OnResetSoulProfile()
-    {
-        StartCoroutine(ResetSoulProfileCoroutine());
-    }
-
-    private IEnumerator ResetSoulProfileCoroutine()
-    {
-        var store = FrontendServices.SoulStore;
-        var task = store.SaveProfileAsync(new SoulProfile());
-        yield return new WaitUntil(() => task.IsCompleted);
-
-        if (_soulProfileExpanded) RefreshSoulProfile();
-    }
-
-    private void OnClearCurrentHistory()
-    {
-        int worldId = WorldIdReader.CurrentWorldId();
-        StartCoroutine(ClearHistoryCoroutine(worldId));
-    }
-
-    private IEnumerator ClearHistoryCoroutine(int worldId)
-    {
-        var session = FrontendServices.SessionManager;
-        var task = session.ClearAsync(worldId);
-        yield return new WaitUntil(() => task.IsCompleted);
-
-        // 同时清除 SoulWorld (仅档内)
-        if (worldId != SessionManager.PregameWorldId)
-        {
-            var store = FrontendServices.SoulStore;
-            var task2 = store.SaveWorldAsync(worldId, new SoulWorld());
-            yield return new WaitUntil(() => task2.IsCompleted);
-        }
-
-        if (_historySection != null) _historySection.Refresh();
-        if (_soulWorldExpanded) RefreshSoulWorld();
     }
 
 
