@@ -48,7 +48,7 @@ public sealed class ThinkingPanel : MonoBehaviour
         icon.transform.SetParent(headerRow.transform, false);
         if (_font != null) icon.font = _font;
         icon.fontSize = 18;
-        icon.text = "▾";
+        icon.text = "";
         icon.color = new Color(0.65f, 0.68f, 0.70f, 1f);
         icon.alignment = TextAlignmentOptions.Left;
         icon.raycastTarget = false;
@@ -60,7 +60,7 @@ public sealed class ThinkingPanel : MonoBehaviour
         _headerText.transform.SetParent(headerRow.transform, false);
         if (_font != null) _headerText.font = _font;
         _headerText.fontSize = 17;
-        _headerText.text = "▾ 思考中…";
+        _headerText.text = "思考中... >>收起";
         _headerText.color = new Color(0.65f, 0.68f, 0.70f, 1f);
         _headerText.alignment = TextAlignmentOptions.Left;
         _headerText.raycastTarget = false;
@@ -106,7 +106,7 @@ public sealed class ThinkingPanel : MonoBehaviour
                 t.fontSize = 18;
                 t.color = new Color(0.55f, 0.58f, 0.60f, 1f);
                 t.raycastTarget = false;
-                t.text = "⏳";
+                t.text = "...";
                 if (_dotsCoroutine == null)
                     _dotsCoroutine = StartCoroutine(AnimateDots());
 
@@ -117,7 +117,7 @@ public sealed class ThinkingPanel : MonoBehaviour
                 if (_font != null) h.font = _font;
                 h.fontSize = 14;
                 h.color = new Color(0.45f, 0.48f, 0.50f, 1f);
-                h.text = "大约需要 30–40 秒";
+                h.text = "大约需要 30-40 秒";
                 h.raycastTarget = false;
             }
         }
@@ -149,7 +149,7 @@ public sealed class ThinkingPanel : MonoBehaviour
         if (_activeRequest.IsThinking)
             _activeRequest.FinalElapsed = elapsed;  // 持续更新，停止时保留最终值
         _timerText.text = string.Format(System.Globalization.CultureInfo.InvariantCulture,
-            "{0:F1}s · {1}", elapsed, FormatTokens(
+            "{0:F1}s | {1}", elapsed, FormatTokens(
                 _activeRequest.TotalPromptTokens,
                 _activeRequest.TotalCompletionTokens,
                 _activeRequest.TotalCacheHitTokens));
@@ -158,7 +158,7 @@ public sealed class ThinkingPanel : MonoBehaviour
     private static string FormatTokens(int prompt, int completion, int cache)
     {
         string F(int n) => n >= 1000 ? $"{n / 1000.0:F1}K" : n.ToString();
-        return $"tokens {F(prompt)}↑ {F(completion)}↓ ({F(cache)} cache)";
+        return $"tokens {F(prompt)}^ {F(completion)}v ({F(cache)} cache)";
     }
 
     private IEnumerator AnimateDots()
@@ -170,7 +170,7 @@ public sealed class ThinkingPanel : MonoBehaviour
             if (_dotsText != null)
             {
                 TextMeshProUGUI t = _dotsText.GetComponent<TextMeshProUGUI>();
-                t.text = new string('·', n);
+                t.text = new string('.', n);
             }
             yield return new WaitForSeconds(0.5f);
         }
@@ -180,14 +180,14 @@ public sealed class ThinkingPanel : MonoBehaviour
     {
         _collapsed = true;
         if (_content != null) _content.gameObject.SetActive(false);
-        if (_headerText != null) _headerText.text = "▸ 思考过程";
+        if (_headerText != null) _headerText.text = "思考过程 >>展开";
     }
 
     public void Expand()
     {
         _collapsed = false;
         if (_content != null) _content.gameObject.SetActive(true);
-        if (_headerText != null) _headerText.text = "▾ 思考过程";
+        if (_headerText != null) _headerText.text = "思考过程 >>收起";
     }
 
     public void Toggle()
@@ -226,7 +226,7 @@ public sealed class ThinkingPanel : MonoBehaviour
         t.fontSize = 16;
         t.alignment = TextAlignmentOptions.Left;
         t.color = new Color(0.75f, 0.78f, 0.82f, 1f);
-        t.text = string.Format(CultureInfo.InvariantCulture, "⏳ {0}", displayText);
+        t.text = string.Format(CultureInfo.InvariantCulture, "... {0}", displayText);
         UiFactory.Anchor(t.rectTransform, Vector2.zero, Vector2.one, new Vector2(4, 0), new Vector2(-4, 0));
     }
 
@@ -239,7 +239,7 @@ public sealed class ThinkingPanel : MonoBehaviour
         if (child != null)
         {
             TextMeshProUGUI t = child.GetComponent<TextMeshProUGUI>();
-            if (t != null) t.text = t.text.Replace("⏳", "✓");
+            if (t != null) t.text = t.text.Replace("...", "OK");
         }
     }
 }
