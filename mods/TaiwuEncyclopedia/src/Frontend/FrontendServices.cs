@@ -233,6 +233,14 @@ public static class FrontendServices
         }
     }
 
+    /// <summary>
+    /// 转发调用 ModelCatalogClient.FetchModelsAsync，供前端 UI 获取可用模型列表。
+    /// </summary>
+    public static async System.Threading.Tasks.Task<ModelCatalogResult> FetchModelsAsync(string baseUrl, string apiKey)
+    {
+        return await ModelCatalogClient.FetchModelsAsync(baseUrl, apiKey);
+    }
+
     // ========== AgentRunner 构建 ==========
     /// <summary>
     /// 初始化时调用：尝试从已有配置构建 AgentRunner。
