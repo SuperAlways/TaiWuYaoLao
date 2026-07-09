@@ -127,7 +127,7 @@ public class ChatPanel : MonoBehaviour, IPanel
         var task = FrontendServices.SessionManager.LoadHistoryAsync(_currentWorldId, limit: 20, includeBoundaries: false);
         yield return new WaitUntil(() => task.IsCompleted);
 
-        if (task.IsFaulted || task.IsCanceled) { msgList.AddSysBubble("⚠ 加载历史失败"); yield break; }
+        if (task.IsFaulted || task.IsCanceled) { msgList.AddSysBubble("[!] 加载历史失败"); yield break; }
 
         List<MessageRecord> messages = task.Result;
         if (messages == null || messages.Count == 0) yield break;
