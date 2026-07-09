@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using TaiwuEncyclopedia.Core.Session;
@@ -59,8 +58,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
     private PersonaSection? _personaSection;
 
     // 区域3: 历史对话
-    private RectTransform? _historyListContent;
-    private List<GameObject>? _historyItems;
+    private HistorySection? _historySection;
 
     // 区域4: 数据与日志
     private TextMeshProUGUI? _runtimePathText;
@@ -179,7 +177,8 @@ public class ConfigPanel : MonoBehaviour, IPanel
         _personaSection.OnConfigChanged += delegate { OnConfigChanged(invalidateTest: false); };
 
         // 区域3: 历史对话
-        BuildHistorySection(contentRt);
+        _historySection = gameObject.AddComponent<HistorySection>();
+        _historySection.Build(contentRt, _font);
 
         // 区域4: 数据与日志
         BuildDataSection(contentRt);
@@ -243,46 +242,6 @@ public class ConfigPanel : MonoBehaviour, IPanel
         LayoutElement sle = _testStatusText.gameObject.AddComponent<LayoutElement>();
         sle.flexibleWidth = 1f;
         sle.preferredHeight = 36;
-    }
-
-    private void BuildHistorySection(Transform parent)
-    {
-        GameObject section = CreateSection(parent, "历史对话");
-        Transform content = section.transform.Find("Content")!;
-
-        // 历史列表 (可滚动)
-        GameObject listBox = new GameObject("ListBox", typeof(RectTransform), typeof(Image), typeof(ScrollRect), typeof(RectMask2D));
-        listBox.transform.SetParent(content, false);
-        listBox.GetComponent<Image>().color = new Color(0, 0, 0, 0.18f);
-        LayoutElement lle = listBox.AddComponent<LayoutElement>();
-        lle.preferredHeight = 140;
-
-        ScrollRect scroll = listBox.GetComponent<ScrollRect>();
-        scroll.horizontal = false;
-        scroll.vertical = true;
-        scroll.scrollSensitivity = 20f;
-
-        GameObject listContentGo = new GameObject("ListContent", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-        _historyListContent = listContentGo.GetComponent<RectTransform>();
-        _historyListContent.SetParent(listBox.transform, false);
-        _historyListContent.anchorMin = new Vector2(0, 1);
-        _historyListContent.anchorMax = new Vector2(1, 1);
-        _historyListContent.pivot = new Vector2(0.5f, 1);
-        _historyListContent.sizeDelta = new Vector2(0, 0);
-        VerticalLayoutGroup vlg = listContentGo.GetComponent<VerticalLayoutGroup>();
-        vlg.childForceExpandWidth = true;
-        vlg.childForceExpandHeight = false;
-        vlg.childControlWidth = true;
-        vlg.childControlHeight = true;
-        vlg.spacing = 6f;
-        vlg.padding = new RectOffset(8, 8, 8, 8);
-        ContentSizeFitter csf = listContentGo.GetComponent<ContentSizeFitter>();
-        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-        scroll.content = _historyListContent;
-        scroll.viewport = listBox.GetComponent<RectTransform>();
-
-        _historyItems = new List<GameObject>();
     }
 
     private void BuildDataSection(Transform parent)
@@ -526,7 +485,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         // 从 FrontendServices 加载配置
         RefreshLlmInputs();
         if (_personaSection != null) _personaSection.Refresh();
-        RefreshHistoryList();
+        if (_historySection != null) _historySection.Refresh();
         RefreshRuntimePath();
         RefreshSoulProfile();
         RefreshSoulWorld();
@@ -546,93 +505,6 @@ public class ConfigPanel : MonoBehaviour, IPanel
         if (_testStatusText != null) _testStatusText.text = "";
     }
 
-
-    private void RefreshHistoryList()
-    {
-        if (_historyListContent == null || _historyItems == null) return;
-
-        // 清空现有
-        foreach (GameObject go in _historyItems)
-            Destroy(go);
-        _historyItems.Clear();
-
-        // 异步加载历史列表
-        StartCoroutine(LoadHistoryListCoroutine());
-    }
-
-    private IEnumerator LoadHistoryListCoroutine()
-    {
-        var task = FrontendServices.SessionManager.ListConversationsAsync();
-        yield return new WaitUntil(() => task.IsCompleted);
-
-        if (task.IsFaulted || task.IsCanceled || _historyListContent == null || _historyItems == null) yield break;
-
-        List<ConversationMeta> metas = task.Result;
-        if (metas.Count == 0)
-        {
-            // 显示空提示
-            TextMeshProUGUI empty = NewText("EmptyHint", _historyListContent, 16, TextAlignmentOptions.Center);
-            empty.text = "(暂无历史对话)";
-            empty.color = new Color(0.45f, 0.48f, 0.50f, 1f);
-            _historyItems.Add(empty.gameObject);
-            yield break;
-        }
-
-        foreach (ConversationMeta meta in metas)
-        {
-            GameObject item = BuildHistoryItem(meta);
-            _historyItems.Add(item);
-        }
-    }
-
-    private GameObject BuildHistoryItem(ConversationMeta meta)
-    {
-        GameObject item = new GameObject($"HistoryItem_{meta.WorldId}", typeof(RectTransform), typeof(Image), typeof(HorizontalLayoutGroup));
-        item.transform.SetParent(_historyListContent!, false);
-        item.GetComponent<Image>().color = new Color(0.08f, 0.10f, 0.10f, 0.95f);
-        LayoutElement ile = item.AddComponent<LayoutElement>();
-        ile.preferredHeight = 38;
-
-        HorizontalLayoutGroup hlg = item.GetComponent<HorizontalLayoutGroup>();
-        hlg.childForceExpandWidth = false;
-        hlg.childForceExpandHeight = false;
-        hlg.childControlWidth = true;
-        hlg.childControlHeight = true;
-        hlg.spacing = 10f;
-        hlg.padding = new RectOffset(10, 10, 0, 0);
-
-        // WorldId + 显示名
-        string displayName = !string.IsNullOrEmpty(meta.Name) ? meta.Name
-            : !string.IsNullOrEmpty(meta.AutoName) ? meta.AutoName
-            : $"WorldId#{meta.WorldId}";
-
-        string worldLabel = meta.WorldId == SessionManager.PregameWorldId ? "主界面" : $"WorldId#{meta.WorldId}";
-
-        TextMeshProUGUI nameText = NewText("Name", item.transform, 16, TextAlignmentOptions.Left);
-        nameText.text = $"{worldLabel} 「{displayName}」";
-        nameText.color = new Color(0.85f, 0.83f, 0.78f, 1f);
-        LayoutElement nle = nameText.gameObject.AddComponent<LayoutElement>();
-        nle.flexibleWidth = 1f;
-
-        // 条数
-        TextMeshProUGUI countText = NewText("Count", item.transform, 15, TextAlignmentOptions.Right);
-        countText.text = $"{meta.Count}条";
-        countText.color = new Color(0.55f, 0.58f, 0.60f, 1f);
-        LayoutElement cle = countText.gameObject.AddComponent<LayoutElement>();
-        cle.preferredWidth = 50;
-
-        // 重命名按钮
-        GameObject renameGo = NewButton("RenameBtn", item.transform, "重命名", 15, out Button renameBtn);
-        renameGo.GetComponent<Image>().color = new Color(0.25f, 0.30f, 0.32f, 0.95f);
-        LayoutElement rle = renameGo.AddComponent<LayoutElement>();
-        rle.preferredWidth = 70;
-        rle.preferredHeight = 28;
-        int capturedWorldId = meta.WorldId;
-        string capturedName = displayName;
-        renameBtn.onClick.AddListener(delegate { OnRenameConversation(capturedWorldId, capturedName); });
-
-        return item;
-    }
 
     private void RefreshRuntimePath()
     {
@@ -873,113 +745,10 @@ public class ConfigPanel : MonoBehaviour, IPanel
             yield return new WaitUntil(() => task2.IsCompleted);
         }
 
-        RefreshHistoryList();
+        if (_historySection != null) _historySection.Refresh();
         if (_soulWorldExpanded) RefreshSoulWorld();
     }
 
-    private void OnRenameConversation(int worldId, string currentName)
-    {
-        ShowRenamePopup(worldId, currentName);
-    }
-
-    /// <summary>模态重命名弹窗:输入框预填当前名,确定→RenameConversationAsync,取消→关闭。</summary>
-    private void ShowRenamePopup(int worldId, string currentName)
-    {
-        if (_root == null) return;
-        Transform parent = _root.transform;
-
-        // 遮罩层(半透明,拦截背景点击)
-        GameObject overlay = new GameObject("RenameOverlay", typeof(RectTransform), typeof(Image));
-        overlay.transform.SetParent(parent, false);
-        overlay.GetComponent<Image>().color = new Color(0, 0, 0, 0.55f);
-        RectTransform ort = overlay.GetComponent<RectTransform>();
-        ort.anchorMin = Vector2.zero;
-        ort.anchorMax = Vector2.one;
-        ort.sizeDelta = Vector2.zero;
-
-        // 对话框
-        GameObject dialog = new GameObject("RenameDialog", typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup));
-        dialog.transform.SetParent(overlay.transform, false);
-        dialog.GetComponent<Image>().color = new Color(0.16f, 0.18f, 0.20f, 1f);
-        RectTransform drt = dialog.GetComponent<RectTransform>();
-        drt.anchorMin = drt.anchorMax = new Vector2(0.5f, 0.5f);
-        drt.sizeDelta = new Vector2(440, 190);
-        drt.pivot = new Vector2(0.5f, 0.5f);
-        VerticalLayoutGroup dlg = dialog.GetComponent<VerticalLayoutGroup>();
-        dlg.childForceExpandWidth = true;
-        dlg.childForceExpandHeight = false;
-        dlg.childControlWidth = true;
-        dlg.childControlHeight = true;
-        dlg.spacing = 12f;
-        dlg.padding = new RectOffset(20, 20, 18, 18);
-
-        TextMeshProUGUI title = NewText("Title", dialog.transform, 20, TextAlignmentOptions.Left);
-        title.text = "重命名对话";
-        title.color = new Color(0.92f, 0.90f, 0.82f, 1f);
-
-        // 输入框(复用 BuildLabeledInput 的创建模式,但无标签/无错误行)
-        GameObject inputGo = new GameObject("RenameInput", typeof(RectTransform), typeof(Image), typeof(TMP_InputField));
-        inputGo.transform.SetParent(dialog.transform, false);
-        inputGo.GetComponent<Image>().color = new Color(1, 1, 1, 0.10f);
-        LayoutElement ile = inputGo.AddComponent<LayoutElement>();
-        ile.preferredHeight = 40;
-        TMP_InputField input = inputGo.GetComponent<TMP_InputField>();
-        TextMeshProUGUI textArea = NewText("Text", inputGo.transform, 18, TextAlignmentOptions.Left);
-        Anchor(textArea.rectTransform, Vector2.zero, Vector2.one, new Vector2(10, 4), new Vector2(-10, -4));
-        input.textViewport = textArea.rectTransform;
-        input.textComponent = textArea;
-        input.lineType = TMP_InputField.LineType.SingleLine;
-        input.contentType = TMP_InputField.ContentType.Standard;
-        TextMeshProUGUI ph = NewText("Placeholder", inputGo.transform, 18, TextAlignmentOptions.Left);
-        Anchor(ph.rectTransform, Vector2.zero, Vector2.one, new Vector2(10, 4), new Vector2(-10, -4));
-        ph.text = "输入新名称";
-        ph.color = new Color(0.5f, 0.52f, 0.55f, 0.7f);
-        ph.raycastTarget = false;
-        input.placeholder = ph;
-        input.text = currentName ?? "";
-        input.caretPosition = (currentName ?? "").Length;
-
-        // 按钮行
-        GameObject btnRow = new GameObject("BtnRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
-        btnRow.transform.SetParent(dialog.transform, false);
-        HorizontalLayoutGroup bhlg = btnRow.GetComponent<HorizontalLayoutGroup>();
-        bhlg.childForceExpandWidth = true;
-        bhlg.childForceExpandHeight = false;
-        bhlg.childControlWidth = true;
-        bhlg.childControlHeight = true;
-        bhlg.spacing = 12f;
-        bhlg.childAlignment = TextAnchor.MiddleRight;
-
-        GameObject cancelGo = NewButton("CancelBtn", btnRow.transform, "取消", 18, out Button cancelBtn);
-        cancelGo.GetComponent<Image>().color = new Color(0.25f, 0.28f, 0.30f, 1f);
-        LayoutElement cle = cancelGo.AddComponent<LayoutElement>();
-        cle.preferredWidth = 90;
-        cle.preferredHeight = 36;
-        cancelBtn.onClick.AddListener(() => { input.DeactivateInputField(); Destroy(overlay); });
-
-        GameObject okGo = NewButton("OkBtn", btnRow.transform, "确定", 18, out Button okBtn);
-        okGo.GetComponent<Image>().color = new Color(0.20f, 0.40f, 0.30f, 1f);
-        LayoutElement okle = okGo.AddComponent<LayoutElement>();
-        okle.preferredWidth = 90;
-        okle.preferredHeight = 36;
-        okBtn.onClick.AddListener(() =>
-        {
-            string newName = (input.text ?? "").Trim();
-            input.DeactivateInputField();
-            Destroy(overlay);
-            StartCoroutine(RenameCoroutine(worldId, newName));
-        });
-
-        // 输入框获焦
-        input.ActivateInputField();
-    }
-
-    private IEnumerator RenameCoroutine(int worldId, string newName)
-    {
-        var task = FrontendServices.SessionManager.RenameConversationAsync(worldId, newName);
-        yield return new WaitUntil(() => task.IsCompleted);
-        RefreshHistoryList();
-    }
 
     // ========== 保存与验证 ==========
     private static (bool Valid, string Error) ValidateBaseUrl(string v)
