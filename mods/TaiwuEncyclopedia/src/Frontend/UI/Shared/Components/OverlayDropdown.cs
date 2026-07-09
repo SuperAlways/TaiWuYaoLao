@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using TaiwuEncyclopedia.Frontend.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -87,19 +88,59 @@ public sealed class OverlayDropdown : MonoBehaviour
         listRt.sizeDelta = new Vector2(200, 0);  // placeholder width
     }
 
+    private const int ScrollThreshold = 8;
+
     private void PopulateItems(GameObject listGo, IReadOnlyList<string> options,
         int currentIndex, Action<int> onSelect, TMP_FontAsset? font)
     {
+        Transform itemsParent;
+        if (options.Count > ScrollThreshold)
+        {
+            // 长列表：在 listGo 内嵌套 ScrollRect
+            RectTransform scrollContent = UiFactory.CreateScroll(listGo.transform, "ScrollContent", spacing: 2f);
+            scrollContent.anchorMin = scrollContent.anchorMax = new Vector2(0, 1);
+            scrollContent.pivot = new Vector2(0.5f, 1);
+            scrollContent.anchoredPosition = Vector2.zero;
+            scrollContent.sizeDelta = new Vector2(0, 0);
+
+            // 限制 ScrollRect Viewport 高度为 300px
+            ScrollRect sr = scrollContent.parent.parent.GetComponent<ScrollRect>();
+            RectTransform viewportRt = scrollContent.parent.GetComponent<RectTransform>();
+            viewportRt.sizeDelta = new Vector2(0, 300);
+
+            // Scrollbar
+            GameObject scrollbarGo = new GameObject("Scrollbar", typeof(RectTransform), typeof(Image), typeof(Scrollbar));
+            scrollbarGo.transform.SetParent(sr.transform, false);
+            RectTransform sbrt = scrollbarGo.GetComponent<RectTransform>();
+            sbrt.anchorMin = new Vector2(1, 0);
+            sbrt.anchorMax = new Vector2(1, 1);
+            sbrt.pivot = new Vector2(1, 1);
+            sbrt.anchoredPosition = Vector2.zero;
+            sbrt.sizeDelta = new Vector2(10, 0);
+            Scrollbar sb = scrollbarGo.GetComponent<Scrollbar>();
+            sb.direction = Scrollbar.Direction.BottomToTop;
+            sb.targetGraphic = scrollbarGo.GetComponent<Image>();
+            scrollbarGo.GetComponent<Image>().color = UiTheme.Accent;
+            sr.verticalScrollbar = sb;
+            sr.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+
+            itemsParent = scrollContent;
+        }
+        else
+        {
+            itemsParent = listGo.transform;
+        }
+
+        // 创建选项按钮（同 Task 1）
         for (int i = 0; i < options.Count; i++)
         {
-            int idx = i;  // capture for closure
+            int idx = i;
             bool isSelected = (idx == currentIndex);
 
             GameObject itemGo = new GameObject($"Item_{idx}", typeof(RectTransform),
                 typeof(Image), typeof(Button), typeof(LayoutElement));
-            itemGo.transform.SetParent(listGo.transform, false);
+            itemGo.transform.SetParent(itemsParent, false);
 
-            // 背景色：选中高亮，未选中透明
             itemGo.GetComponent<Image>().color = isSelected ? UiTheme.Accent : Color.clear;
 
             LayoutElement le = itemGo.GetComponent<LayoutElement>();
@@ -108,8 +149,7 @@ public sealed class OverlayDropdown : MonoBehaviour
             Button btn = itemGo.GetComponent<Button>();
             btn.onClick.AddListener(() => { onSelect(idx); Hide(); });
 
-            // 文字标签
-            TextMeshProUGUI label = CreateItemLabel(itemGo.transform, options[i], isSelected, font);
+            CreateItemLabel(itemGo.transform, options[i], isSelected, font);
         }
     }
 
