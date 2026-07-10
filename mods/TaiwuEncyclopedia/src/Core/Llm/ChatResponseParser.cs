@@ -18,7 +18,8 @@ public static class ChatResponseParser
         List<LlmMessage> messages,
         bool stream,
         List<Dictionary<string, object>>? tools = null,
-        string toolChoice = "auto")
+        string toolChoice = "auto",
+        int maxTokens = 0)
     {
         var body = new Dictionary<string, object>
         {
@@ -32,6 +33,7 @@ public static class ChatResponseParser
             body["tools"] = tools;
             body["tool_choice"] = toolChoice;
         }
+        if (maxTokens > 0) body["max_tokens"] = maxTokens;
         return JsonConvert.SerializeObject(body, Formatting.None);
     }
 

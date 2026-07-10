@@ -235,15 +235,17 @@ public static class FrontendServices
         }
     }
 
+    private static int _fetchGeneration;
+
     /// <summary>
     /// 获取可用模型列表。通过 LlmTransportHost.FetchModels 协程桥接到 async。
     /// </summary>
     public static async Task<ModelCatalogResult> FetchModelsAsync(string baseUrl, string apiKey)
     {
+        int gen = ++_fetchGeneration;
         var tcs = new TaskCompletionSource<ModelCatalogResult>();
-        int gen = Environment.TickCount;
         LlmTransportHost.Instance.StartCoroutine(
-            LlmTransportHost.Instance.FetchModels(baseUrl, apiKey, r => tcs.SetResult(r), gen, () => gen));
+            LlmTransportHost.Instance.FetchModels(baseUrl, apiKey, r => tcs.SetResult(r), gen, () => _fetchGeneration));
         return await tcs.Task;
     }
 

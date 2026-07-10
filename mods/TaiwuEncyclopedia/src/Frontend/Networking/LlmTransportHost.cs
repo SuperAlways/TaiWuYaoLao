@@ -194,9 +194,7 @@ public sealed class LlmTransportHost : MonoBehaviour, ILlmClient
         Action<bool, string, long> onComplete)
     {
         var messages = new List<LlmMessage> { new() { Role = "user", Content = "ping" } };
-        var body = ChatResponseParser.BuildBody(model, messages, stream: false);
-        // inject max_tokens=1 for testing
-        body = body.Insert(body.Length - 1, ",\"max_tokens\":1");
+        var body = ChatResponseParser.BuildBody(model, messages, stream: false, maxTokens: 1);
 
         var url = EndpointResolver.BuildChatCompletionsUrl(baseUrl)
                   ?? "https://api.deepseek.com/v1/chat/completions";
