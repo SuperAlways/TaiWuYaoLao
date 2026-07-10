@@ -101,4 +101,14 @@ public class ChatResponseParserTest
         var chunk = ChatResponseParser.ParseChunk(json);
         chunk.Should().BeNull();
     }
+
+    [Fact]
+    public void ParseChunk_FinishReason_ReturnsFinishReason()
+    {
+        var json = @"{""choices"":[{""delta"":{}, ""finish_reason"":""stop""}]}";
+        var chunk = ChatResponseParser.ParseChunk(json);
+        chunk.Should().NotBeNull();
+        chunk!.Content.Should().BeNull();
+        chunk.FinishReason.Should().Be("stop");
+    }
 }

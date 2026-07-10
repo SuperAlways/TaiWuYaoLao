@@ -71,7 +71,7 @@ public static class ChatResponseParser
         return resp;
     }
 
-    /// <summary>解析流式 SSE chunk。仅含 usage 时返回 usage-only chunk；空 choices 返回 null。</summary>
+    /// <summary>解析流式 SSE chunk。仅含 usage 时返回 usage-only chunk；空 choices 返回 null；有 finish_reason 但无内容时返回 finish-reason-only chunk。</summary>
     public static StreamChunk? ParseChunk(string json)
     {
         var chunk = JObject.Parse(json);
@@ -84,11 +84,17 @@ public static class ChatResponseParser
         if (choices == null || choices.Count == 0)
             return null;
 
-        var delta = choices[0]["delta"]?["content"]?.ToString();
-        if (string.IsNullOrEmpty(delta))
+        var content = choices[0]["delta"]?["content"]?.ToString();
+        var finishReason = choices[0]["finish_reason"]?.ToString();
+
+        if (string.IsNullOrEmpty(content) && string.IsNullOrEmpty(finishReason))
             return null;
 
-        return new StreamChunk { Content = delta };
+        return new StreamChunk
+        {
+            Content = string.IsNullOrEmpty(content) ? null : content,
+            FinishReason = string.IsNullOrEmpty(finishReason) ? null : finishReason,
+        };
     }
 
     /// <summary>解析 OpenAI usage JSON 对象为 TokenUsage。</summary>
@@ -105,11 +111,14 @@ public static class ChatResponseParser
     }
 }
 
-/// <summary>流式 chunk 最小 DTO（仅携带 content 或 usage）。</summary>
+/// <summary>流式 chunk 最小 DTO（携带 content、finish_reason 或 usage）。</summary>
 public sealed class StreamChunk
 {
     /// <summary>增量内容片段。</summary>
     public string? Content { get; init; }
+
+    /// <summary>结束原因（如 "stop"、"tool_calls"），仅末尾 chunk 携带。</summary>
+    public string? FinishReason { get; init; }
 
     /// <summary>末尾 chunk 的 token 用量。</summary>
     public TokenUsage? Usage { get; init; }
