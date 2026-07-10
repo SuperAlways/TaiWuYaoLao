@@ -11,8 +11,8 @@ namespace TaiwuEncyclopedia.Core.Agent;
 /// </summary>
 public interface ILlmClient
 {
-    /// <summary>流式 LLM 调用，yield 返回内容 chunks。</summary>
-    IAsyncEnumerable<string> StreamChatAsync(
+    /// <summary>流式 LLM 调用，yield StreamChunk（含 Content + Usage）。</summary>
+    IAsyncEnumerable<StreamChunk> StreamChatAsync(
         LlmConfig config, List<LlmMessage> messages, CancellationToken ct);
 
     /// <summary>非流式 LLM 调用。</summary>

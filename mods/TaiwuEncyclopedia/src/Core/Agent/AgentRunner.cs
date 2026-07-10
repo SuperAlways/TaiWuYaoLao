@@ -23,7 +23,7 @@ namespace TaiwuEncyclopedia.Core.Agent;
 /// </summary>
 public sealed class AgentRunner
 {
-    private readonly OpenAiCompatibleClient _llmClient;
+    private readonly ILlmClient _llmClient;
     private readonly LlmConfig _llmConfig;
     private readonly ToolRegistry _registry;
     private readonly ToolExecutor _executor;
@@ -49,7 +49,7 @@ public sealed class AgentRunner
     /// <param name="maxIter">最大迭代次数（默认 6）。</param>
     /// <param name="trace">追踪器（可选）。</param>
     public AgentRunner(
-        OpenAiCompatibleClient llmClient,
+        ILlmClient llmClient,
         LlmConfig llmConfig,
         ToolRegistry registry,
         ToolExecutor executor,

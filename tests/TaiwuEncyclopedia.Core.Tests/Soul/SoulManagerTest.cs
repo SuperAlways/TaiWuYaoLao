@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using TaiwuEncyclopedia.Core.Agent;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Soul;
@@ -57,8 +60,8 @@ public class SoulManagerTest
         var root = Path.Combine(Path.GetTempPath(), "yaolao-soul-" + System.Guid.NewGuid().ToString("N"));
         var store = new JsonSoulStore(root);
         var sm = new SoulManager(store);
-        // 用 null llmClient 模拟失败（实际调用会 NPE → catch → 返回空）
-        var llmClient = new OpenAiCompatibleClient(new FailingHandler());
+        // 用抛异常的 llmClient 模拟失败
+        var llmClient = new ThrowingLlmClient();
         var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
 
         var summary = await sm.UpdateFromCompressAsync(1, "some history", llmClient, config);
@@ -75,15 +78,9 @@ public class SoulManagerTest
         // 玩家主动设置 Playstyle 为 protected
         await sm.SetPlayerFieldsAsync(new Dictionary<string, string> { ["Playstyle"] = "速通" });
 
-        // LLM 返回试图覆盖 Playstyle 的响应（OpenAI chat completion 格式）
+        // LLM 返回试图覆盖 Playstyle 的响应
         var extractionJson = @"{""summary"":""对话摘要"",""profile_fields"":{""Playstyle"":""苟道流"",""TechnicalLevel"":""老手""},""world_fields"":{""Sect"":""少林""}}";
-        var responseJson = Newtonsoft.Json.JsonConvert.SerializeObject(new
-        {
-            choices = new[] { new { message = new { role = "assistant", content = extractionJson } } },
-            usage = new { prompt_tokens = 10, completion_tokens = 5 }
-        });
-        var handler = new StubHandler(responseJson);
-        var llmClient = new OpenAiCompatibleClient(handler);
+        var llmClient = new StubLlmClient(new LlmResponse { Content = extractionJson, Usage = new TokenUsage() });
         var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
 
         await sm.UpdateFromCompressAsync(1, "some history", llmClient, config);
@@ -102,13 +99,7 @@ public class SoulManagerTest
 
         // LLM 返回 profile + world 字段
         var extractionJson = @"{""summary"":""主界面对话摘要"",""profile_fields"":{""Playstyle"":""苟道流""},""world_fields"":{""Sect"":""少林""}}";
-        var responseJson = Newtonsoft.Json.JsonConvert.SerializeObject(new
-        {
-            choices = new[] { new { message = new { role = "assistant", content = extractionJson } } },
-            usage = new { prompt_tokens = 10, completion_tokens = 5 }
-        });
-        var handler = new StubHandler(responseJson);
-        var llmClient = new OpenAiCompatibleClient(handler);
+        var llmClient = new StubLlmClient(new LlmResponse { Content = extractionJson, Usage = new TokenUsage() });
         var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
 
         await sm.UpdateFromCompressAsync(SessionManager.PregameWorldId, "主界面对话历史", llmClient, config);
@@ -130,10 +121,13 @@ public class SoulManagerTest
         var store = new JsonSoulStore(root);
         var sm = new SoulManager(store);
         string? capturedPrompt = null;
-        var handler = new StubLlmHandlerForSoul(
-            responseJson: "{\"summary\":\"新摘要\",\"profile_fields\":{},\"world_fields\":{}}",
+        var llmClient = new PromptCapturingLlmClient(
+            response: new LlmResponse
+            {
+                Content = @"{""summary"":""新摘要"",""profile_fields"":{},""world_fields"":{}}",
+                Usage = new TokenUsage(),
+            },
             capturePrompt: p => capturedPrompt = p);
-        var llmClient = new OpenAiCompatibleClient(handler);
         var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
 
         await sm.UpdateFromCompressAsync(worldId: 1, earlyHistoryText: "user: 新问题", llmClient, config, oldSummary: "旧摘要内容");
@@ -142,46 +136,52 @@ public class SoulManagerTest
         capturedPrompt.Should().Contain("新问题");
     }
 
-    private sealed class FailingHandler : System.Net.Http.HttpMessageHandler
+    // --- Stub implementations ---
+
+    private sealed class ThrowingLlmClient : ILlmClient
     {
-        protected override Task<System.Net.Http.HttpResponseMessage> SendAsync(
-            System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken ct)
-            => throw new System.Net.Http.HttpRequestException("connection failed");
+        public Task<LlmResponse> ChatAsync(AgentLLMRole role, LlmConfig config,
+            List<LlmMessage> messages, List<Dictionary<string, object>>? tools = null)
+            => throw new System.Exception("LLM call failed");
+
+        public async IAsyncEnumerable<StreamChunk> StreamChatAsync(LlmConfig config,
+            List<LlmMessage> messages, [EnumeratorCancellation] CancellationToken ct)
+        { yield break; }
     }
 
-    private sealed class StubHandler : System.Net.Http.HttpMessageHandler
+    private sealed class StubLlmClient : ILlmClient
     {
-        private readonly string _response;
-        public StubHandler(string response) { _response = response; }
+        private readonly LlmResponse _response;
 
-        protected override Task<System.Net.Http.HttpResponseMessage> SendAsync(
-            System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken ct)
-        {
-            return Task.FromResult(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new System.Net.Http.StringContent(_response, System.Text.Encoding.UTF8, "application/json")
-            });
-        }
+        public StubLlmClient(LlmResponse response) { _response = response; }
+
+        public Task<LlmResponse> ChatAsync(AgentLLMRole role, LlmConfig config,
+            List<LlmMessage> messages, List<Dictionary<string, object>>? tools = null)
+            => Task.FromResult(_response);
+
+        public async IAsyncEnumerable<StreamChunk> StreamChatAsync(LlmConfig config,
+            List<LlmMessage> messages, [EnumeratorCancellation] CancellationToken ct)
+        { yield break; }
     }
 
-    private sealed class StubLlmHandlerForSoul : System.Net.Http.HttpMessageHandler
+    private sealed class PromptCapturingLlmClient : ILlmClient
     {
-        private readonly string _responseJson;
+        private readonly LlmResponse _response;
         private readonly System.Action<string>? _capturePrompt;
-        public StubLlmHandlerForSoul(string responseJson, System.Action<string>? capturePrompt = null)
-        { _responseJson = responseJson; _capturePrompt = capturePrompt; }
-        protected override Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken ct)
+
+        public PromptCapturingLlmClient(LlmResponse response, System.Action<string>? capturePrompt = null)
+        { _response = response; _capturePrompt = capturePrompt; }
+
+        public Task<LlmResponse> ChatAsync(AgentLLMRole role, LlmConfig config,
+            List<LlmMessage> messages, List<Dictionary<string, object>>? tools = null)
         {
-            var body = request.Content?.ReadAsStringAsync(ct).Result ?? "";
-            // 从请求 body 解出 messages[0].content 作为 prompt
-            try
-            {
-                var obj = Newtonsoft.Json.Linq.JObject.Parse(body);
-                _capturePrompt?.Invoke(obj["messages"]?[0]?["content"]?.ToString() ?? "");
-            }
-            catch { }
-            return Task.FromResult(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            { Content = new System.Net.Http.StringContent($"{{\"choices\":[{{\"message\":{{\"role\":\"assistant\",\"content\":{_responseJson}}}}}],\"usage\":{{\"prompt_tokens\":10,\"completion_tokens\":5}}}}", System.Text.Encoding.UTF8, "application/json") });
+            if (messages.Count > 0 && messages[0].Content != null)
+                _capturePrompt?.Invoke(messages[0].Content);
+            return Task.FromResult(_response);
         }
+
+        public async IAsyncEnumerable<StreamChunk> StreamChatAsync(LlmConfig config,
+            List<LlmMessage> messages, [EnumeratorCancellation] CancellationToken ct)
+        { yield break; }
     }
 }

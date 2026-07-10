@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using TaiwuEncyclopedia.Core.Agent;
 using TaiwuEncyclopedia.Core.Diagnostics;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Session;
@@ -94,7 +95,7 @@ public sealed class SoulManager
     public async Task<string> UpdateFromCompressAsync(
         int worldId,
         string earlyHistoryText,
-        OpenAiCompatibleClient llmClient,
+        ILlmClient llmClient,
         LlmConfig llmConfig,
         string? oldSummary = null,
         IAgentTrace? trace = null)
@@ -113,10 +114,10 @@ public sealed class SoulManager
             var promptMsgs = new List<LlmMessage> { new() { Role = "user", Content = prompt } };
             var sw = System.Diagnostics.Stopwatch.StartNew();
             trace?.LlmCall(0, "intent", "soul_extract", promptMsgs, null);
-            var response = await llmClient.Chat(
+            var response = await llmClient.ChatAsync(
                 AgentLLMRole.Intent,
-                promptMsgs,
-                llmConfig);
+                llmConfig,
+                promptMsgs);
             sw.Stop();
             trace?.LlmResponse(0, "intent", response.Content, null, "stop",
                 response.Usage, (int)sw.ElapsedMilliseconds);

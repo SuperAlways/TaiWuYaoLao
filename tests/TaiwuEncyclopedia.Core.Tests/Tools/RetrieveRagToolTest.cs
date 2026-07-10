@@ -1,8 +1,4 @@
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using TaiwuEncyclopedia.Core.Rag;
@@ -16,8 +12,7 @@ public class RetrieveRagToolTest
     [Fact]
     public async Task ReturnsContextOnSuccess()
     {
-        var handler = new StubHandler("{\"context\":\"攻略内容\",\"references\":[]}", HttpStatusCode.OK);
-        var ragClient = new RagHttpClient(handler, "http://taiwuasker");
+        var ragClient = new StubRagClient(new RagRetrieveResult { Context = "攻略内容" });
         var tool = new RetrieveRagTool(ragClient);
 
         var result = await tool.ExecuteAsync(new Dictionary<string, object>
@@ -33,8 +28,7 @@ public class RetrieveRagToolTest
     [Fact]
     public async Task ClampsTopKToBounds()
     {
-        var handler = new StubHandler("{\"context\":\"\",\"references\":[]}", HttpStatusCode.OK);
-        var ragClient = new RagHttpClient(handler, "http://taiwuasker");
+        var ragClient = new StubRagClient(new RagRetrieveResult { Context = "" });
         var tool = new RetrieveRagTool(ragClient);
 
         var result = await tool.ExecuteAsync(new Dictionary<string, object>
@@ -50,10 +44,9 @@ public class RetrieveRagToolTest
     }
 
     [Fact]
-    public async Task RagFailureReturnsEmptyContext()
+    public async Task RagFailureReturnsErrorContext()
     {
-        var handler = new StubHandler("error", HttpStatusCode.InternalServerError);
-        var ragClient = new RagHttpClient(handler, "http://taiwuasker");
+        var ragClient = new StubRagClient(new RagRetrieveResult { Error = "server error" });
         var tool = new RetrieveRagTool(ragClient);
 
         var result = await tool.ExecuteAsync(new Dictionary<string, object>
@@ -61,21 +54,31 @@ public class RetrieveRagToolTest
             ["query"] = "太吾",
         });
 
-        result["context"].ToString().Should().BeEmpty();
+        result["error"].ToString().Should().Be("server error");
     }
 
     [Fact]
     public async Task ReturnsReferencesFromRagResult()
     {
-        var body = @"{""context"":""攻略内容"",
-""references"":[
-  {""full_doc_id"":""doc-A"",""file_path"":""wiki/a.md"",
-   ""source_url"":""https://wiki.example.com/a"",""source_type"":""wiki"",
-   ""knowledge_type"":""机制"",""author"":""灰机"",
-   ""game_version"":""1.0"",""snippet"":""片段"",""hit_count"":2}
-]}";
-        var handler = new StubHandler(body, System.Net.HttpStatusCode.OK);
-        var ragClient = new RagHttpClient(handler, "http://taiwuasker");
+        var ragClient = new StubRagClient(new RagRetrieveResult
+        {
+            Context = "攻略内容",
+            References = new List<Reference>
+            {
+                new()
+                {
+                    FullDocId = "doc-A",
+                    FilePath = "wiki/a.md",
+                    SourceUrl = "https://wiki.example.com/a",
+                    SourceType = "wiki",
+                    KnowledgeType = "机制",
+                    Author = "灰机",
+                    GameVersion = "1.0",
+                    Snippet = "片段",
+                    HitCount = 2,
+                },
+            },
+        });
         var tool = new RetrieveRagTool(ragClient);
 
         var result = await tool.ExecuteAsync(new Dictionary<string, object>
@@ -90,15 +93,13 @@ public class RetrieveRagToolTest
         refs![0].SourceUrl.Should().Be("https://wiki.example.com/a");
     }
 
-    private sealed class StubHandler : HttpMessageHandler
+    private sealed class StubRagClient : IRagClient
     {
-        private readonly string _body;
-        private readonly HttpStatusCode _code;
-        public StubHandler(string body, HttpStatusCode code) { _body = body; _code = code; }
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
-            => Task.FromResult(new HttpResponseMessage(_code)
-            {
-                Content = new StringContent(_body, Encoding.UTF8, "application/json")
-            });
+        private readonly RagRetrieveResult _result;
+
+        public StubRagClient(RagRetrieveResult result) { _result = result; }
+
+        public Task<RagRetrieveResult> RetrieveAsync(RagRetrieveRequest request)
+            => Task.FromResult(_result);
     }
 }

@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -32,18 +30,15 @@ public class AgentRunnerTest
     public async Task RunAsyncDirectAnswerWithoutTools()
     {
         var root = PathRoot();
-        var llmHandler = new StubLlmHandler(
-            thinkingResponse: "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"我直接回答\"}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
-            streamResponse: "data: {\"choices\":[{\"delta\":{\"content\":\"最终答案\"}}]}\n\ndata: {\"choices\":[],\"usage\":{\"prompt_tokens\":20,\"completion_tokens\":10}}\n\ndata: [DONE]\n\n");
-        var sm = MakeSkillManager();
-        var llmClient = new OpenAiCompatibleClient(llmHandler);
+        var llmClient = new DirectAnswerLlmClient();
         var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
-        var ragClient = new RagHttpClient(new StubRagHandler(), "http://taiwuasker");
+        var ragClient = new StubRagClient(new RagRetrieveResult { Context = "" });
         var soulStore = new JsonSoulStore(root);
         var sessionStore = new JsonSessionStore(root);
 
         var registry = new ToolRegistry();
         registry.Register(new RetrieveRagTool(ragClient));
+        var sm = MakeSkillManager();
         registry.Register(new LoadBackgroundSkillTool(sm));
         registry.Register(new LoadGuidanceSkillTool(sm));
         var executor = new ToolExecutor(registry);
@@ -76,22 +71,33 @@ public class AgentRunnerTest
     public async Task RunAsyncYieldsReferencesEventAndPersistsReferences()
     {
         var root = PathRoot();
-        // LLM: 第 1 轮 THINKING 返回 tool_call(retrieve_rag)，第 2 轮 THINKING 直答（无 tool_calls），第 3 次是 ANSWER 流式
-        var llmHandler = new StubLlmHandlerWithToolCall(
-            thinking1: "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"retrieve_rag\",\"arguments\":\"{\\\"query\\\":\\\"太吾\\\"}\"}}]}}],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20}}",
-            thinking2: "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"根据资料回答\"}}],\"usage\":{\"prompt_tokens\":200,\"completion_tokens\":10}}",
-            stream: "data: {\"choices\":[{\"delta\":{\"content\":\"最终答案\"}}]}\n\ndata: {\"choices\":[],\"usage\":{\"prompt_tokens\":50,\"completion_tokens\":10}}\n\ndata: [DONE]\n\n");
-        var sm = MakeSkillManager();
-        var llmClient = new OpenAiCompatibleClient(llmHandler);
+        var llmClient = new ToolCallThenAnswerLlmClient();
         var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
-        // RAG stub 返回带 references 的响应
-        var ragHandler = new StubRagHandlerWithRefs();
-        var ragClient = new RagHttpClient(ragHandler, "http://taiwuasker");
+        var ragClient = new StubRagClient(new RagRetrieveResult
+        {
+            Context = "RAG 结果",
+            References = new List<Reference>
+            {
+                new()
+                {
+                    FullDocId = "doc-A",
+                    FilePath = "wiki/a.md",
+                    SourceUrl = "https://wiki.example.com/a",
+                    SourceType = "wiki",
+                    KnowledgeType = "机制",
+                    Author = "灰机",
+                    GameVersion = "1.0",
+                    Snippet = "片段",
+                    HitCount = 1,
+                },
+            },
+        });
         var soulStore = new JsonSoulStore(root);
         var sessionStore = new JsonSessionStore(root);
 
         var registry = new ToolRegistry();
         registry.Register(new RetrieveRagTool(ragClient));
+        var sm = MakeSkillManager();
         registry.Register(new LoadBackgroundSkillTool(sm));
         registry.Register(new LoadGuidanceSkillTool(sm));
         var executor = new ToolExecutor(registry);
@@ -148,109 +154,13 @@ personas:
         return new SkillManager(dir);
     }
 
-    private sealed class StubLlmHandler : HttpMessageHandler
-    {
-        private readonly string _thinking;
-        private readonly string _stream;
-        private int _callCount;
-
-        public string? LastThinkingRequestBody;
-
-        public StubLlmHandler(string thinkingResponse, string streamResponse)
-        {
-            _thinking = thinkingResponse;
-            _stream = streamResponse;
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
-        {
-            _callCount++;
-            // 第 1 次是 THINKING（非流式），第 2 次是 ANSWER（流式）
-            var body = _callCount == 1 ? _thinking : _stream;
-            var isStream = _callCount > 1;
-            var content = new StringContent(body, Encoding.UTF8,
-                isStream ? "text/event-stream" : "application/json");
-
-            if (!isStream)
-            {
-                LastThinkingRequestBody = req.Content!.ReadAsStringAsync(ct).Result;
-            }
-
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
-        }
-    }
-
-    private sealed class StubRagHandler : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
-        {
-            var content = new StringContent("{\"context\":\"\",\"chunks\":[]}", Encoding.UTF8, "application/json");
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
-        }
-    }
-
-    /// <summary>支持 3 次调用的 LLM handler：thinking1(有 tool_calls) → thinking2(直答) → stream。</summary>
-    private sealed class StubLlmHandlerWithToolCall : HttpMessageHandler
-    {
-        private readonly string _thinking1;
-        private readonly string _thinking2;
-        private readonly string _stream;
-        private int _thinkingCount;
-
-        public StubLlmHandlerWithToolCall(string thinking1, string thinking2, string stream)
-        {
-            _thinking1 = thinking1;
-            _thinking2 = thinking2;
-            _stream = stream;
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
-        {
-            var reqBody = req.Content!.ReadAsStringAsync(ct).Result;
-            var isStream = reqBody.Contains("\"stream\":true");
-            string body;
-            if (isStream)
-            {
-                body = _stream;
-            }
-            else
-            {
-                body = _thinkingCount == 0 ? _thinking1 : _thinking2;
-                _thinkingCount++;
-            }
-            var content = new StringContent(body, Encoding.UTF8,
-                isStream ? "text/event-stream" : "application/json");
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
-        }
-    }
-
-    private sealed class StubRagHandlerWithRefs : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
-        {
-            var body = @"{""context"":""RAG 结果"",
-""references"":[
-  {""full_doc_id"":""doc-A"",""file_path"":""wiki/a.md"",
-   ""source_url"":""https://wiki.example.com/a"",""source_type"":""wiki"",
-   ""knowledge_type"":""机制"",""author"":""灰机"",
-   ""game_version"":""1.0"",""snippet"":""片段"",""hit_count"":1}
-]}";
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
-        }
-    }
-
     [Fact]
     public async System.Threading.Tasks.Task RunAsync_LoadsHistoryFromSession_WhenHistoryParamNull()
     {
         var root = PathRoot();
-        var llmHandler = new StubLlmHandler(
-            thinkingResponse: "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"回答\"}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
-            streamResponse: "data: {\"choices\":[{\"delta\":{\"content\":\"最终答案\"}}]}\n\ndata: {\"choices\":[],\"usage\":{\"prompt_tokens\":20,\"completion_tokens\":10}}\n\ndata: [DONE]\n\n");
-        var sm = MakeSkillManager();
-        var llmClient = new OpenAiCompatibleClient(llmHandler);
+        var llmClient = new HistoryCapturingLlmClient();
         var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
-        var ragClient = new RagHttpClient(new StubRagHandler(), "http://taiwuasker");
+        var ragClient = new StubRagClient(new RagRetrieveResult { Context = "" });
         var soulStore = new JsonSoulStore(root);
         var sessionStore = new JsonSessionStore(root);
         var sessionManager = new SessionManager(sessionStore);
@@ -262,27 +172,23 @@ personas:
         var executor = new ToolExecutor(registry);
         var ctx = new ContextManager();
         var soulManager = new SoulManager(soulStore);
+        var sm = MakeSkillManager();
         var prompts = new PromptBuilder(sm);
         var runner = new AgentRunner(llmClient, config, registry, executor, ctx, soulManager, sessionManager, prompts);
 
         await foreach (var _ in runner.RunAsync(query: "这轮问题", worldId: 1)) { }
 
-        // 验证 LLM 收到的 messages 含上一轮历史（通过 handler 捕获）
-        llmHandler.LastThinkingRequestBody.Should().Contain("上一轮问题");
-        llmHandler.LastThinkingRequestBody.Should().Contain("这轮问题");
+        // 验证 LLM 收到的 messages 含上一轮历史（通过 client 捕获）
+        llmClient.LastThinkingRequestBody.Should().Contain("上一轮问题");
+        llmClient.LastThinkingRequestBody.Should().Contain("这轮问题");
     }
 
     [Fact]
     public async System.Threading.Tasks.Task RunAsync_CompressesHistory_WhenTokenExceedsThreshold()
     {
         var root = PathRoot();
-        // 使用支持多次调用的 handler
-        var llmHandler = new StubLlmHandlerWithToolCall(
-            thinking1: "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"{\\\"summary\\\":\\\"玩家问了历史问题\\\",\\\"profile_fields\\\":{},\\\"world_fields\\\":{}}\"}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
-            thinking2: "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"我直接回答\"}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
-            stream: "data: {\"choices\":[{\"delta\":{\"content\":\"最终答案\"}}]}\n\ndata: {\"choices\":[],\"usage\":{\"prompt_tokens\":20,\"completion_tokens\":10}}\n\ndata: [DONE]\n\n");
-        var sm = MakeSkillManager();
-        var llmClient = new OpenAiCompatibleClient(llmHandler);
+        // 使用 compress 场景的 LLM client：第一次调用（compress）返回摘要，第二次（thinking）直答，流式答案
+        var llmClient = new CompressThenAnswerLlmClient();
         var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
         var soulStore = new JsonSoulStore(root);
         var sessionStore = new JsonSessionStore(root);
@@ -294,6 +200,7 @@ personas:
         var registry = new ToolRegistry();
         var executor = new ToolExecutor(registry);
         var soulManager = new SoulManager(soulStore);
+        var sm = MakeSkillManager();
         var ctx = new ContextManager(soulManager, llmClient, config, collapseThresholdTokens: 1);
         var prompts = new PromptBuilder(sm);
         var runner = new AgentRunner(llmClient, config, registry, executor, ctx, soulManager, sessionManager, prompts, maxIter: 6);
@@ -307,5 +214,145 @@ personas:
         var (oldSummary, newMessages) = await sessionManager.LoadForAgentAsync(1);
         oldSummary.Should().Contain("历史问题");
         newMessages.Should().BeEmpty(); // 压缩后边界在末尾，之后无消息
+    }
+
+    // --- Stub ILlmClient implementations ---
+
+    /// <summary>直答：ChatAsync 返回无 tool_calls 的 thinking，StreamChatAsync 返回答案。</summary>
+    private sealed class DirectAnswerLlmClient : ILlmClient
+    {
+        public Task<LlmResponse> ChatAsync(AgentLLMRole role, LlmConfig config,
+            List<LlmMessage> messages, List<Dictionary<string, object>>? tools = null)
+            => Task.FromResult(new LlmResponse
+            {
+                Content = "我直接回答",
+                ToolCalls = null,
+                Usage = new TokenUsage { PromptTokens = 10, CompletionTokens = 5, CacheHitTokens = 0 },
+            });
+
+        public async IAsyncEnumerable<StreamChunk> StreamChatAsync(LlmConfig config,
+            List<LlmMessage> messages, [EnumeratorCancellation] CancellationToken ct)
+        {
+            yield return new StreamChunk { Content = "最终答案" };
+            yield return new StreamChunk
+            {
+                FinishReason = "stop",
+                Usage = new TokenUsage { PromptTokens = 20, CompletionTokens = 10, CacheHitTokens = 0 },
+            };
+        }
+    }
+
+    /// <summary>先返回 tool_call(retrieve_rag)，再返回直答，然后流式答案。</summary>
+    private sealed class ToolCallThenAnswerLlmClient : ILlmClient
+    {
+        private int _chatCallCount;
+
+        public Task<LlmResponse> ChatAsync(AgentLLMRole role, LlmConfig config,
+            List<LlmMessage> messages, List<Dictionary<string, object>>? tools = null)
+        {
+            _chatCallCount++;
+            if (_chatCallCount == 1)
+            {
+                return Task.FromResult(new LlmResponse
+                {
+                    Content = "",
+                    ToolCalls = new List<ToolCall>
+                    {
+                        new()
+                        {
+                            Id = "call_1",
+                            Type = "function",
+                            Function = new ToolCallFunction
+                            {
+                                Name = "retrieve_rag",
+                                Arguments = "{\"query\":\"太吾\"}",
+                            },
+                        },
+                    },
+                    Usage = new TokenUsage { PromptTokens = 100, CompletionTokens = 20, CacheHitTokens = 0 },
+                });
+            }
+            return Task.FromResult(new LlmResponse
+            {
+                Content = "根据资料回答",
+                ToolCalls = null,
+                Usage = new TokenUsage { PromptTokens = 200, CompletionTokens = 10, CacheHitTokens = 0 },
+            });
+        }
+
+        public async IAsyncEnumerable<StreamChunk> StreamChatAsync(LlmConfig config,
+            List<LlmMessage> messages, [EnumeratorCancellation] CancellationToken ct)
+        {
+            yield return new StreamChunk { Content = "最终答案" };
+            yield return new StreamChunk
+            {
+                FinishReason = "stop",
+                Usage = new TokenUsage { PromptTokens = 50, CompletionTokens = 10, CacheHitTokens = 0 },
+            };
+        }
+    }
+
+    /// <summary>捕获 ChatAsync 收到的 messages 文本，用于验证历史加载。</summary>
+    private sealed class HistoryCapturingLlmClient : ILlmClient
+    {
+        public string? LastThinkingRequestBody { get; private set; }
+
+        public Task<LlmResponse> ChatAsync(AgentLLMRole role, LlmConfig config,
+            List<LlmMessage> messages, List<Dictionary<string, object>>? tools = null)
+        {
+            // 将所有 messages 拼接成文本以验证内容
+            LastThinkingRequestBody = string.Join("|", messages.Select(m => m.Content ?? ""));
+            return Task.FromResult(new LlmResponse
+            {
+                Content = "回答",
+                ToolCalls = null,
+                Usage = new TokenUsage { PromptTokens = 10, CompletionTokens = 5, CacheHitTokens = 0 },
+            });
+        }
+
+        public async IAsyncEnumerable<StreamChunk> StreamChatAsync(LlmConfig config,
+            List<LlmMessage> messages, [EnumeratorCancellation] CancellationToken ct)
+        {
+            yield return new StreamChunk { Content = "最终答案" };
+            yield return new StreamChunk
+            {
+                FinishReason = "stop",
+                Usage = new TokenUsage { PromptTokens = 20, CompletionTokens = 10, CacheHitTokens = 0 },
+            };
+        }
+    }
+
+    /// <summary>压缩场景：所有 ChatAsync 调用都返回摘要/直答，流式返回最终答案。</summary>
+    private sealed class CompressThenAnswerLlmClient : ILlmClient
+    {
+        public Task<LlmResponse> ChatAsync(AgentLLMRole role, LlmConfig config,
+            List<LlmMessage> messages, List<Dictionary<string, object>>? tools = null)
+            => Task.FromResult(new LlmResponse
+            {
+                Content = @"{""summary"":""玩家问了历史问题"",""profile_fields"":{},""world_fields"":{}}",
+                ToolCalls = null,
+                Usage = new TokenUsage { PromptTokens = 10, CompletionTokens = 5, CacheHitTokens = 0 },
+            });
+
+        public async IAsyncEnumerable<StreamChunk> StreamChatAsync(LlmConfig config,
+            List<LlmMessage> messages, [EnumeratorCancellation] CancellationToken ct)
+        {
+            yield return new StreamChunk { Content = "最终答案" };
+            yield return new StreamChunk
+            {
+                FinishReason = "stop",
+                Usage = new TokenUsage { PromptTokens = 20, CompletionTokens = 10, CacheHitTokens = 0 },
+            };
+        }
+    }
+
+    // --- Stub IRagClient ---
+
+    private sealed class StubRagClient : IRagClient
+    {
+        private readonly RagRetrieveResult _result;
+        public StubRagClient(RagRetrieveResult result) { _result = result; }
+        public Task<RagRetrieveResult> RetrieveAsync(RagRetrieveRequest request)
+            => Task.FromResult(_result);
     }
 }
