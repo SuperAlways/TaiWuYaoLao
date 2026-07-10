@@ -44,10 +44,11 @@ public sealed class OverlayDropdown : MonoBehaviour
         _overlay.GetComponent<Image>().color = new Color(0, 0, 0, 0.55f);
         _overlay.GetComponent<Button>().onClick.AddListener(Hide);
 
-        // 2. 列表容器（定位在 trigger 下方）
+        // 2. 列表容器（挂在 canvasRoot 下，渲染在遮罩之上）
         GameObject listGo = new GameObject("List", typeof(RectTransform), typeof(Image),
             typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-        listGo.transform.SetParent(ort, false);
+        listGo.transform.SetParent(canvasRoot, false);
+        listGo.transform.SetAsLastSibling();  // 确保在最前
         RectTransform lrt = listGo.GetComponent<RectTransform>();
         listGo.GetComponent<Image>().color = UiTheme.PanelBg;
 
@@ -89,7 +90,7 @@ public sealed class OverlayDropdown : MonoBehaviour
         Vector2 triggerBottomLeft = corners[1];   // trigger 左下角
         Vector2 triggerBottomRight = corners[2];  // trigger 右下角
 
-        // 转为 canvasRoot 的局部坐标
+        // 转为 canvasRoot 的局部坐标（原点在画布中心）
         Vector2 localBottomLeft;
         Vector2 localBottomRight;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
@@ -98,36 +99,44 @@ public sealed class OverlayDropdown : MonoBehaviour
             canvasRoot, triggerBottomRight, null, out localBottomRight);
 
         float triggerWidth = localBottomRight.x - localBottomLeft.x;
-        float triggerX = localBottomLeft.x;
+
+        // canvasRoot 尺寸（参考分辨率逻辑尺寸）
+        float halfW = canvasRoot.rect.width * 0.5f;
+        float halfH = canvasRoot.rect.height * 0.5f;
+
+        // ScreenPointToLocalPointInRectangle 返回的是中心相对坐标，
+        // 但 anchor (0,1) 是左上角相对。需要从中心坐标转换：
+        //   左上角相对 = 中心相对 + (halfW, -halfH)
+        // 即：anchoredPosition.x = triggerX + halfW
+        //     anchoredPosition.y = triggerY - halfH
+        float anchorX = localBottomLeft.x + halfW;
+        float anchorY = localBottomLeft.y - halfH;
 
         // 估算列表高度：每项 34px + spacing(2)* (N-1) + padding(8)
         float estimatedHeight = itemCount * 34f + (itemCount - 1) * 2f + 8f;
-        float maxListHeight = Mathf.Min(estimatedHeight + 8f, 300f + 8f);  // 含 padding
+        float maxListHeight = Mathf.Min(estimatedHeight + 8f, 300f + 8f);
 
-        // canvasRoot 底部 Y（最底部）
-        float canvasBottom = -canvasRoot.rect.height / 2f;
-        float triggerBottomY = localBottomLeft.y;
+        // canvasRoot 底部 Y（最底部，中心相对坐标）
+        float canvasBottom = -halfH;
 
         // 默认向下展开：列表 pivot 为左上角 (0,1)
         listRt.pivot = new Vector2(0, 1);
         listRt.anchorMin = listRt.anchorMax = new Vector2(0, 1);
         listRt.sizeDelta = new Vector2(triggerWidth, 0);  // 高度由 ContentSizeFitter 控制
 
-        if (triggerBottomY - maxListHeight < canvasBottom)
+        if (localBottomLeft.y - maxListHeight < canvasBottom)
         {
             // 底部空间不足，改为向上展开
-            // pivot 设为左下角 (0,0)，锚定 trigger 顶部
             listRt.pivot = new Vector2(0, 0);
             Vector2 localTopLeft;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 canvasRoot, corners[0], null, out localTopLeft);
-            float triggerTopY = localTopLeft.y;
-            listRt.anchoredPosition = new Vector2(triggerX, triggerTopY);
+            listRt.anchoredPosition = new Vector2(anchorX, localTopLeft.y - halfH);
         }
         else
         {
             // 向下展开
-            listRt.anchoredPosition = new Vector2(triggerX, triggerBottomY);
+            listRt.anchoredPosition = new Vector2(anchorX, anchorY);
         }
     }
 
