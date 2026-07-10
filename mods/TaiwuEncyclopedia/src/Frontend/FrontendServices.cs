@@ -245,7 +245,7 @@ public static class FrontendServices
         int gen = ++_fetchGeneration;
         var tcs = new TaskCompletionSource<ModelCatalogResult>();
         LlmTransportHost.Instance.StartCoroutine(
-            LlmTransportHost.Instance.FetchModels(baseUrl, apiKey, r => tcs.SetResult(r), gen, () => _fetchGeneration));
+            LlmTransportHost.Instance.FetchModels(baseUrl, apiKey, r => tcs.TrySetResult(r), gen, () => _fetchGeneration));
         return await tcs.Task;
     }
 

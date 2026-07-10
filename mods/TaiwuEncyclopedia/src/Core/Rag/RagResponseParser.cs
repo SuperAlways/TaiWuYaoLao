@@ -4,7 +4,7 @@ namespace TaiwuEncyclopedia.Core.Rag;
 
 /// <summary>
 /// 将 RAG API 响应 JSON 解析为 RagRetrieveResult。
-/// 从 RagHttpClient.RetrieveAsync 中提取，供 IRagClient 的不同实现复用。
+/// 从 RagTransportHost.RetrieveAsync 中提取，供 IRagClient 的不同实现复用。
 /// </summary>
 public static class RagResponseParser
 {

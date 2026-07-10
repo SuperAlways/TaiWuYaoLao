@@ -76,37 +76,73 @@ public sealed class LlmTransportHost : MonoBehaviour, ILlmClient
     private IEnumerator StreamChatCoroutine(string url, string apiKey, string body,
         TaskCompletionSource<string> tcs, CancellationToken ct)
     {
-        using var request = UnityWebRequest.Post(url, body, "application/json");
-        request.SetRequestHeader("Authorization", "Bearer " + apiKey);
-        request.downloadHandler = new DownloadHandlerBuffer();
-        request.timeout = 120;
-
-        var op = request.SendWebRequest();
-        while (!op.isDone)
+        // Retry on initial connect for transient errors (not during streaming)
+        int maxRetries = 2;
+        for (int attempt = 0; attempt <= maxRetries; attempt++)
         {
+            using var request = UnityWebRequest.Post(url, body, "application/json");
+            request.SetRequestHeader("Authorization", "Bearer " + apiKey);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.timeout = 120;
+
+            var op = request.SendWebRequest();
+            while (!op.isDone)
+            {
+                if (ct.IsCancellationRequested)
+                {
+                    request.Abort();
+                    tcs.TrySetCanceled(ct);
+                    yield break;
+                }
+                yield return null;
+            }
+
             if (ct.IsCancellationRequested)
             {
-                request.Abort();
                 tcs.TrySetCanceled(ct);
                 yield break;
             }
-            yield return null;
-        }
 
-        if (ct.IsCancellationRequested)
-        {
-            tcs.TrySetCanceled(ct);
-            yield break;
-        }
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                tcs.SetResult(request.downloadHandler.text);
+                yield break;
+            }
 
-        if (request.result != UnityWebRequest.Result.Success)
-        {
+            // Bug 4: ConnectionError → responseCode=0, ClassifyStatus(0)=Success (wrong).
+            // Check request.result first before ClassifyStatus.
+            if (request.result == UnityWebRequest.Result.ConnectionError)
+            {
+                // Network failure: retry if attempts remain, else fail
+                if (attempt < maxRetries)
+                {
+                    var delay = ApiRetryPolicy.GetDelay(attempt);
+                    yield return new WaitForSeconds((float)delay.TotalSeconds);
+                    continue;
+                }
+                tcs.SetException(new ApiException(ApiErrorType.NetworkError, request.error ?? "网络错误", "error"));
+                yield break;
+            }
+
             var errorType = ApiRetryPolicy.ClassifyStatus((int)request.responseCode);
+            if (errorType == ApiErrorType.AuthError || errorType == ApiErrorType.ClientError)
+            {
+                // No retry for auth/4xx
+                tcs.SetException(new ApiException(errorType, request.error ?? "网络错误", "error"));
+                yield break;
+            }
+
+            // Transient error: retry if attempts remain
+            if (attempt < maxRetries)
+            {
+                var delay = ApiRetryPolicy.GetDelay(attempt);
+                yield return new WaitForSeconds((float)delay.TotalSeconds);
+                continue;
+            }
+
             tcs.SetException(new ApiException(errorType, request.error ?? "网络错误", "error"));
             yield break;
         }
-
-        tcs.SetResult(request.downloadHandler.text);
     }
 
     // ===== ILlmClient: ChatAsync =====
@@ -129,22 +165,53 @@ public sealed class LlmTransportHost : MonoBehaviour, ILlmClient
         var url = EndpointResolver.BuildChatCompletionsUrl(config.BaseUrl)
                   ?? "https://api.deepseek.com/v1/chat/completions";
 
-        using var request = UnityWebRequest.Post(url, body, "application/json");
-        request.SetRequestHeader("Authorization", "Bearer " + config.ApiKey);
-        request.timeout = 120;
-
-        yield return request.SendWebRequest();
-
-        if (request.result != UnityWebRequest.Result.Success)
+        int maxRetries = ApiRetryPolicy.IsForeground(role) ? 3 : 0;
+        for (int attempt = 0; attempt <= maxRetries; attempt++)
         {
+            using var request = UnityWebRequest.Post(url, body, "application/json");
+            request.SetRequestHeader("Authorization", "Bearer " + config.ApiKey);
+            request.timeout = 120;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                var json = request.downloadHandler.text;
+                var response = ChatResponseParser.ParseResponse(json, role);
+                tcs.SetResult(response);
+                yield break;
+            }
+
+            // Bug 4: ConnectionError → responseCode=0, ClassifyStatus(0)=Success (wrong).
+            if (request.result == UnityWebRequest.Result.ConnectionError)
+            {
+                if (attempt < maxRetries)
+                {
+                    var delay = ApiRetryPolicy.GetDelay(attempt);
+                    yield return new WaitForSeconds((float)delay.TotalSeconds);
+                    continue;
+                }
+                tcs.SetException(new ApiException(ApiErrorType.NetworkError, request.error ?? "网络错误", "error"));
+                yield break;
+            }
+
             var errorType = ApiRetryPolicy.ClassifyStatus((int)request.responseCode);
+            if (errorType == ApiErrorType.AuthError || errorType == ApiErrorType.ClientError)
+            {
+                tcs.SetException(new ApiException(errorType, request.error ?? "网络错误", "error"));
+                yield break;
+            }
+
+            if (attempt < maxRetries)
+            {
+                var delay = ApiRetryPolicy.GetDelay(attempt);
+                yield return new WaitForSeconds((float)delay.TotalSeconds);
+                continue;
+            }
+
             tcs.SetException(new ApiException(errorType, request.error ?? "网络错误", "error"));
             yield break;
         }
-
-        var json = request.downloadHandler.text;
-        var response = ChatResponseParser.ParseResponse(json, role);
-        tcs.SetResult(response);
     }
 
     // ===== FetchModels coroutine =====
@@ -168,10 +235,20 @@ public sealed class LlmTransportHost : MonoBehaviour, ILlmClient
 
         yield return request.SendWebRequest();
 
-        if (startGeneration != currentGeneration()) yield break;
+        if (startGeneration != currentGeneration())
+        {
+            onComplete(new ModelCatalogResult { Success = false, Error = "请求已过期" });
+            yield break;
+        }
 
         if (request.result != UnityWebRequest.Result.Success)
         {
+            // Bug 4: ConnectionError → responseCode=0, ClassifyError(0) returns misleading "HTTP 0".
+            if (request.result == UnityWebRequest.Result.ConnectionError)
+            {
+                onComplete(new ModelCatalogResult { Success = false, Error = "无法连接 API 服务，请检查网络" });
+                yield break;
+            }
             var error = ModelCatalogParser.ClassifyError((int)request.responseCode);
             onComplete(new ModelCatalogResult { Success = false, Error = error });
             yield break;

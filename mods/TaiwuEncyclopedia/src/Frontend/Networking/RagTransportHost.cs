@@ -36,7 +36,7 @@ public sealed class RagTransportHost : IRagClient
     private IEnumerator RetrieveCoroutine(RagRetrieveRequest request, TaskCompletionSource<RagRetrieveResult> tcs)
     {
         var body = JsonConvert.SerializeObject(request);
-        var url = _baseUrl + "/retrieve";
+        var url = _baseUrl + "/api/retrieve";
 
         using var req = UnityWebRequest.Post(url, body, "application/json");
         req.timeout = 60;
