@@ -1,4 +1,3 @@
-using TaiwuEncyclopedia.Core.Http;
 using Newtonsoft.Json.Linq;
 
 namespace TaiwuEncyclopedia.Core.Rag;

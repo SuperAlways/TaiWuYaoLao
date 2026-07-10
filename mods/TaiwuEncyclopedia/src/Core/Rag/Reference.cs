@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace TaiwuEncyclopedia.Core.Http;
+namespace TaiwuEncyclopedia.Core.Rag;
 
 /// <summary>参考文献项（对齐 taiwuasker /api/retrieve 响应的 references 元素）。</summary>
 public sealed class Reference

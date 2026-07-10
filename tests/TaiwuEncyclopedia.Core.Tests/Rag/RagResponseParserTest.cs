@@ -1,5 +1,4 @@
 using FluentAssertions;
-using TaiwuEncyclopedia.Core.Http;
 using TaiwuEncyclopedia.Core.Rag;
 using Xunit;
 

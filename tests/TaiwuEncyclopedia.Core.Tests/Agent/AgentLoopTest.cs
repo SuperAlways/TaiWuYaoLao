@@ -10,7 +10,7 @@ using FluentAssertions;
 using TaiwuEncyclopedia.Core.Agent;
 using TaiwuEncyclopedia.Core.Context;
 using TaiwuEncyclopedia.Core.Diagnostics;
-using TaiwuEncyclopedia.Core.Http;
+using TaiwuEncyclopedia.Core.Rag;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Skills;
 using TaiwuEncyclopedia.Core.Tools;

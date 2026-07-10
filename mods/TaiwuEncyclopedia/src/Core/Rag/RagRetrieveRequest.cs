@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace TaiwuEncyclopedia.Core.Http;
+namespace TaiwuEncyclopedia.Core.Rag;
 
 /// <summary>调 taiwuasker RAG API 的请求体。参照 v0.5 RetrieveLightragContextTool 参数。
 /// [JsonProperty] 显式映射 snake_case —— taiwuasker 是 Pydantic(Python),期望 snake_case 字段名。</summary>

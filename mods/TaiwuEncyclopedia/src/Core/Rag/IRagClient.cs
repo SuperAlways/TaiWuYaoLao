@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using TaiwuEncyclopedia.Core.Http;
 
 namespace TaiwuEncyclopedia.Core.Rag;
 

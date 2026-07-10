@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using TaiwuEncyclopedia.Core.Http;
+using TaiwuEncyclopedia.Core.Rag;
 
 namespace TaiwuEncyclopedia.Core.Agent;
 

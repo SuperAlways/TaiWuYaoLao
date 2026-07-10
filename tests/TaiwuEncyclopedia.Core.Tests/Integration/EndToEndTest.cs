@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using TaiwuEncyclopedia.Core.Agent;
 using TaiwuEncyclopedia.Core.Context;
-using TaiwuEncyclopedia.Core.Http;
+using TaiwuEncyclopedia.Core.Rag;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Skills;

@@ -19,7 +19,7 @@ public sealed class MessageRecord
     public System.DateTime Timestamp { get; set; } = System.DateTime.UtcNow;
 
     /// <summary>参考文献列表（仅 assistant 消息携带，user 消息为 null）。</summary>
-    public System.Collections.Generic.List<TaiwuEncyclopedia.Core.Http.Reference>? References { get; set; }
+    public System.Collections.Generic.List<TaiwuEncyclopedia.Core.Rag.Reference>? References { get; set; }
 
     /// <summary>扩展数据(react_trace 等),按需存入,默认 null。</summary>
     public System.Collections.Generic.Dictionary<string, object>? ExtData { get; set; }

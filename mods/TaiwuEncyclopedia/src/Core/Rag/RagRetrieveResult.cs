@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace TaiwuEncyclopedia.Core.Http;
+namespace TaiwuEncyclopedia.Core.Rag;
 
 /// <summary>RAG 检索返回结果（context 文本 + 富化 references + 错误标识）。</summary>
 public sealed class RagRetrieveResult
