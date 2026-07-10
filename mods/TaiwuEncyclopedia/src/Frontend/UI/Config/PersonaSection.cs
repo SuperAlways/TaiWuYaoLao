@@ -24,6 +24,7 @@ public sealed class PersonaSection : MonoBehaviour
 
     private List<string> _personaIdList = [];
     private int _currentPersonaIdx = -1;
+    private OverlayDropdown? _personaDropdown;
 
     /// <summary>当前选中的 Persona ID；未选择时返回空字符串。</summary>
     public string SelectedPersonaId
@@ -162,8 +163,14 @@ public sealed class PersonaSection : MonoBehaviour
             displayNames.Add(cn);
         }
 
-        var dropdown = _personaButton.gameObject.AddComponent<OverlayDropdown>();
-        dropdown.Show(_canvasRt, _personaButton.GetComponent<RectTransform>(),
+        if (_personaDropdown != null && _personaDropdown.IsOpen)
+        {
+            _personaDropdown.Hide();
+            return;
+        }
+        if (_personaDropdown == null)
+            _personaDropdown = _personaButton.gameObject.AddComponent<OverlayDropdown>();
+        _personaDropdown.Show(_canvasRt, _personaButton.GetComponent<RectTransform>(),
             displayNames, _currentPersonaIdx, idx =>
         {
             _currentPersonaIdx = idx;

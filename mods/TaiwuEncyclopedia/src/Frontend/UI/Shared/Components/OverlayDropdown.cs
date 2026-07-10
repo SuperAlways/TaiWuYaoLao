@@ -10,15 +10,23 @@ namespace TaiwuEncyclopedia.UI;
 /// <summary>
 /// 通用下拉组件：全屏透明遮罩 + 独立定位选项列表。
 /// 解决 Unity TMP_Dropdown 在 ScrollRect 中裁切的问题。
-/// 参考 WorldTalk WorldTalkSettingsUiHost Provider Dropdown。
+/// 参考 WorldTalk WorldTalkSettingsUiHost Provider/Model Dropdown 模式：
+///   - 遮罩+列表共用一个根节点，Destroy 一起清理
+///   - 近透明遮罩（0.004 alpha），仅拦截射线，不遮挡视觉
+///   - 弹出后为模态：必须选择或点空白关闭，不能同时操作面板
 /// </summary>
 public sealed class OverlayDropdown : MonoBehaviour
 {
-    private GameObject? _overlay;
+    private GameObject? _root;   // 遮罩 + 列表的共同根节点
     private bool _isOpen;
 
     public bool IsOpen => _isOpen;
 
+    /// <summary>
+    /// 显示下拉列表。对齐 WorldTalk ToggleProviderDropdown 模式：
+    /// 创建全屏遮罩（近透明，拦截射线）+ 定位列表 + 选项按钮。
+    /// 遮罩和列表共用一个根节点，确保 Hide/Destroy 一起清理。
+    /// </summary>
     public void Show(
         RectTransform canvasRoot,
         RectTransform trigger,
@@ -32,23 +40,27 @@ public sealed class OverlayDropdown : MonoBehaviour
 
         _isOpen = true;
 
-        // 1. 全屏遮罩
-        _overlay = new GameObject("DropdownOverlay", typeof(RectTransform), typeof(Image), typeof(Button));
-        _overlay.transform.SetParent(canvasRoot, false);
-        RectTransform ort = _overlay.GetComponent<RectTransform>();
-        ort.anchorMin = Vector2.zero;
-        ort.anchorMax = Vector2.one;
-        ort.sizeDelta = Vector2.zero;
-        ort.SetAsLastSibling();
+        // 1. 根节点（全屏拉伸，拦截射线，近透明遮罩）
+        _root = new GameObject("DropdownRoot", typeof(RectTransform), typeof(Image), typeof(Button));
+        _root.transform.SetParent(canvasRoot, false);
+        RectTransform rootRt = _root.GetComponent<RectTransform>();
+        rootRt.anchorMin = Vector2.zero;
+        rootRt.anchorMax = Vector2.one;
+        rootRt.sizeDelta = Vector2.zero;
+        rootRt.SetAsLastSibling();
 
-        _overlay.GetComponent<Image>().color = new Color(0, 0, 0, 0.55f);
-        _overlay.GetComponent<Button>().onClick.AddListener(Hide);
+        // 近透明遮罩（WorldTalk 用 0.004 alpha，只拦截射线不遮挡视觉）
+        Image rootImg = _root.GetComponent<Image>();
+        rootImg.color = new Color(0f, 0f, 0f, 0.004f);
+        rootImg.raycastTarget = true;
+        Button rootBtn = _root.GetComponent<Button>();
+        rootBtn.targetGraphic = rootImg;
+        rootBtn.onClick.AddListener(Hide);
 
-        // 2. 列表容器（挂在 canvasRoot 下，渲染在遮罩之上）
+        // 2. 列表容器（作为根节点的子节点，一起销毁）
         GameObject listGo = new GameObject("List", typeof(RectTransform), typeof(Image),
             typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-        listGo.transform.SetParent(canvasRoot, false);
-        listGo.transform.SetAsLastSibling();  // 确保在最前
+        listGo.transform.SetParent(_root.transform, false);
         RectTransform lrt = listGo.GetComponent<RectTransform>();
         listGo.GetComponent<Image>().color = UiTheme.PanelBg;
 
@@ -64,73 +76,87 @@ public sealed class OverlayDropdown : MonoBehaviour
         csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         // 定位：trigger 下方，水平对齐 trigger 左边缘
+        // root 与 canvasRoot 完全重合（stretch-fill），所以坐标空间相同
         PositionList(lrt, trigger, canvasRoot, options.Count);
 
         // 3. 选项按钮
         PopulateItems(listGo, options, currentIndex, onSelect, font);
+
+        // 4. 确保列表在遮罩之上渲染
+        listGo.transform.SetAsLastSibling();
     }
 
+    /// <summary>关闭下拉列表，销毁遮罩+列表的根节点。</summary>
     public void Hide()
     {
-        if (_overlay != null)
+        if (_root != null)
         {
-            Destroy(_overlay);
-            _overlay = null;
+            Destroy(_root);
+            _root = null;
         }
         _isOpen = false;
     }
 
+    private void OnDestroy()
+    {
+        // 防止组件销毁时泄漏根节点
+        if (_root != null)
+        {
+            Destroy(_root);
+            _root = null;
+        }
+    }
+
+    /// <summary>
+    /// 定位列表：在 trigger 下方展开，底部空间不足时向上展开。
+    /// root 与 canvasRoot 完全重合（stretch-fill），
+    /// 所以列表在 root 内的坐标 = 在 canvasRoot 内的坐标。
+    /// </summary>
     private static void PositionList(RectTransform listRt, RectTransform trigger,
         RectTransform canvasRoot, int itemCount)
     {
-        // trigger 在 Canvas 空间中的世界坐标
+        // trigger 世界坐标 → canvasRoot 局部坐标（原点在画布中心）
         Vector3[] corners = new Vector3[4];
         trigger.GetWorldCorners(corners);
-        // corners: [0]=左上, [1]=左下, [2]=右下, [3]=右上
-        Vector2 triggerBottomLeft = corners[1];   // trigger 左下角
-        Vector2 triggerBottomRight = corners[2];  // trigger 右下角
+        // corners: [0]=左下, [1]=左上（Unity UGUI GetWorldCorners 在 ScreenSpace-Overlay 下）
 
-        // 转为 canvasRoot 的局部坐标（原点在画布中心）
+        // 对于 ScreenSpace-Overlay Canvas，GetWorldCorners 返回的已经是屏幕坐标
+        // 需要转为 canvasRoot 的局部坐标
         Vector2 localBottomLeft;
         Vector2 localBottomRight;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvasRoot, triggerBottomLeft, null, out localBottomLeft);
+            canvasRoot, corners[0], null, out localBottomLeft);
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvasRoot, triggerBottomRight, null, out localBottomRight);
+            canvasRoot, corners[3], null, out localBottomRight);
 
         float triggerWidth = localBottomRight.x - localBottomLeft.x;
 
-        // canvasRoot 尺寸（参考分辨率逻辑尺寸）
+        // 画布尺寸
         float halfW = canvasRoot.rect.width * 0.5f;
         float halfH = canvasRoot.rect.height * 0.5f;
 
-        // ScreenPointToLocalPointInRectangle 返回的是中心相对坐标，
-        // 但 anchor (0,1) 是左上角相对。需要从中心坐标转换：
-        //   左上角相对 = 中心相对 + (halfW, -halfH)
-        // 即：anchoredPosition.x = triggerX + halfW
-        //     anchoredPosition.y = triggerY - halfH
+        // ScreenPointToLocalPointInRectangle 返回中心相对坐标，
+        // anchor (0,1) 需要左上角相对坐标：
+        //   leftTopRelative = centerRelative + (halfW, -halfH)
         float anchorX = localBottomLeft.x + halfW;
         float anchorY = localBottomLeft.y - halfH;
 
-        // 估算列表高度：每项 34px + spacing(2)* (N-1) + padding(8)
+        // 估算列表高度
         float estimatedHeight = itemCount * 34f + (itemCount - 1) * 2f + 8f;
         float maxListHeight = Mathf.Min(estimatedHeight + 8f, 300f + 8f);
 
-        // canvasRoot 底部 Y（最底部，中心相对坐标）
-        float canvasBottom = -halfH;
-
-        // 默认向下展开：列表 pivot 为左上角 (0,1)
+        // 默认向下展开：pivot 左上角 (0,1)
         listRt.pivot = new Vector2(0, 1);
         listRt.anchorMin = listRt.anchorMax = new Vector2(0, 1);
         listRt.sizeDelta = new Vector2(triggerWidth, 0);  // 高度由 ContentSizeFitter 控制
 
-        if (localBottomLeft.y - maxListHeight < canvasBottom)
+        if (localBottomLeft.y - maxListHeight < -halfH)
         {
             // 底部空间不足，改为向上展开
             listRt.pivot = new Vector2(0, 0);
             Vector2 localTopLeft;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvasRoot, corners[0], null, out localTopLeft);
+                canvasRoot, corners[1], null, out localTopLeft);
             listRt.anchoredPosition = new Vector2(anchorX, localTopLeft.y - halfH);
         }
         else
@@ -183,7 +209,7 @@ public sealed class OverlayDropdown : MonoBehaviour
             itemsParent = listGo.transform;
         }
 
-        // 创建选项按钮（同 Task 1）
+        // 创建选项按钮
         for (int i = 0; i < options.Count; i++)
         {
             int idx = i;
