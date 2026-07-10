@@ -26,6 +26,8 @@ public sealed class LlmConfigSection : MonoBehaviour
     private int _fetchGeneration;
     private bool _testPassed;
     private List<string> _fetchedModels = [];
+    private OverlayDropdown? _providerDropdown;
+    private OverlayDropdown? _modelDropdown;
 
     public bool TestPassed => _testPassed;
     public string BaseUrl => _baseUrlInput?.text?.Trim() ?? "";
@@ -114,11 +116,17 @@ public sealed class LlmConfigSection : MonoBehaviour
 
         btn.onClick.AddListener(() =>
         {
-            var dropdown = btn.gameObject.AddComponent<OverlayDropdown>();
+            if (_providerDropdown != null && _providerDropdown.IsOpen)
+            {
+                _providerDropdown.Hide();
+                return;
+            }
+            if (_providerDropdown == null)
+                _providerDropdown = btn.gameObject.AddComponent<OverlayDropdown>();
             var presets = ApiProviderPresets.All;
             var names = new List<string>();
             foreach (var p in presets) names.Add(p.DisplayName);
-            dropdown.Show(_canvasRt!, btn.GetComponent<RectTransform>(), names,
+            _providerDropdown.Show(_canvasRt!, btn.GetComponent<RectTransform>(), names,
                 _currentProviderIndex, idx =>
             {
                 _currentProviderIndex = idx;
@@ -160,8 +168,14 @@ public sealed class LlmConfigSection : MonoBehaviour
                 if (_statusText != null) _statusText.text = "请先拉取模型列表";
                 return;
             }
-            var dropdown = btn.gameObject.AddComponent<OverlayDropdown>();
-            dropdown.Show(_canvasRt!, btn.GetComponent<RectTransform>(), _fetchedModels,
+            if (_modelDropdown != null && _modelDropdown.IsOpen)
+            {
+                _modelDropdown.Hide();
+                return;
+            }
+            if (_modelDropdown == null)
+                _modelDropdown = btn.gameObject.AddComponent<OverlayDropdown>();
+            _modelDropdown.Show(_canvasRt!, btn.GetComponent<RectTransform>(), _fetchedModels,
                 _fetchedModels.IndexOf(Model), idx =>
             {
                 if (_modelInput != null) _modelInput.text = _fetchedModels[idx];

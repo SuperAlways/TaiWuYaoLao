@@ -8,16 +8,31 @@ using UnityEngine.UI;
 namespace TaiwuEncyclopedia.UI;
 
 /// <summary>
-/// 通用下拉组件：全屏透明遮罩 + 独立定位选项列表。
-/// 解决 Unity TMP_Dropdown 在 ScrollRect 中裁切的问题。
-/// 参考 WorldTalk WorldTalkSettingsUiHost Provider Dropdown。
+/// 通用下拉组件：全屏透明遮罩 + 选项列表。
+/// 三种显示模式：
+///   ≤3 项：trigger 下方弹出
+///   4~12 项：画布中央弹出，高度随项数自适应
+///   >12 项：画布中央弹出，固定最大高度 + ScrollRect 滚动
 /// </summary>
 public sealed class OverlayDropdown : MonoBehaviour
 {
-    private GameObject? _overlay;
+    private GameObject? _root;
     private bool _isOpen;
 
     public bool IsOpen => _isOpen;
+
+    private const int CenterThreshold = 3;
+    private const int ScrollThreshold = 12;
+    private const float ItemHeight = 34f;
+    private const float ItemSpacing = 2f;
+    private const float ListPadding = 4f;
+
+    // 中央弹出列表的水平 anchor 百分比
+    private const float CenterAnchorXMin = 0.28f;
+    private const float CenterAnchorXMax = 0.72f;
+    // ScrollRect 模式下的垂直 anchor 百分比
+    private const float ScrollAnchorYMin = 0.22f;
+    private const float ScrollAnchorYMax = 0.78f;
 
     public void Show(
         RectTransform canvasRoot,
@@ -32,23 +47,29 @@ public sealed class OverlayDropdown : MonoBehaviour
 
         _isOpen = true;
 
-        // 1. 全屏遮罩
-        _overlay = new GameObject("DropdownOverlay", typeof(RectTransform), typeof(Image), typeof(Button));
-        _overlay.transform.SetParent(canvasRoot, false);
-        RectTransform ort = _overlay.GetComponent<RectTransform>();
-        ort.anchorMin = Vector2.zero;
-        ort.anchorMax = Vector2.one;
-        ort.sizeDelta = Vector2.zero;
-        ort.SetAsLastSibling();
+        bool useScroll = options.Count > ScrollThreshold;
+        bool useCenter = options.Count > CenterThreshold;
 
-        _overlay.GetComponent<Image>().color = new Color(0, 0, 0, 0.55f);
-        _overlay.GetComponent<Button>().onClick.AddListener(Hide);
+        // 1. 根节点（全屏拉伸，拦截射线）
+        _root = new GameObject("DropdownRoot", typeof(RectTransform), typeof(Image), typeof(Button));
+        _root.transform.SetParent(canvasRoot, false);
+        RectTransform rootRt = _root.GetComponent<RectTransform>();
+        rootRt.anchorMin = Vector2.zero;
+        rootRt.anchorMax = Vector2.one;
+        rootRt.sizeDelta = Vector2.zero;
+        rootRt.SetAsLastSibling();
 
-        // 2. 列表容器（定位在 trigger 下方）
+        Image rootImg = _root.GetComponent<Image>();
+        rootImg.color = new Color(0f, 0f, 0f, useCenter ? 0.35f : 0.004f);
+        rootImg.raycastTarget = true;
+        Button rootBtn = _root.GetComponent<Button>();
+        rootBtn.targetGraphic = rootImg;
+        rootBtn.onClick.AddListener(Hide);
+
+        // 2. 列表容器
         GameObject listGo = new GameObject("List", typeof(RectTransform), typeof(Image),
             typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-        listGo.transform.SetParent(ort, false);
-        RectTransform lrt = listGo.GetComponent<RectTransform>();
+        listGo.transform.SetParent(_root.transform, false);
         listGo.GetComponent<Image>().color = UiTheme.PanelBg;
 
         VerticalLayoutGroup vlg = listGo.GetComponent<VerticalLayoutGroup>();
@@ -56,125 +77,130 @@ public sealed class OverlayDropdown : MonoBehaviour
         vlg.childForceExpandHeight = false;
         vlg.childControlWidth = true;
         vlg.childControlHeight = true;
-        vlg.spacing = 2f;
-        vlg.padding = new RectOffset(4, 4, 4, 4);
+        vlg.spacing = ItemSpacing;
+        vlg.padding = new RectOffset((int)ListPadding, (int)ListPadding, (int)ListPadding, (int)ListPadding);
 
         ContentSizeFitter csf = listGo.GetComponent<ContentSizeFitter>();
-        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        RectTransform lrt = listGo.GetComponent<RectTransform>();
 
-        // 定位：trigger 下方，水平对齐 trigger 左边缘
-        PositionList(lrt, trigger, canvasRoot, options.Count);
+        // 3. 定位
+        if (useCenter)
+        {
+            // 水平：anchor 百分比撑满
+            lrt.anchorMin = new Vector2(CenterAnchorXMin, 0.5f);
+            lrt.anchorMax = new Vector2(CenterAnchorXMax, 0.5f);
+            lrt.pivot = new Vector2(0.5f, 0.5f);
+            lrt.anchoredPosition = Vector2.zero;
 
-        // 3. 选项按钮
-        PopulateItems(listGo, options, currentIndex, onSelect, font);
+            if (useScroll)
+            {
+                // >12 项：固定垂直区域 + ScrollRect
+                lrt.anchorMin = new Vector2(CenterAnchorXMin, ScrollAnchorYMin);
+                lrt.anchorMax = new Vector2(CenterAnchorXMax, ScrollAnchorYMax);
+                lrt.sizeDelta = Vector2.zero;
+                csf.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
+            }
+            else
+            {
+                // 4~12 项：高度自适应，ContentSizeFitter 控制高度
+                // 宽度由 anchor 控制，高度设 0 让 CSF 自动撑开
+                lrt.sizeDelta = new Vector2(0, 0);
+                csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            }
+        }
+        else
+        {
+            // ≤3 项：trigger 下方弹出，高度自适应
+            csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            PositionBelowTrigger(lrt, trigger, canvasRoot);
+        }
+
+        // 4. 填充选项
+        if (useScroll)
+        {
+            PopulateScrollItems(listGo, options, currentIndex, onSelect, font);
+        }
+        else
+        {
+            PopulateItems(listGo, options, currentIndex, onSelect, font);
+        }
+
+        // 5. 确保列表在遮罩之上渲染
+        listGo.transform.SetAsLastSibling();
     }
 
     public void Hide()
     {
-        if (_overlay != null)
+        if (_root != null)
         {
-            Destroy(_overlay);
-            _overlay = null;
+            Destroy(_root);
+            _root = null;
         }
         _isOpen = false;
     }
 
-    private static void PositionList(RectTransform listRt, RectTransform trigger,
-        RectTransform canvasRoot, int itemCount)
+    private void OnDestroy()
     {
-        // trigger 在 Canvas 空间中的世界坐标
-        Vector3[] corners = new Vector3[4];
-        trigger.GetWorldCorners(corners);
-        // corners: [0]=左上, [1]=左下, [2]=右下, [3]=右上
-        Vector2 triggerBottomLeft = corners[1];   // trigger 左下角
-        Vector2 triggerBottomRight = corners[2];  // trigger 右下角
-
-        // 转为 canvasRoot 的局部坐标
-        Vector2 localBottomLeft;
-        Vector2 localBottomRight;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvasRoot, triggerBottomLeft, null, out localBottomLeft);
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvasRoot, triggerBottomRight, null, out localBottomRight);
-
-        float triggerWidth = localBottomRight.x - localBottomLeft.x;
-        float triggerX = localBottomLeft.x;
-
-        // 估算列表高度：每项 34px + spacing(2)* (N-1) + padding(8)
-        float estimatedHeight = itemCount * 34f + (itemCount - 1) * 2f + 8f;
-        float maxListHeight = Mathf.Min(estimatedHeight + 8f, 300f + 8f);  // 含 padding
-
-        // canvasRoot 底部 Y（最底部）
-        float canvasBottom = -canvasRoot.rect.height / 2f;
-        float triggerBottomY = localBottomLeft.y;
-
-        // 默认向下展开：列表 pivot 为左上角 (0,1)
-        listRt.pivot = new Vector2(0, 1);
-        listRt.anchorMin = listRt.anchorMax = new Vector2(0, 1);
-        listRt.sizeDelta = new Vector2(triggerWidth, 0);  // 高度由 ContentSizeFitter 控制
-
-        if (triggerBottomY - maxListHeight < canvasBottom)
+        if (_root != null)
         {
-            // 底部空间不足，改为向上展开
-            // pivot 设为左下角 (0,0)，锚定 trigger 顶部
-            listRt.pivot = new Vector2(0, 0);
-            Vector2 localTopLeft;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvasRoot, corners[0], null, out localTopLeft);
-            float triggerTopY = localTopLeft.y;
-            listRt.anchoredPosition = new Vector2(triggerX, triggerTopY);
-        }
-        else
-        {
-            // 向下展开
-            listRt.anchoredPosition = new Vector2(triggerX, triggerBottomY);
+            Destroy(_root);
+            _root = null;
         }
     }
 
-    private const int ScrollThreshold = 8;
+    private static void PositionBelowTrigger(RectTransform listRt, RectTransform trigger, RectTransform canvasRoot)
+    {
+        Vector3[] corners = new Vector3[4];
+        trigger.GetWorldCorners(corners);
 
-    private void PopulateItems(GameObject listGo, IReadOnlyList<string> options,
+        Vector2 localBottomLeft;
+        Vector2 localBottomRight;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRoot, corners[0], null, out localBottomLeft);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRoot, corners[3], null, out localBottomRight);
+
+        float triggerWidth = localBottomRight.x - localBottomLeft.x;
+        float halfW = canvasRoot.rect.width * 0.5f;
+        float halfH = canvasRoot.rect.height * 0.5f;
+
+        float anchorX = localBottomLeft.x + halfW;
+        float anchorY = localBottomLeft.y - halfH;
+
+        listRt.pivot = new Vector2(0, 1);
+        listRt.anchorMin = listRt.anchorMax = new Vector2(0, 1);
+        listRt.anchoredPosition = new Vector2(anchorX, anchorY);
+        listRt.sizeDelta = new Vector2(triggerWidth, 0);
+    }
+
+    /// <summary>>12 项：在 listGo 内嵌套 ScrollRect。</summary>
+    private void PopulateScrollItems(GameObject listGo, IReadOnlyList<string> options,
         int currentIndex, Action<int> onSelect, TMP_FontAsset? font)
     {
-        Transform itemsParent;
-        if (options.Count > ScrollThreshold)
-        {
-            // 长列表：在 listGo 内嵌套 ScrollRect
-            RectTransform scrollContent = UiFactory.CreateScroll(listGo.transform, "ScrollContent", spacing: 2f);
-            scrollContent.anchorMin = scrollContent.anchorMax = new Vector2(0, 1);
-            scrollContent.pivot = new Vector2(0.5f, 1);
-            scrollContent.anchoredPosition = Vector2.zero;
-            scrollContent.sizeDelta = new Vector2(0, 0);
+        RectTransform scrollContent = UiFactory.CreateScroll(listGo.transform, "ScrollContent", spacing: ItemSpacing);
+        scrollContent.anchorMin = scrollContent.anchorMax = new Vector2(0, 1);
+        scrollContent.pivot = new Vector2(0.5f, 1);
+        scrollContent.anchoredPosition = Vector2.zero;
+        scrollContent.sizeDelta = new Vector2(0, 0);
 
-            // 限制 ScrollRect Viewport 高度为 300px
-            ScrollRect sr = scrollContent.parent.parent.GetComponent<ScrollRect>();
-            RectTransform viewportRt = scrollContent.parent.GetComponent<RectTransform>();
-            viewportRt.sizeDelta = new Vector2(0, 300);
+        ScrollRect sr = scrollContent.parent.parent.GetComponent<ScrollRect>();
 
-            // Scrollbar
-            GameObject scrollbarGo = new GameObject("Scrollbar", typeof(RectTransform), typeof(Image), typeof(Scrollbar));
-            scrollbarGo.transform.SetParent(sr.transform, false);
-            RectTransform sbrt = scrollbarGo.GetComponent<RectTransform>();
-            sbrt.anchorMin = new Vector2(1, 0);
-            sbrt.anchorMax = new Vector2(1, 1);
-            sbrt.pivot = new Vector2(1, 1);
-            sbrt.anchoredPosition = Vector2.zero;
-            sbrt.sizeDelta = new Vector2(10, 0);
-            Scrollbar sb = scrollbarGo.GetComponent<Scrollbar>();
-            sb.direction = Scrollbar.Direction.BottomToTop;
-            sb.targetGraphic = scrollbarGo.GetComponent<Image>();
-            scrollbarGo.GetComponent<Image>().color = UiTheme.Accent;
-            sr.verticalScrollbar = sb;
-            sr.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+        // Scrollbar
+        GameObject scrollbarGo = new GameObject("Scrollbar", typeof(RectTransform), typeof(Image), typeof(Scrollbar));
+        scrollbarGo.transform.SetParent(sr.transform, false);
+        RectTransform sbrt = scrollbarGo.GetComponent<RectTransform>();
+        sbrt.anchorMin = new Vector2(1, 0);
+        sbrt.anchorMax = new Vector2(1, 1);
+        sbrt.pivot = new Vector2(1, 1);
+        sbrt.anchoredPosition = Vector2.zero;
+        sbrt.sizeDelta = new Vector2(10, 0);
+        Scrollbar sb = scrollbarGo.GetComponent<Scrollbar>();
+        sb.direction = Scrollbar.Direction.BottomToTop;
+        sb.targetGraphic = scrollbarGo.GetComponent<Image>();
+        scrollbarGo.GetComponent<Image>().color = UiTheme.Accent;
+        sr.verticalScrollbar = sb;
+        sr.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
 
-            itemsParent = scrollContent;
-        }
-        else
-        {
-            itemsParent = listGo.transform;
-        }
-
-        // 创建选项按钮（同 Task 1）
         for (int i = 0; i < options.Count; i++)
         {
             int idx = i;
@@ -182,12 +208,37 @@ public sealed class OverlayDropdown : MonoBehaviour
 
             GameObject itemGo = new GameObject($"Item_{idx}", typeof(RectTransform),
                 typeof(Image), typeof(Button), typeof(LayoutElement));
-            itemGo.transform.SetParent(itemsParent, false);
+            itemGo.transform.SetParent(scrollContent, false);
 
             itemGo.GetComponent<Image>().color = isSelected ? UiTheme.Accent : Color.clear;
 
             LayoutElement le = itemGo.GetComponent<LayoutElement>();
-            le.preferredHeight = 34f;
+            le.preferredHeight = ItemHeight;
+
+            Button btn = itemGo.GetComponent<Button>();
+            btn.onClick.AddListener(() => { onSelect(idx); Hide(); });
+
+            CreateItemLabel(itemGo.transform, options[i], isSelected, font);
+        }
+    }
+
+    /// <summary>≤12 项：直接在 listGo 内创建选项。</summary>
+    private void PopulateItems(GameObject listGo, IReadOnlyList<string> options,
+        int currentIndex, Action<int> onSelect, TMP_FontAsset? font)
+    {
+        for (int i = 0; i < options.Count; i++)
+        {
+            int idx = i;
+            bool isSelected = (idx == currentIndex);
+
+            GameObject itemGo = new GameObject($"Item_{idx}", typeof(RectTransform),
+                typeof(Image), typeof(Button), typeof(LayoutElement));
+            itemGo.transform.SetParent(listGo.transform, false);
+
+            itemGo.GetComponent<Image>().color = isSelected ? UiTheme.Accent : Color.clear;
+
+            LayoutElement le = itemGo.GetComponent<LayoutElement>();
+            le.preferredHeight = ItemHeight;
 
             Button btn = itemGo.GetComponent<Button>();
             btn.onClick.AddListener(() => { onSelect(idx); Hide(); });
