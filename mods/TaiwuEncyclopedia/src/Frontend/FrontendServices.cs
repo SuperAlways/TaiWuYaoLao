@@ -1,6 +1,7 @@
 #pragma warning disable IDE0008, IDE0032, RCS1085, IDE0063, CA1031, CA1305, RCS1181, IDE0011, CA1054, IDE0074, IDE0058, CA1308
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using TaiwuEncyclopedia.Core.Agent;
 using TaiwuEncyclopedia.Core.Context;
 using TaiwuEncyclopedia.Core.Diagnostics;
@@ -11,6 +12,7 @@ using TaiwuEncyclopedia.Core.Skills;
 using TaiwuEncyclopedia.Core.Soul;
 using TaiwuEncyclopedia.Core.Storage;
 using TaiwuEncyclopedia.Core.Tools;
+using TaiwuEncyclopedia.Frontend.Networking;
 using UnityEngine;
 
 namespace TaiwuEncyclopedia;
@@ -66,12 +68,12 @@ public static class FrontendServices
     private static SoulManager? _soulManager;
     private static SkillManager? _skillManager;
     private static AgentRunner? _agentRunner;
-    private static OpenAiCompatibleClient? _llmClient;
+    private static ILlmClient? _llmClient;
     private static ToolRegistry? _toolRegistry;
     private static ToolExecutor? _toolExecutor;
     private static ContextManager? _contextManager;
     private static PromptBuilder? _promptBuilder;
-    private static RagHttpClient? _ragHttpClient;
+    private static IRagClient? _ragClient;
 
     /// <summary>
     /// 会话管理器。
@@ -234,11 +236,15 @@ public static class FrontendServices
     }
 
     /// <summary>
-    /// 转发调用 ModelCatalogClient.FetchModelsAsync，供前端 UI 获取可用模型列表。
+    /// 获取可用模型列表。通过 LlmTransportHost.FetchModels 协程桥接到 async。
     /// </summary>
-    public static async System.Threading.Tasks.Task<ModelCatalogResult> FetchModelsAsync(string baseUrl, string apiKey)
+    public static async Task<ModelCatalogResult> FetchModelsAsync(string baseUrl, string apiKey)
     {
-        return await ModelCatalogClient.FetchModelsAsync(baseUrl, apiKey);
+        var tcs = new TaskCompletionSource<ModelCatalogResult>();
+        int gen = Environment.TickCount;
+        LlmTransportHost.Instance.StartCoroutine(
+            LlmTransportHost.Instance.FetchModels(baseUrl, apiKey, r => tcs.SetResult(r), gen, () => gen));
+        return await tcs.Task;
     }
 
     // ========== AgentRunner 构建 ==========
@@ -277,8 +283,8 @@ public static class FrontendServices
                 trace = new JsonlAgentTrace(traceDir);
             }
 
-            // 1. LLM Client
-            _llmClient = new OpenAiCompatibleClient();
+            // 1. LLM Client — LlmTransportHost (UnityWebRequest singleton)
+            _llmClient = LlmTransportHost.Instance;
 
             // 2. SkillManager
             SkillManager? sm = SkillManager; // 可能为 null
@@ -286,14 +292,14 @@ public static class FrontendServices
             // 3. ToolRegistry (注册所有 4 个工具)
             _toolRegistry = new ToolRegistry();
 
-            // RetrieveRagTool (需要 RagHttpClient)
-            if (_ragHttpClient == null)
+            // RetrieveRagTool (需要 IRagClient)
+            if (_ragClient == null)
             {
                 // RAG 服务端点:优先用 config.json 的 rag_base_url,缺省用远程服务。
                 string ragUrl = !string.IsNullOrWhiteSpace(_ragBaseUrl) ? _ragBaseUrl : "https://rag.goodcooking.top";
-                _ragHttpClient = new RagHttpClient(ragUrl);
+                _ragClient = new RagTransportHost(ragUrl);
             }
-            _toolRegistry.Register(new RetrieveRagTool(_ragHttpClient));
+            _toolRegistry.Register(new RetrieveRagTool(_ragClient));
 
             // LoadBackgroundSkillTool (需要 SkillManager)
             if (sm != null)
