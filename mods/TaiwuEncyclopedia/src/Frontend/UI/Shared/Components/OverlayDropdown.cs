@@ -110,7 +110,8 @@ public sealed class OverlayDropdown : MonoBehaviour
         }
         else
         {
-            // ≤3 项：trigger 下方弹出
+            // ≤3 项：trigger 下方弹出，高度自适应
+            csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             PositionBelowTrigger(lrt, trigger, canvasRoot);
         }
 
