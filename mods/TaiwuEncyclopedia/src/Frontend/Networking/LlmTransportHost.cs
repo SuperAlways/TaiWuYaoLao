@@ -127,6 +127,17 @@ public sealed class LlmTransportHost : MonoBehaviour, ILlmClient
             var errorType = ApiRetryPolicy.ClassifyStatus((int)request.responseCode);
             if (errorType == ApiErrorType.AuthError || errorType == ApiErrorType.ClientError)
             {
+                // Check for context-too-long in 400/413 response body
+                if ((int)request.responseCode == 400 || (int)request.responseCode == 413)
+                {
+                    var body = request.downloadHandler?.text ?? "";
+                    if (body.Contains("context") || body.Contains("token") || body.Contains("length") || body.Contains("too long"))
+                    {
+                        errorType = ApiErrorType.ContextTooLong;
+                        tcs.SetException(new ApiException(errorType, request.error ?? "上下文过长", "warn"));
+                        yield break;
+                    }
+                }
                 // No retry for auth/4xx
                 tcs.SetException(new ApiException(errorType, request.error ?? "网络错误", "error"));
                 yield break;
@@ -198,6 +209,17 @@ public sealed class LlmTransportHost : MonoBehaviour, ILlmClient
             var errorType = ApiRetryPolicy.ClassifyStatus((int)request.responseCode);
             if (errorType == ApiErrorType.AuthError || errorType == ApiErrorType.ClientError)
             {
+                // Check for context-too-long in 400/413 response body
+                if ((int)request.responseCode == 400 || (int)request.responseCode == 413)
+                {
+                    var body = request.downloadHandler?.text ?? "";
+                    if (body.Contains("context") || body.Contains("token") || body.Contains("length") || body.Contains("too long"))
+                    {
+                        errorType = ApiErrorType.ContextTooLong;
+                        tcs.SetException(new ApiException(errorType, request.error ?? "上下文过长", "warn"));
+                        yield break;
+                    }
+                }
                 tcs.SetException(new ApiException(errorType, request.error ?? "网络错误", "error"));
                 yield break;
             }

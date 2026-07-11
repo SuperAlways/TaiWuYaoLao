@@ -9,6 +9,7 @@ public enum ApiErrorType
     RateLimit,
     Overload,
     AuthError,
+    ContextTooLong,   // context length exceeded
     ClientError,
     ServerError,
     Unknown,

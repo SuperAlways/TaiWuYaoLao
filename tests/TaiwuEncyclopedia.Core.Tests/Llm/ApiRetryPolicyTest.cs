@@ -145,4 +145,28 @@ public class ApiRetryPolicyTest
         ApiRetryPolicy.GetRetryMessage(ApiErrorType.Overload).Should().Contain("过载");
         ApiRetryPolicy.GetRetryMessage(ApiErrorType.Timeout).Should().Contain("超时");
     }
+
+    // --- ContextTooLong tests (Task 1: P0-2 ForceCompress trigger) ---
+
+    [Fact]
+    public void Evaluate_ContextTooLongRetriesOnceWithForceCompress()
+    {
+        int c = 0;
+        var r = ApiRetryPolicy.Evaluate(ApiErrorType.ContextTooLong, 0, ref c, true);
+        r.Decision.Should().Be(RetryDecision.Retry);
+        r.Level.Should().Be("warn");
+        r.Message.Should().Contain("过长");
+    }
+
+    [Fact]
+    public void GetFailMessage_ContextTooLong_ReturnsContextMessage()
+    {
+        ApiRetryPolicy.GetFailMessage(ApiErrorType.ContextTooLong).Should().Contain("上下文");
+    }
+
+    [Fact]
+    public void GetRetryMessage_ContextTooLong_ReturnsRetryMessage()
+    {
+        ApiRetryPolicy.GetRetryMessage(ApiErrorType.ContextTooLong).Should().Contain("过长");
+    }
 }

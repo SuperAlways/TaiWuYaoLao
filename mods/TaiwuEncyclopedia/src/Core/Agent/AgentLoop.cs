@@ -70,7 +70,8 @@ public static class AgentLoop
             }
             catch (ApiException ex)
             {
-                if (ex.ErrorType == ApiErrorType.Overload || ex.ErrorType == ApiErrorType.Timeout)
+                if (ex.ErrorType == ApiErrorType.Overload || ex.ErrorType == ApiErrorType.Timeout
+                    || ex.ErrorType == ApiErrorType.ContextTooLong)
                 {
                     // 可能 token 超限 -> force_compress 后重试一次。重试若仍失败会再次抛 ApiException 直接传播。
                     var llmSw2 = System.Diagnostics.Stopwatch.StartNew();

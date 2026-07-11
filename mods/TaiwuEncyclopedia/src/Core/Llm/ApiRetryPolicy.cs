@@ -74,7 +74,7 @@ public static class ApiRetryPolicy
         return error switch
         {
             ApiErrorType.Timeout or ApiErrorType.NetworkError or ApiErrorType.RateLimit
-                or ApiErrorType.Overload or ApiErrorType.ServerError
+                or ApiErrorType.Overload or ApiErrorType.ServerError or ApiErrorType.ContextTooLong
                 => (RetryDecision.Retry, GetRetryMessage(error), "warn"),
             _ => (RetryDecision.Fail, GetFailMessage(error), "error"),
         };
@@ -87,6 +87,7 @@ public static class ApiRetryPolicy
         ApiErrorType.RateLimit => "AI 服务繁忙，排队等待中...",
         ApiErrorType.Overload => "AI 服务过载，稍等重试中...",
         ApiErrorType.ServerError => "AI 服务暂时异常，正在重试...",
+        ApiErrorType.ContextTooLong => "对话历史过长，正在压缩后重试...",
         _ => "正在重试...",
     };
 
@@ -98,6 +99,7 @@ public static class ApiRetryPolicy
         ApiErrorType.Overload => "AI 服务持续过载，请稍后再试",
         ApiErrorType.AuthError => "API Key 无效或已过期，请在设置中更新",
         ApiErrorType.ClientError => "请求参数有误，请检查模型名称和 API 地址配置",
+        ApiErrorType.ContextTooLong => "对话上下文过长，请尝试清除历史后重试",
         ApiErrorType.ServerError => "AI 服务异常，请稍后重试",
         _ => "未知错误，请稍后重试，如持续出现请查看日志",
     };

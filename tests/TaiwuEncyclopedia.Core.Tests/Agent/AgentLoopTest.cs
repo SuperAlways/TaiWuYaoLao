@@ -189,6 +189,52 @@ guidance:
         { yield break; }
     }
 
+    /// <summary>ContextTooLong 触发 force_compress 重试；重试成功恢复，yield FinalChunkEvent。</summary>
+    [Fact]
+    public async Task ContextTooLongTriggersForceCompressAndRecovers()
+    {
+        var client = new ContextTooLongThenRecoverLlmClient();
+        var ctx = new ContextManager();
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+        var messages = new List<LlmMessage> { new() { Role = "user", Content = "q" } };
+        var result = new AgentLoopResult();
+        var finalParts = new List<string>();
+
+        var events = new List<AgentEvent>();
+        await foreach (var ev in AgentLoop.Run(client, new ToolExecutor(new ToolRegistry()),
+            ctx, null, messages, config, 1, 6, new List<Reference>(), finalParts,
+            result, NullAgentTrace.Instance))
+        {
+            events.Add(ev);
+        }
+
+        events.Should().Contain(e => e is FinalChunkEvent);
+        string.Join("", finalParts).Should().Contain("答案");
+    }
+
+    /// <summary>ContextTooLong 触发 force_compress 重试；重试也失败则传播 ApiException。</summary>
+    [Fact]
+    public async Task ContextTooLongForceCompressRetryAlsoFails_Propagates()
+    {
+        var client = new ContextTooLongLlmClient();
+        var ctx = new ContextManager();
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+        var messages = new List<LlmMessage> { new() { Role = "user", Content = "q" } };
+        var result = new AgentLoopResult();
+
+        ApiException? thrown = null;
+        try
+        {
+            await foreach (var _ in AgentLoop.Run(client, new ToolExecutor(new ToolRegistry()),
+                ctx, null, messages, config, 1, 6, new List<Reference>(), new List<string>(),
+                result, NullAgentTrace.Instance)) { }
+        }
+        catch (ApiException ex) { thrown = ex; }
+
+        thrown.Should().NotBeNull();
+        thrown!.ErrorType.Should().Be(ApiErrorType.ContextTooLong);
+    }
+
     /// <summary>第 1 次 ChatAsync 抛 Overload，第 2 次起成功（thinking 无 tool_calls），流式返回答案。</summary>
     private sealed class OverloadThenRecoverLlmClient : ILlmClient
     {
@@ -218,5 +264,48 @@ guidance:
                 Usage = new TokenUsage { PromptTokens = 20, CompletionTokens = 10, CacheHitTokens = 0 },
             };
         }
+    }
+
+    /// <summary>第 1 次 ChatAsync 抛 ContextTooLong，第 2 次起成功，流式返回答案。</summary>
+    private sealed class ContextTooLongThenRecoverLlmClient : ILlmClient
+    {
+        private int _chatCallCount;
+
+        public Task<LlmResponse> ChatAsync(AgentLLMRole role, LlmConfig config,
+            List<LlmMessage> messages, List<Dictionary<string, object>>? tools = null)
+        {
+            _chatCallCount++;
+            if (_chatCallCount == 1)
+                throw new ApiException(ApiErrorType.ContextTooLong, "context length exceeded", "warn");
+            return Task.FromResult(new LlmResponse
+            {
+                Content = "ok",
+                ToolCalls = null,
+                Usage = new TokenUsage { PromptTokens = 10, CompletionTokens = 5, CacheHitTokens = 0 },
+            });
+        }
+
+        public async IAsyncEnumerable<StreamChunk> StreamChatAsync(LlmConfig config,
+            List<LlmMessage> messages, [EnumeratorCancellation] CancellationToken ct)
+        {
+            yield return new StreamChunk { Content = "答案" };
+            yield return new StreamChunk
+            {
+                FinishReason = "stop",
+                Usage = new TokenUsage { PromptTokens = 20, CompletionTokens = 10, CacheHitTokens = 0 },
+            };
+        }
+    }
+
+    /// <summary>始终抛 ContextTooLong，用于测试重试也失败场景。</summary>
+    private sealed class ContextTooLongLlmClient : ILlmClient
+    {
+        public Task<LlmResponse> ChatAsync(AgentLLMRole role, LlmConfig config,
+            List<LlmMessage> messages, List<Dictionary<string, object>>? tools = null)
+            => throw new ApiException(ApiErrorType.ContextTooLong, "context length exceeded", "warn");
+
+        public async IAsyncEnumerable<StreamChunk> StreamChatAsync(LlmConfig config,
+            List<LlmMessage> messages, [EnumeratorCancellation] CancellationToken ct)
+        { yield break; }
     }
 }
