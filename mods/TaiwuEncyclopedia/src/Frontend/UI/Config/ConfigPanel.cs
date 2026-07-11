@@ -11,7 +11,7 @@ using TaiwuEncyclopedia.Frontend.UI;
 namespace TaiwuEncyclopedia.UI;
 
 /// <summary>
-/// 设置面板编排层：组合 LlmConfigSection / PersonaSection / HistorySection / DataSection。
+/// 设置面板编排层：组合 LlmConfigSection / RagSection / PersonaSection / HistorySection / DataSection。
 /// 实现 IPanel，通过 PanelStack.Push 显示在 ChatPanel 之上。F9 快捷键独立打开。
 /// </summary>
 public class ConfigPanel : MonoBehaviour, IPanel
@@ -40,6 +40,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
     private PersonaSection? _personaSection;
     private HistorySection? _historySection;
     private DataSection? _dataSection;
+    private RagSection? _ragSection;
 
     // ========== 构建 ==========
     private void Build()
@@ -54,6 +55,10 @@ public class ConfigPanel : MonoBehaviour, IPanel
         _llmSection.Build(content, _font, (RectTransform)gameObject.transform);
         _llmSection.OnConfigChanged += () => _view.ValidationText!.text = "";
         _llmSection.OnTestConnection += (url, key) => RunTestConnection(url, key);
+
+        // 区域1.5: RAG 远程检索
+        _ragSection = gameObject.AddComponent<RagSection>();
+        _ragSection.Build(content, _font);
 
         // 区域2: 对话风格
         _personaSection = gameObject.AddComponent<PersonaSection>();
@@ -76,6 +81,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
     {
         _view?.Show();
         _llmSection?.Refresh();
+        _ragSection?.Refresh();
         _personaSection?.Refresh();
         _historySection?.Refresh();
         _dataSection?.Refresh();
@@ -111,6 +117,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         string apiKey = _llmSection.ApiKey;
         string model = _llmSection.Model;
         string personaId = _personaSection!.SelectedPersonaId;
+        bool ragEnabled = _ragSection?.RagEnabled ?? true;
 
         // 验证非空
         if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(apiKey)
@@ -129,7 +136,8 @@ public class ConfigPanel : MonoBehaviour, IPanel
             return;
         }
 
-        await FrontendServices.SaveLlmConfig(baseUrl, apiKey, model, personaId);
+        await FrontendServices.SaveLlmConfig(baseUrl, apiKey, model, personaId,
+            ragEnabled: ragEnabled);
         PanelStack.Pop();
     }
 }
