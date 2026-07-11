@@ -130,8 +130,8 @@ public sealed class LlmTransportHost : MonoBehaviour, ILlmClient
                 // Check for context-too-long in 400/413 response body
                 if ((int)request.responseCode == 400 || (int)request.responseCode == 413)
                 {
-                    var body = request.downloadHandler?.text ?? "";
-                    if (body.Contains("context") || body.Contains("token") || body.Contains("length") || body.Contains("too long"))
+                    var responseBody = request.downloadHandler?.text ?? "";
+                    if (responseBody.Contains("context") || responseBody.Contains("token") || responseBody.Contains("length") || responseBody.Contains("too long"))
                     {
                         errorType = ApiErrorType.ContextTooLong;
                         tcs.SetException(new ApiException(errorType, request.error ?? "上下文过长", "warn"));
@@ -212,8 +212,8 @@ public sealed class LlmTransportHost : MonoBehaviour, ILlmClient
                 // Check for context-too-long in 400/413 response body
                 if ((int)request.responseCode == 400 || (int)request.responseCode == 413)
                 {
-                    var body = request.downloadHandler?.text ?? "";
-                    if (body.Contains("context") || body.Contains("token") || body.Contains("length") || body.Contains("too long"))
+                    var responseBody = request.downloadHandler?.text ?? "";
+                    if (responseBody.Contains("context") || responseBody.Contains("token") || responseBody.Contains("length") || responseBody.Contains("too long"))
                     {
                         errorType = ApiErrorType.ContextTooLong;
                         tcs.SetException(new ApiException(errorType, request.error ?? "上下文过长", "warn"));
