@@ -51,7 +51,7 @@ public sealed class RagTransportHost : IRagClient
             if (ct.IsCancellationRequested)
             {
                 req.Abort();
-                tcs.SetResult(new RagRetrieveResult { Error = "请求已取消" });
+                tcs.TrySetResult(new RagRetrieveResult { Error = "请求已取消" });
                 yield break;
             }
             yield return null;
@@ -61,13 +61,13 @@ public sealed class RagTransportHost : IRagClient
         {
             var error = req.error ?? "网络错误";
             Core.Diagnostics.CoreLog.Write("TE.RAG", $"RAG HTTP failed: {error}");
-            tcs.SetResult(new RagRetrieveResult { Error = "unreachable" });
+            tcs.TrySetResult(new RagRetrieveResult { Error = "unreachable" });
             yield break;
         }
 
         var json = req.downloadHandler.text;
         var result = RagResponseParser.Parse(json);
-        tcs.SetResult(result);
+        tcs.TrySetResult(result);
     }
 }
 #pragma warning restore IDE0008, IDE0032, RCS1085, IDE0063, CA1031, CA1305, RCS1181, IDE0011, CA1054, IDE0074, IDE0058, CA1308
