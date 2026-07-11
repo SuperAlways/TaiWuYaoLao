@@ -18,7 +18,8 @@ public sealed class PromptBuilder
     private const string _toolSpec = @"
 ## 工具使用规范
 你有 4 个工具：retrieve_rag / load_background_skill / load_guidance_skill / lookup_concept。
-- ReAct 循环最多 6 轮，每轮可选调工具或直接回答。
+- ReAct 循环最多 6 轮。你只进行分析和工具调用决策，**不要在此阶段直接给出最终回答**。
+- 当你确认资料已收集足够时，调用 0 个工具，系统会自动引导你进入回答阶段。
 - 检索策略：先判断需要哪类信息，再选合适工具。复杂问题可分多轮检索。
 - 不要重复检索相同内容。已检索到的资料直接用。
 - 正文中 [查:xxx] 标记处可调 lookup_concept 查询具体数值或相关章节。同一概念查一次即可。

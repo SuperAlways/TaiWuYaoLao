@@ -163,4 +163,17 @@ personas:
         var prompt = pb.BuildSystemPrompt();
         prompt.Should().Contain("剑中虚影");
     }
+
+    /// <summary>
+    /// system prompt 包含"只分析不答题"指令，阻止 Thinking 阶段直接回答。
+    /// </summary>
+    [Fact]
+    public void BuildSystemPrompt_ContainsAnalyzeOnlyDirective()
+    {
+        var sm = MakeSm();
+        var pb = new PromptBuilder(sm, "sword-will");
+        var prompt = pb.BuildSystemPrompt();
+        prompt.Should().Contain("只进行分析");
+        prompt.Should().Contain("不要在此阶段直接给出最终回答");
+    }
 }
