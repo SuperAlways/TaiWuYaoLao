@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TaiwuEncyclopedia.Core.Tools;
@@ -31,6 +32,7 @@ public abstract class ToolBase
 
     /// <summary>执行工具。</summary>
     /// <param name="args">工具调用参数。</param>
+    /// <param name="ct">取消令牌。</param>
     /// <returns>工具执行结果字典。</returns>
-    public abstract Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args);
+    public abstract Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args, CancellationToken ct = default);
 }

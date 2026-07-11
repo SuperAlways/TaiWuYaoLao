@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TaiwuEncyclopedia.Core.Rag;
@@ -8,5 +9,5 @@ namespace TaiwuEncyclopedia.Core.Rag;
 /// </summary>
 public interface IRagClient
 {
-    Task<RagRetrieveResult> RetrieveAsync(RagRetrieveRequest request);
+    Task<RagRetrieveResult> RetrieveAsync(RagRetrieveRequest request, CancellationToken ct = default);
 }

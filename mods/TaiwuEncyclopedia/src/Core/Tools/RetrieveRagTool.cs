@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using TaiwuEncyclopedia.Core.Rag;
 
@@ -74,7 +75,7 @@ public sealed class RetrieveRagTool : ToolBase
     /// <summary>执行 RAG 检索。</summary>
     /// <param name="args">检索参数。</param>
     /// <returns>检索结果字典。</returns>
-    public override async Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args)
+    public override async Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args, CancellationToken ct = default)
     {
         var query = args.GetValueOrDefault("query")?.ToString() ?? "";
         var mode = args.GetValueOrDefault("mode")?.ToString() ?? "hybrid";
@@ -102,7 +103,7 @@ public sealed class RetrieveRagTool : ToolBase
             LlKeywords = llKeywords,
             TopK = topK,
             ChunkTopK = chunkTopK,
-        });
+        }, ct);
 
         Core.Diagnostics.CoreLog.Write("TE.RAG",
             string.IsNullOrEmpty(ragResult.Error)

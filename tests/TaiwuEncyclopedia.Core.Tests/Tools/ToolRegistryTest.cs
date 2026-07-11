@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using TaiwuEncyclopedia.Core.Tools;
@@ -58,7 +59,7 @@ public class ToolRegistryTest
     {
         public StubTool(string name, string desc) : base(name, desc) { }
         public void SetParams(Dictionary<string, Dictionary<string, object>> p) => SetParameters(p);
-        public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args)
+        public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args, CancellationToken ct = default)
             => Task.FromResult(new Dictionary<string, object>());
     }
 }

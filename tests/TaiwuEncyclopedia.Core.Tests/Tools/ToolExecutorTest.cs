@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
@@ -133,17 +134,38 @@ public class ToolExecutorTest
         obj["result"]!.ToString().Should().Be("ok");
     }
 
+    [Fact]
+    public async Task TimeoutCancelsToolTask()
+    {
+        var registry = new ToolRegistry();
+        registry.Register(new SlowTool(5000)); // 5s delay, 1s timeout
+        var executor = new ToolExecutor(registry);
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var results = await executor.ExecuteAsync(new List<ToolCall>
+        {
+            new() { Id = "1", Function = new ToolCallFunction { Name = "slow", Arguments = "{}" } },
+        });
+        sw.Stop();
+
+        // Should return quickly (within ~2s), not wait the full 5s
+        sw.ElapsedMilliseconds.Should().BeLessThan(3000);
+
+        var obj = JObject.Parse(results[0].Content);
+        obj["error"]!.ToString().Should().Contain("超时");
+    }
+
     private sealed class EchoTool : ToolBase
     {
         public EchoTool(string name) : base(name, "echo") { }
-        public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args)
+        public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args, CancellationToken ct = default)
             => Task.FromResult(new Dictionary<string, object> { ["echo"] = args });
     }
 
     private sealed class ThrowingTool : ToolBase
     {
         public ThrowingTool() : base("throwing", "throws") { }
-        public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args)
+        public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args, CancellationToken ct = default)
             => throw new System.InvalidOperationException("boom");
     }
 
@@ -151,7 +173,18 @@ public class ToolExecutorTest
     {
         public SaveGameOnlyTool() : base("savegame-only", "requires save game") { }
         public override bool RequiresSaveGame => true;
-        public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args)
+        public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args, CancellationToken ct = default)
             => Task.FromResult(new Dictionary<string, object> { ["result"] = "ok" });
+    }
+
+    private sealed class SlowTool : ToolBase
+    {
+        private readonly int _delayMs;
+        public SlowTool(int delayMs) : base("slow", "slow tool", timeout: 1) => _delayMs = delayMs;
+        public override async Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args, CancellationToken ct = default)
+        {
+            await Task.Delay(_delayMs, ct);
+            return new Dictionary<string, object> { ["done"] = true };
+        }
     }
 }

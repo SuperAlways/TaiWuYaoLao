@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using TaiwuEncyclopedia.Core.Rag;
@@ -99,7 +100,7 @@ public class RetrieveRagToolTest
 
         public StubRagClient(RagRetrieveResult result) { _result = result; }
 
-        public Task<RagRetrieveResult> RetrieveAsync(RagRetrieveRequest request)
+        public Task<RagRetrieveResult> RetrieveAsync(RagRetrieveRequest request, CancellationToken ct = default)
             => Task.FromResult(_result);
     }
 }

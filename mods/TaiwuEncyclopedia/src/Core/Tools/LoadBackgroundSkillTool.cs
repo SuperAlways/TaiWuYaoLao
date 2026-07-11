@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using TaiwuEncyclopedia.Core.Skills;
 
@@ -50,8 +51,9 @@ public sealed class LoadBackgroundSkillTool : ToolBase
     /// <summary>执行背景技能加载。</summary>
     /// <param name="args">加载参数。</param>
     /// <returns>加载结果字典。</returns>
-    public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args)
+    public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var chapter = args.GetValueOrDefault("chapter")?.ToString() ?? "";
         var depth = args.GetValueOrDefault("depth")?.ToString() ?? "overview";
         var section = args.GetValueOrDefault("section")?.ToString();

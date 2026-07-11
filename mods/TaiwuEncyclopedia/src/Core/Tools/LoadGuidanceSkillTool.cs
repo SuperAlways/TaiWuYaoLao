@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using TaiwuEncyclopedia.Core.Skills;
 
@@ -32,8 +33,9 @@ public sealed class LoadGuidanceSkillTool : ToolBase
     /// <summary>执行引导技能加载。</summary>
     /// <param name="args">加载参数。</param>
     /// <returns>加载结果字典。</returns>
-    public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args)
+    public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var skill = args.GetValueOrDefault("skill")?.ToString() ?? "";
         var content = _sm.LoadGuidanceSkill(skill);
         if (content == null)

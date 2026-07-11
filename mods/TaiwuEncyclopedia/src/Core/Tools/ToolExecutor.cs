@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TaiwuEncyclopedia.Core.Llm;
@@ -117,10 +118,18 @@ public sealed class ToolExecutor
                 }
             }
 
-            // netstandard2.1 没有 Task.WaitAsync，用 Task.WhenAny + Task.Delay 实现超时
-            var task = tool.ExecuteAsync(args);
-            var timeoutTask = Task.Delay(System.TimeSpan.FromSeconds(tool.Metadata.Timeout));
-            if (await Task.WhenAny(task, timeoutTask) != task)
+            // 用 CancellationTokenSource 实现超时取消，避免工具在后台继续运行
+            using var cts = new CancellationTokenSource(System.TimeSpan.FromSeconds(tool.Metadata.Timeout));
+            try
+            {
+                var result = await tool.ExecuteAsync(args, cts.Token);
+                return new ToolResult
+                {
+                    CallId = tc.Id,
+                    Content = JsonConvert.SerializeObject(result),
+                };
+            }
+            catch (OperationCanceledException)
             {
                 var timeout = tool.Metadata.Timeout;
                 return new ToolResult
@@ -129,12 +138,6 @@ public sealed class ToolExecutor
                     Content = JsonConvert.SerializeObject(new { error = $"工具 {toolName} 执行超时({timeout}s)" }),
                 };
             }
-            var result = await task;
-            return new ToolResult
-            {
-                CallId = tc.Id,
-                Content = JsonConvert.SerializeObject(result),
-            };
         }
         catch (JsonException)
         {

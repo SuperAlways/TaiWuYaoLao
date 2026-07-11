@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using TaiwuEncyclopedia.Core.Skills;
 
@@ -31,8 +32,9 @@ public sealed class LookupConceptTool : ToolBase
     /// <summary>执行概念查询。</summary>
     /// <param name="args">查询参数。</param>
     /// <returns>查询结果字典。</returns>
-    public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args)
+    public override Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var name = args.GetValueOrDefault("name")?.ToString() ?? "";
         var content = _sm.LookupConcept(name);
         return Task.FromResult(content != null
