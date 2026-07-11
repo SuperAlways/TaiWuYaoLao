@@ -136,6 +136,33 @@ public class SoulManagerTest
         capturedPrompt.Should().Contain("新问题");
     }
 
+    [Fact]
+    public async Task UpdateFromCompressTruncatesLongHistoryBeforeFeedingLlm()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "yaolao-soul-" + System.Guid.NewGuid().ToString("N"));
+        var store = new JsonSoulStore(root);
+        var sm = new SoulManager(store);
+        string? capturedPrompt = null;
+        var llmClient = new PromptCapturingLlmClient(
+            response: new LlmResponse
+            {
+                Content = @"{""summary"":""ok"",""profile_fields"":{},""world_fields"":{}}",
+                Usage = new TokenUsage(),
+            },
+            capturePrompt: p => capturedPrompt = p);
+        var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
+
+        // 构造 15000 字符的历史（远超合理 Soul 提取所需）
+        var longHistory = new string('x', 15000);
+
+        await sm.UpdateFromCompressAsync(worldId: 1, earlyHistoryText: longHistory,
+            llmClient, config, oldSummary: null);
+
+        // prompt 中的 history 部分应被截断到 ≤ 4500 字符（4000 + oldSummary 开销）
+        capturedPrompt.Should().NotBeNull();
+        capturedPrompt!.Length.Should().BeLessThan(5000);
+    }
+
     // --- Stub implementations ---
 
     private sealed class ThrowingLlmClient : ILlmClient

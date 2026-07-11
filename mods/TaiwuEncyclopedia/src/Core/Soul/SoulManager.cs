@@ -108,9 +108,13 @@ public sealed class SoulManager
         try
         {
             var oldSummarySection = string.IsNullOrEmpty(oldSummary) ? "（无）" : oldSummary;
+            const int maxHistoryChars = 4000;
+            var truncatedHistory = earlyHistoryText.Length > maxHistoryChars
+                ? earlyHistoryText[..maxHistoryChars] + "\n... [历史已截断]"
+                : earlyHistoryText;
             var prompt = _extractPrompt
                 .Replace("{old_summary}", oldSummarySection)
-                .Replace("{history}", earlyHistoryText); // 不截断，全文传入
+                .Replace("{history}", truncatedHistory);
             var promptMsgs = new List<LlmMessage> { new() { Role = "user", Content = prompt } };
             var sw = System.Diagnostics.Stopwatch.StartNew();
             trace?.LlmCall(0, "intent", "soul_extract", promptMsgs, null);
