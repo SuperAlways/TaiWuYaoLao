@@ -62,6 +62,11 @@ public class AgentRunnerTest
         var endEvent = events.Find(e => e is EndEvent) as EndEvent;
         endEvent.Should().NotBeNull();
         endEvent!.TotalIterations.Should().BeGreaterThan(0);
+
+        // 验证 trace 中 UsageEvent token 不为全零
+        var usageEvents = events.OfType<UsageEvent>().ToList();
+        usageEvents.Should().NotBeEmpty();
+        usageEvents.Sum(u => u.PromptTokens).Should().BeGreaterThan(0);
     }
 
     /// <summary>

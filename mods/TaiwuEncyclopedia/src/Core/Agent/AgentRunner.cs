@@ -157,6 +157,7 @@ public sealed class AgentRunner
         var finalAnswerParts = new List<string>();
         var loopResult = new AgentLoopResult();
         var thinkingBuilder = new StringBuilder();
+        int totalPrompt = 0, totalCompletion = 0, totalCacheHit = 0;
 
         await foreach (var evt in AgentLoop.Run(
             _llmClient, _executor, _ctx, _toolsSchema, messages, _llmConfig,
@@ -164,6 +165,12 @@ public sealed class AgentRunner
             trace: _trace,
             thinkingBuilder: thinkingBuilder))
         {
+            if (evt is UsageEvent u)
+            {
+                totalPrompt += u.PromptTokens;
+                totalCompletion += u.CompletionTokens;
+                totalCacheHit += u.CacheHitTokens;
+            }
             yield return evt;
         }
 
@@ -194,9 +201,9 @@ public sealed class AgentRunner
         // 8. 结束 trace 会话
         var totalUsage = new TokenUsage
         {
-            PromptTokens = 0,
-            CompletionTokens = 0,
-            CacheHitTokens = 0,
+            PromptTokens = totalPrompt,
+            CompletionTokens = totalCompletion,
+            CacheHitTokens = totalCacheHit,
         };
         _trace.EndSession((int)stopwatch.Elapsed.TotalMilliseconds, loopResult.TotalIterations + 1,
             finalAnswer.Length, totalUsage);
