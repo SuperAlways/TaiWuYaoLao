@@ -244,17 +244,14 @@ public sealed class LlmTransportHost : MonoBehaviour, ILlmClient
 
         if (request.result != UnityWebRequest.Result.Success)
         {
-            if (request.result == UnityWebRequest.Result.ConnectionError)
+            // Debug log for diagnosis, user-facing message is generic
+            var rawError = request.error ?? "";
+            Core.Diagnostics.CoreLog.Write("TE.Fetch", $"FetchModels failed: {baseUrl} → {(int)request.responseCode} {rawError}");
+            onComplete(new ModelCatalogResult
             {
-                onComplete(new ModelCatalogResult
-                {
-                    Success = false,
-                    Error = $"无法连接 API 服务，请检查网络: {request.error}"
-                });
-                yield break;
-            }
-            var error = ModelCatalogParser.ClassifyError((int)request.responseCode, request.error);
-            onComplete(new ModelCatalogResult { Success = false, Error = error });
+                Success = false,
+                Error = "暂不支持该厂商拉取模型，请自行填写模型名称"
+            });
             yield break;
         }
 
