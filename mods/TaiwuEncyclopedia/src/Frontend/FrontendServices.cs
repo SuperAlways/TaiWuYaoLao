@@ -34,6 +34,7 @@ public static class FrontendServices
     private static LlmConfig? _loadedLlmConfig;
     private static string? _selectedPersonaId;
     private static string? _ragBaseUrl;
+    private static bool _ragEnabled = true;
     private static bool _agentTrace;
 
     /// <summary>
@@ -178,6 +179,7 @@ public static class FrontendServices
                     };
                     _selectedPersonaId = saved.PersonaId ?? "sword-will";
                     _ragBaseUrl = saved.RagBaseUrl;
+                    _ragEnabled = saved.RagEnabled;
                     _agentTrace = saved.AgentTrace;
                     Debug.Log("[TaiwuEncyclopedia] Config loaded from disk");
                     return;
@@ -198,7 +200,7 @@ public static class FrontendServices
     /// <summary>
     /// 保存 LLM 配置并重建 AgentRunner。
     /// </summary>
-    public static async System.Threading.Tasks.Task SaveLlmConfig(string baseUrl, string apiKey, string model, string personaId, bool agentTrace = false)
+    public static async System.Threading.Tasks.Task SaveLlmConfig(string baseUrl, string apiKey, string model, string personaId, bool ragEnabled = true, bool agentTrace = false)
     {
         try
         {
@@ -210,11 +212,13 @@ public static class FrontendServices
                 Model = model,
                 PersonaId = personaId,
                 RagBaseUrl = _ragBaseUrl,
+                RagEnabled = ragEnabled,
                 AgentTrace = agentTrace
             };
             await AtomicFile.WriteJsonAsync(ConfigPath, saved);
 
             // 更新内存
+            _ragEnabled = ragEnabled;
             _loadedLlmConfig = new LlmConfig
             {
                 BaseUrl = baseUrl,
@@ -301,7 +305,9 @@ public static class FrontendServices
                 string ragUrl = !string.IsNullOrWhiteSpace(_ragBaseUrl) ? _ragBaseUrl : "https://rag.goodcooking.top";
                 _ragClient = new RagTransportHost(ragUrl);
             }
-            _toolRegistry.Register(new RetrieveRagTool(_ragClient));
+            var ragTool = new RetrieveRagTool(_ragClient);
+            ragTool.RagEnabled = _ragEnabled;
+            _toolRegistry.Register(ragTool);
 
             // LoadBackgroundSkillTool (需要 SkillManager)
             if (sm != null)
@@ -360,6 +366,7 @@ public static class FrontendServices
         public string? Model { get; set; }
         public string? PersonaId { get; set; }
         public string? RagBaseUrl { get; set; }
+        public bool RagEnabled { get; set; } = true;
         public bool AgentTrace { get; set; }
     }
 
