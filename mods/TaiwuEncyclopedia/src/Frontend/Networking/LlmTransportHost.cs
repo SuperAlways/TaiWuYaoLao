@@ -231,6 +231,7 @@ public sealed class LlmTransportHost : MonoBehaviour, ILlmClient
 
         using var request = UnityWebRequest.Get(url);
         request.SetRequestHeader("Authorization", "Bearer " + apiKey);
+        request.SetRequestHeader("Accept", "application/json");
         request.timeout = 15;
 
         yield return request.SendWebRequest();
@@ -243,13 +244,16 @@ public sealed class LlmTransportHost : MonoBehaviour, ILlmClient
 
         if (request.result != UnityWebRequest.Result.Success)
         {
-            // Bug 4: ConnectionError → responseCode=0, ClassifyError(0) returns misleading "HTTP 0".
             if (request.result == UnityWebRequest.Result.ConnectionError)
             {
-                onComplete(new ModelCatalogResult { Success = false, Error = "无法连接 API 服务，请检查网络" });
+                onComplete(new ModelCatalogResult
+                {
+                    Success = false,
+                    Error = $"无法连接 API 服务，请检查网络: {request.error}"
+                });
                 yield break;
             }
-            var error = ModelCatalogParser.ClassifyError((int)request.responseCode);
+            var error = ModelCatalogParser.ClassifyError((int)request.responseCode, request.error);
             onComplete(new ModelCatalogResult { Success = false, Error = error });
             yield break;
         }

@@ -60,12 +60,15 @@ public static class ModelCatalogParser
     /// </summary>
     public static string ClassifyError(int statusCode, string? rawError = null)
     {
-        return statusCode switch
+        var prefix = statusCode switch
         {
             401 or 403 => "Key 无效或无权访问模型列表接口",
             404 or 405 => "服务商未提供模型列表接口，请手动填写模型名",
             >= 500 and < 600 => "API 基址不可用或服务商暂时不可用",
             _ => $"HTTP {statusCode}"
         };
+        if (!string.IsNullOrWhiteSpace(rawError))
+            prefix += $" ({rawError})";
+        return prefix;
     }
 }
