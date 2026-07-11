@@ -37,9 +37,33 @@ public static class LoopDetector
         var sigs = new List<string>();
         foreach (var tc in calls)
         {
-            sigs.Add($"{tc.Function.Name}:{tc.Function.Arguments}");
+            if (tc.Function.Name == "retrieve_rag")
+            {
+                // 对 retrieve_rag：只取 query 值做签名，忽略 top_k/mode 等参数
+                var query = ExtractJsonValue(tc.Function.Arguments, "query");
+                sigs.Add($"retrieve_rag:{query}");
+            }
+            else
+            {
+                sigs.Add($"{tc.Function.Name}:{tc.Function.Arguments}");
+            }
         }
         return sigs;
+    }
+
+    /// <summary>从 JSON 字符串中提取指定 key 的字符串值。简易实现，不依赖 Newtonsoft。</summary>
+    private static string ExtractJsonValue(string json, string key)
+    {
+        var searchKey = $"\"{key}\"";
+        var keyIdx = json.IndexOf(searchKey, StringComparison.Ordinal);
+        if (keyIdx < 0) return json;
+        var colonIdx = json.IndexOf(':', keyIdx + searchKey.Length);
+        if (colonIdx < 0) return json;
+        var valStart = json.IndexOf('"', colonIdx + 1);
+        if (valStart < 0) return json;
+        var valEnd = json.IndexOf('"', valStart + 1);
+        if (valEnd < 0) return json;
+        return json.Substring(valStart + 1, valEnd - valStart - 1);
     }
 
     /// <summary>
