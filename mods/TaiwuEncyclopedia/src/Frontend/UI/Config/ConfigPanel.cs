@@ -1,11 +1,11 @@
 #pragma warning disable CS8604, CS8618, IDE0008, IDE0011, RCS1181, IDE0090, IDE0031, RCS1146, IDE0058, IDE0074, RCS1048, CA1822, CA1812, IDE0051, IDE0052, CA1001, CA2012, IDE0055, IDE0110, IDE0010, IDE0022, IDE0048, RCS1123, CA1307, RCS1238, CA1852, CS0414, RCS1201, RCS1124, IDE0057, CA1031, RCS1001, IDE0370, RCS1085, IDE0028, RCS1161
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using TaiwuEncyclopedia.Core.Llm;
+using TaiwuEncyclopedia.Frontend.Networking;
 using TaiwuEncyclopedia.Frontend.UI;
 
 namespace TaiwuEncyclopedia.UI;
@@ -91,35 +91,17 @@ public class ConfigPanel : MonoBehaviour, IPanel
 
     private IEnumerator TestConnectionCoroutine(string baseUrl, string apiKey)
     {
-        var sw = Stopwatch.StartNew();
-        var client = new OpenAiCompatibleClient();
-        var config = new LlmConfig
-        {
-            BaseUrl = baseUrl,
-            ApiKey = apiKey,
-            Model = _llmSection!.Model
-        };
-        var messages = new List<LlmMessage> { new() { Role = "user", Content = "ping" } };
+        bool done = false;
+        bool success = false;
+        string message = "";
+        long latencyMs = 0;
 
-        Task<LlmResponse>? task = null;
-        Exception? fault = null;
-        try { task = client.Chat(AgentLLMRole.Testing, messages, config); }
-        catch (Exception e) { fault = e; }
+        StartCoroutine(LlmTransportHost.Instance.TestConnection(
+            baseUrl, apiKey, _llmSection!.Model,
+            (s, msg, ms) => { done = true; success = s; message = msg; latencyMs = ms; }));
 
-        if (task != null)
-        {
-            yield return new WaitUntil(() => task.IsCompleted);
-            if (task.IsFaulted) fault = task.Exception?.InnerException ?? task.Exception;
-        }
-
-        sw.Stop();
-
-        if (fault != null)
-            _llmSection.SetTestResult(false, $"连接失败 ({sw.ElapsedMilliseconds}ms): {fault.Message}");
-        else if (task != null && task.Result != null)
-            _llmSection.SetTestResult(true, $"连接正常 ({sw.ElapsedMilliseconds}ms)");
-        else
-            _llmSection.SetTestResult(false, "未知错误");
+        yield return new WaitUntil(() => done);
+        _llmSection.SetTestResult(success, message);
     }
 
     // ========== 保存并关闭 ==========

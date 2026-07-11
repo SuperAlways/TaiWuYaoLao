@@ -2,7 +2,7 @@
 using System;
 using System.Globalization;
 using System.Collections.Generic;
-using TaiwuEncyclopedia.Core.Http;
+using TaiwuEncyclopedia.Core.Rag;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;

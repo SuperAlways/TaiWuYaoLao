@@ -3,7 +3,7 @@ using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TaiwuEncyclopedia.Core.Http;
+using TaiwuEncyclopedia.Core.Rag;
 
 using TaiwuEncyclopedia.Frontend.UI;
 

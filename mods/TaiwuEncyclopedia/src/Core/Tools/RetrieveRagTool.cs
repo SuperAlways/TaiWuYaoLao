@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TaiwuEncyclopedia.Core.Http;
+using TaiwuEncyclopedia.Core.Rag;
 
 namespace TaiwuEncyclopedia.Core.Tools;
 
@@ -10,11 +10,11 @@ namespace TaiwuEncyclopedia.Core.Tools;
 /// </summary>
 public sealed class RetrieveRagTool : ToolBase
 {
-    private readonly RagHttpClient _ragClient;
+    private readonly IRagClient _ragClient;
 
     /// <summary>初始化 RetrieveRagTool 实例。</summary>
-    /// <param name="ragClient">RAG HTTP 客户端。</param>
-    public RetrieveRagTool(RagHttpClient ragClient) : base(
+    /// <param name="ragClient">RAG 检索客户端。</param>
+    public RetrieveRagTool(IRagClient ragClient) : base(
         name: "retrieve_rag",
         description: "从太吾绘卷知识库中检索信息。返回实体、关系、原文片段。适用于需要查阅游戏机制、攻略、资料的场景。",
         timeout: 60)

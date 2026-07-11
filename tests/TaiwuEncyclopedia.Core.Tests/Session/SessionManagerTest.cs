@@ -97,7 +97,7 @@ public class SessionManagerTest
         var store = new JsonSessionStore(root);
         var sm = new SessionManager(store);
 
-        var refs = new List<TaiwuEncyclopedia.Core.Http.Reference>
+        var refs = new List<TaiwuEncyclopedia.Core.Rag.Reference>
         {
             new() { FullDocId = "doc-A", SourceUrl = "https://wiki.example.com/a", HitCount = 3 },
             new() { FullDocId = "doc-B", SourceUrl = "https://bbs.example.com/b", HitCount = 1 },

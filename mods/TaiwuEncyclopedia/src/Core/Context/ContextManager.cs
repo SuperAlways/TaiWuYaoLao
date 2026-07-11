@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TaiwuEncyclopedia.Core.Agent;
 using TaiwuEncyclopedia.Core.Diagnostics;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Soul;
@@ -14,7 +15,7 @@ namespace TaiwuEncyclopedia.Core.Context;
 public sealed class ContextManager
 {
     private readonly SoulManager? _soulManager;
-    private readonly OpenAiCompatibleClient? _llmClient;
+    private readonly ILlmClient? _llmClient;
     private readonly LlmConfig? _llmConfig;
     private readonly int _collapseThreshold;
     private readonly IAgentTrace? _trace;
@@ -28,7 +29,7 @@ public sealed class ContextManager
     /// <param name="collapseThresholdTokens">压缩阈值 token 数</param>
     public ContextManager(
         SoulManager? soulManager = null,
-        OpenAiCompatibleClient? llmClient = null,
+        ILlmClient? llmClient = null,
         LlmConfig? llmConfig = null,
         int collapseThresholdTokens = 80000,
         IAgentTrace? trace = null)

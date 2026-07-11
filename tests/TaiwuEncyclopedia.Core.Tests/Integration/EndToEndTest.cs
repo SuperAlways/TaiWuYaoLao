@@ -1,15 +1,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using TaiwuEncyclopedia.Core.Agent;
 using TaiwuEncyclopedia.Core.Context;
-using TaiwuEncyclopedia.Core.Http;
+using TaiwuEncyclopedia.Core.Rag;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Core.Skills;
@@ -25,30 +23,6 @@ namespace TaiwuEncyclopedia.Core.Tests.Integration;
 /// </summary>
 public class EndToEndTest
 {
-    private static readonly string[] ReActLoopResponses = new[]
-    {
-        // 轮 1 THINKING: 返回 tool_call
-        "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"retrieve_rag\",\"arguments\":\"{\\\"query\\\":\\\"太吾\\\"}\"}}]}}],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":20}}",
-        // 轮 2 THINKING: 返回直答（无 tool_calls）
-        "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"根据资料...\"}}],\"usage\":{\"prompt_tokens\":200,\"completion_tokens\":10}}",
-    };
-
-    private static readonly string[] ExhaustionResponses = new[]
-    {
-        "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_0\",\"type\":\"function\",\"function\":{\"name\":\"retrieve_rag\",\"arguments\":\"{\\\"query\\\":\\\"太吾绘卷战斗系统详解\\\"}\"}}]}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
-        "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"retrieve_rag\",\"arguments\":\"{\\\"query\\\":\\\"门派武功秘籍收集攻略\\\"}\"}}]}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
-        "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_2\",\"type\":\"function\",\"function\":{\"name\":\"retrieve_rag\",\"arguments\":\"{\\\"query\\\":\\\"村民好感度提升方法大全\\\"}\"}}]}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
-    };
-
-    private static readonly string[] LoopDetectionResponses = new[]
-    {
-        "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"retrieve_rag\",\"arguments\":\"{\\\"query\\\":\\\"相同查询\\\"}\"}}]}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
-        "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"retrieve_rag\",\"arguments\":\"{\\\"query\\\":\\\"相同查询\\\"}\"}}]}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5}}",
-    };
-
-    private const string StreamResponse = "data: {\"choices\":[{\"delta\":{\"content\":\"最终答案\"}}]}\n\ndata: {\"choices\":[],\"usage\":{\"prompt_tokens\":50,\"completion_tokens\":10}}\n\ndata: [DONE]\n\n";
-    private const string FallbackStreamResponse = "data: {\"choices\":[{\"delta\":{\"content\":\"兜底答案\"}}]}\n\ndata: {\"choices\":[],\"usage\":{\"prompt_tokens\":50,\"completion_tokens\":10}}\n\ndata: [DONE]\n\n";
-    private const string LoopStreamResponse = "data: {\"choices\":[{\"delta\":{\"content\":\"循环检测答案\"}}]}\n\ndata: {\"choices\":[],\"usage\":{\"prompt_tokens\":50,\"completion_tokens\":10}}\n\ndata: [DONE]\n\n";
     /// <summary>
     /// 验证 ReAct 循环：先调用工具，然后收敛到最终答案。
     /// </summary>
@@ -57,10 +31,62 @@ public class EndToEndTest
     {
         var root = PathRoot();
         var sm = MakeSkillManager();
-        // LLM: 第1轮返回 tool_call(retrieve_rag)，第2轮返回直答
-        var llmHandler = new SequenceLlmHandler(ReActLoopResponses, StreamResponse);
+        var llmClient = new SequenceLlmClient(
+            thinkingResponses: new[]
+            {
+                // 轮 1 THINKING: 返回 tool_call(retrieve_rag)
+                new LlmResponse
+                {
+                    Content = "",
+                    ToolCalls = new List<ToolCall>
+                    {
+                        new()
+                        {
+                            Id = "call_1",
+                            Type = "function",
+                            Function = new ToolCallFunction
+                            {
+                                Name = "retrieve_rag",
+                                Arguments = "{\"query\":\"太吾\"}",
+                            },
+                        },
+                    },
+                    Usage = new TokenUsage { PromptTokens = 100, CompletionTokens = 20, CacheHitTokens = 0 },
+                },
+                // 轮 2 THINKING: 返回直答（无 tool_calls）
+                new LlmResponse
+                {
+                    Content = "根据资料...",
+                    ToolCalls = null,
+                    Usage = new TokenUsage { PromptTokens = 200, CompletionTokens = 10, CacheHitTokens = 0 },
+                },
+            },
+            streamChunks: new[]
+            {
+                new StreamChunk { Content = "最终答案" },
+                new StreamChunk { FinishReason = "stop", Usage = new TokenUsage { PromptTokens = 50, CompletionTokens = 10, CacheHitTokens = 0 } },
+            });
+        var ragClient = new StubRagClient(new RagRetrieveResult
+        {
+            Context = "RAG结果",
+            References = new List<Reference>
+            {
+                new()
+                {
+                    FullDocId = "doc-A",
+                    FilePath = "wiki/a.md",
+                    SourceUrl = "https://wiki.example.com/a",
+                    SourceType = "wiki",
+                    KnowledgeType = "机制",
+                    Author = "灰机",
+                    GameVersion = "1.0",
+                    Snippet = "片段",
+                    HitCount = 1,
+                },
+            },
+        });
 
-        var runner = BuildRunner(llmHandler, sm, root);
+        var runner = BuildRunner(llmClient, ragClient, sm, root);
 
         var events = new List<AgentEvent>();
         await foreach (var ev in runner.RunAsync("太吾怎么玩", worldId: 1))
@@ -104,9 +130,45 @@ public class EndToEndTest
         var sm = MakeSkillManager();
         // LLM: 每轮都返回 tool_call，直到 max_iter 耗尽
         // 使用完全不同的查询参数，确保 Jaccard 相似度 < 0.8，避免触发循环检测
-        var llmHandler = new SequenceLlmHandler(ExhaustionResponses, FallbackStreamResponse);
+        var llmClient = new SequenceLlmClient(
+            thinkingResponses: new[]
+            {
+                new LlmResponse
+                {
+                    Content = "",
+                    ToolCalls = new List<ToolCall>
+                    {
+                        new() { Id = "call_0", Type = "function", Function = new ToolCallFunction { Name = "retrieve_rag", Arguments = "{\"query\":\"太吾绘卷战斗系统详解\"}" } },
+                    },
+                    Usage = new TokenUsage { PromptTokens = 10, CompletionTokens = 5, CacheHitTokens = 0 },
+                },
+                new LlmResponse
+                {
+                    Content = "",
+                    ToolCalls = new List<ToolCall>
+                    {
+                        new() { Id = "call_1", Type = "function", Function = new ToolCallFunction { Name = "retrieve_rag", Arguments = "{\"query\":\"门派武功秘籍收集攻略\"}" } },
+                    },
+                    Usage = new TokenUsage { PromptTokens = 10, CompletionTokens = 5, CacheHitTokens = 0 },
+                },
+                new LlmResponse
+                {
+                    Content = "",
+                    ToolCalls = new List<ToolCall>
+                    {
+                        new() { Id = "call_2", Type = "function", Function = new ToolCallFunction { Name = "retrieve_rag", Arguments = "{\"query\":\"村民好感度提升方法大全\"}" } },
+                    },
+                    Usage = new TokenUsage { PromptTokens = 10, CompletionTokens = 5, CacheHitTokens = 0 },
+                },
+            },
+            streamChunks: new[]
+            {
+                new StreamChunk { Content = "兜底答案" },
+                new StreamChunk { FinishReason = "stop", Usage = new TokenUsage { PromptTokens = 50, CompletionTokens = 10, CacheHitTokens = 0 } },
+            });
 
-        var runner = BuildRunner(llmHandler, sm, root, maxIter: 3);
+        var ragClient = new StubRagClient(new RagRetrieveResult { Context = "RAG结果" });
+        var runner = BuildRunner(llmClient, ragClient, sm, root, maxIter: 3);
 
         var events = new List<AgentEvent>();
         await foreach (var ev in runner.RunAsync("test", worldId: 1))
@@ -130,9 +192,36 @@ public class EndToEndTest
         var root = PathRoot();
         var sm = MakeSkillManager();
         // LLM: 连续两轮返回相同的 tool_call
-        var llmHandler = new SequenceLlmHandler(LoopDetectionResponses, LoopStreamResponse);
+        var llmClient = new SequenceLlmClient(
+            thinkingResponses: new[]
+            {
+                new LlmResponse
+                {
+                    Content = "",
+                    ToolCalls = new List<ToolCall>
+                    {
+                        new() { Id = "call_1", Type = "function", Function = new ToolCallFunction { Name = "retrieve_rag", Arguments = "{\"query\":\"相同查询\"}" } },
+                    },
+                    Usage = new TokenUsage { PromptTokens = 10, CompletionTokens = 5, CacheHitTokens = 0 },
+                },
+                new LlmResponse
+                {
+                    Content = "",
+                    ToolCalls = new List<ToolCall>
+                    {
+                        new() { Id = "call_1", Type = "function", Function = new ToolCallFunction { Name = "retrieve_rag", Arguments = "{\"query\":\"相同查询\"}" } },
+                    },
+                    Usage = new TokenUsage { PromptTokens = 10, CompletionTokens = 5, CacheHitTokens = 0 },
+                },
+            },
+            streamChunks: new[]
+            {
+                new StreamChunk { Content = "循环检测答案" },
+                new StreamChunk { FinishReason = "stop", Usage = new TokenUsage { PromptTokens = 50, CompletionTokens = 10, CacheHitTokens = 0 } },
+            });
 
-        var runner = BuildRunner(llmHandler, sm, root);
+        var ragClient = new StubRagClient(new RagRetrieveResult { Context = "RAG结果" });
+        var runner = BuildRunner(llmClient, ragClient, sm, root);
 
         var events = new List<AgentEvent>();
         await foreach (var ev in runner.RunAsync("test", worldId: 1))
@@ -166,11 +255,9 @@ public class EndToEndTest
 
     // --- helpers ---
 
-    private static AgentRunner BuildRunner(HttpMessageHandler llmHandler, SkillManager sm, string root, int maxIter = 6)
+    private static AgentRunner BuildRunner(ILlmClient llmClient, IRagClient ragClient, SkillManager sm, string root, int maxIter = 6)
     {
-        var llmClient = new OpenAiCompatibleClient(llmHandler);
         var config = new LlmConfig { ApiKey = "k", Model = "m", BaseUrl = "http://test" };
-        var ragClient = new RagHttpClient(new StubRagHandler(), "http://taiwuasker");
         var soulStore = new JsonSoulStore(root);
         var sessionStore = new JsonSessionStore(root);
         var registry = new ToolRegistry();
@@ -211,53 +298,41 @@ personas:
     }
 
     /// <summary>按顺序返回 THINKING 响应，ANSWER 流式响应固定。</summary>
-    private sealed class SequenceLlmHandler : HttpMessageHandler
+    private sealed class SequenceLlmClient : ILlmClient
     {
-        private readonly string[] _thinkingResponses;
-        private readonly string _streamResponse;
+        private readonly LlmResponse[] _thinkingResponses;
+        private readonly StreamChunk[] _streamChunks;
         private int _thinkingCount;
-        private int _streamCount;
 
-        public SequenceLlmHandler(string[] thinkingResponses, string streamResponse)
+        public SequenceLlmClient(LlmResponse[] thinkingResponses, StreamChunk[] streamChunks)
         {
             _thinkingResponses = thinkingResponses;
-            _streamResponse = streamResponse;
+            _streamChunks = streamChunks;
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
+        public Task<LlmResponse> ChatAsync(AgentLLMRole role, LlmConfig config,
+            List<LlmMessage> messages, List<Dictionary<string, object>>? tools = null)
         {
-            // 判断是流式还是非流式：流式请求的 body 含 "stream":true
-            var body = req.Content!.ReadAsStringAsync(ct).Result;
-            var isStream = body.Contains("\"stream\":true");
+            var idx = System.Math.Min(_thinkingCount, _thinkingResponses.Length - 1);
+            _thinkingCount++;
+            return Task.FromResult(_thinkingResponses[idx]);
+        }
 
-            string respBody;
-            bool isStreamContent;
-            if (isStream)
-            {
-                respBody = _streamResponse;
-                isStreamContent = true;
-                _streamCount++;
-            }
-            else
-            {
-                var idx = System.Math.Min(_thinkingCount, _thinkingResponses.Length - 1);
-                respBody = _thinkingResponses[idx];
-                isStreamContent = false;
-                _thinkingCount++;
-            }
-
-            var content = new StringContent(respBody, Encoding.UTF8,
-                isStreamContent ? "text/event-stream" : "application/json");
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+        public async IAsyncEnumerable<StreamChunk> StreamChatAsync(LlmConfig config,
+            List<LlmMessage> messages, [EnumeratorCancellation] CancellationToken ct)
+        {
+            foreach (var chunk in _streamChunks)
+                yield return chunk;
         }
     }
 
-    private sealed class StubRagHandler : HttpMessageHandler
+    // --- Stub IRagClient ---
+
+    private sealed class StubRagClient : IRagClient
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
-        {
-            var content = new StringContent("{\"context\":\"RAG结果\",\"references\":[{\"full_doc_id\":\"doc-A\",\"file_path\":\"wiki/a.md\",\"source_url\":\"https://wiki.example.com/a\",\"source_type\":\"wiki\",\"knowledge_type\":\"机制\",\"author\":\"灰机\",\"game_version\":\"1.0\",\"snippet\":\"片段\",\"hit_count\":1}]}", Encoding.UTF8, "application/json");
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
-        }
+        private readonly RagRetrieveResult _result;
+        public StubRagClient(RagRetrieveResult result) { _result = result; }
+        public Task<RagRetrieveResult> RetrieveAsync(RagRetrieveRequest request)
+            => Task.FromResult(_result);
     }
 }

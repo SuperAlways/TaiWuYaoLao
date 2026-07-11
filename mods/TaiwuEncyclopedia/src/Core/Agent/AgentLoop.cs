@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TaiwuEncyclopedia.Core.Context;
 using TaiwuEncyclopedia.Core.Diagnostics;
-using TaiwuEncyclopedia.Core.Http;
+using TaiwuEncyclopedia.Core.Rag;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Tools;
 
@@ -34,7 +34,7 @@ public static class AgentLoop
     /// <param name="trace">ReAct 追踪（可选，暂留占位，后续接入 IAgentTrace）。</param>
     /// <returns>Agent 事件异步枚举。</returns>
     public static async IAsyncEnumerable<AgentEvent> Run(
-        OpenAiCompatibleClient llmClient,
+        ILlmClient llmClient,
         ToolExecutor executor,
         ContextManager ctx,
         List<Dictionary<string, object>>? toolsSchema,
@@ -61,8 +61,8 @@ public static class AgentLoop
             {
                 var llmSw = System.Diagnostics.Stopwatch.StartNew();
                 trace.LlmCall(iteration, "thinking", "thinking_normal", messages, toolsSchema);
-                response = await llmClient.Chat(
-                    AgentLLMRole.Thinking, messages, llmConfig, tools: toolsSchema);
+                response = await llmClient.ChatAsync(
+                    AgentLLMRole.Thinking, llmConfig, messages, tools: toolsSchema);
                 llmSw.Stop();
                 trace.LlmResponse(iteration, "thinking", response.Content, response.ToolCalls,
                     "", response.Usage, (int)llmSw.ElapsedMilliseconds);
@@ -76,8 +76,8 @@ public static class AgentLoop
                     var llmSw2 = System.Diagnostics.Stopwatch.StartNew();
                     trace.LlmCall(iteration, "thinking", "thinking_force_compress_retry", messages, toolsSchema);
                     messages = ctx.ForceCompress(messages);
-                    response = await llmClient.Chat(
-                        AgentLLMRole.Thinking, messages, llmConfig, tools: toolsSchema);
+                    response = await llmClient.ChatAsync(
+                        AgentLLMRole.Thinking, llmConfig, messages, tools: toolsSchema);
                     llmSw2.Stop();
                     trace.LlmResponse(iteration, "thinking", response.Content, response.ToolCalls,
                         "", response.Usage, (int)llmSw2.ElapsedMilliseconds);
@@ -124,24 +124,29 @@ public static class AgentLoop
                 var ansSw = System.Diagnostics.Stopwatch.StartNew();
                 trace.LlmCall(iteration, "answer", "answer_direct", messages, null);
                 var answerContent = new System.Text.StringBuilder();
-                await foreach (var chunk in llmClient.StreamChat(AgentLLMRole.Answer, messages, llmConfig))
+                TokenUsage? streamUsage = null;
+                await foreach (var chunk in llmClient.StreamChatAsync(llmConfig, messages, System.Threading.CancellationToken.None))
                 {
-                    finalAnswerParts.Add(chunk);
-                    answerContent.Append(chunk);
-                    yield return new FinalChunkEvent { Content = chunk, Iteration = iteration };
+                    if (chunk.Content != null)
+                    {
+                        finalAnswerParts.Add(chunk.Content);
+                        answerContent.Append(chunk.Content);
+                        yield return new FinalChunkEvent { Content = chunk.Content, Iteration = iteration };
+                    }
+                    if (chunk.Usage != null) streamUsage = chunk.Usage;
                 }
                 ansSw.Stop();
                 trace.LlmResponse(iteration, "answer", answerContent.ToString(), null, "stop",
-                    llmClient.LastStreamUsage, (int)ansSw.ElapsedMilliseconds);
-                if (llmClient.LastStreamUsage != null)
+                    streamUsage, (int)ansSw.ElapsedMilliseconds);
+                if (streamUsage != null)
                 {
                     yield return new UsageEvent
                     {
                         Iteration = iteration,
                         Role = "answer",
-                        PromptTokens = llmClient.LastStreamUsage.PromptTokens,
-                        CompletionTokens = llmClient.LastStreamUsage.CompletionTokens,
-                        CacheHitTokens = llmClient.LastStreamUsage.CacheHitTokens,
+                        PromptTokens = streamUsage.PromptTokens,
+                        CompletionTokens = streamUsage.CompletionTokens,
+                        CacheHitTokens = streamUsage.CacheHitTokens,
                     };
                 }
                 break;
@@ -161,24 +166,29 @@ public static class AgentLoop
                 var ansSw = System.Diagnostics.Stopwatch.StartNew();
                 trace.LlmCall(iteration, "answer", "answer_loop_detected", messages, null);
                 var answerContent = new System.Text.StringBuilder();
-                await foreach (var chunk in llmClient.StreamChat(AgentLLMRole.Answer, messages, llmConfig))
+                TokenUsage? streamUsage = null;
+                await foreach (var chunk in llmClient.StreamChatAsync(llmConfig, messages, System.Threading.CancellationToken.None))
                 {
-                    finalAnswerParts.Add(chunk);
-                    answerContent.Append(chunk);
-                    yield return new FinalChunkEvent { Content = chunk, Iteration = iteration };
+                    if (chunk.Content != null)
+                    {
+                        finalAnswerParts.Add(chunk.Content);
+                        answerContent.Append(chunk.Content);
+                        yield return new FinalChunkEvent { Content = chunk.Content, Iteration = iteration };
+                    }
+                    if (chunk.Usage != null) streamUsage = chunk.Usage;
                 }
                 ansSw.Stop();
                 trace.LlmResponse(iteration, "answer", answerContent.ToString(), null, "stop",
-                    llmClient.LastStreamUsage, (int)ansSw.ElapsedMilliseconds);
-                if (llmClient.LastStreamUsage != null)
+                    streamUsage, (int)ansSw.ElapsedMilliseconds);
+                if (streamUsage != null)
                 {
                     yield return new UsageEvent
                     {
                         Iteration = iteration,
                         Role = "answer",
-                        PromptTokens = llmClient.LastStreamUsage.PromptTokens,
-                        CompletionTokens = llmClient.LastStreamUsage.CompletionTokens,
-                        CacheHitTokens = llmClient.LastStreamUsage.CacheHitTokens,
+                        PromptTokens = streamUsage.PromptTokens,
+                        CompletionTokens = streamUsage.CompletionTokens,
+                        CacheHitTokens = streamUsage.CacheHitTokens,
                     };
                 }
                 break;
@@ -282,24 +292,29 @@ public static class AgentLoop
             var ansSw = System.Diagnostics.Stopwatch.StartNew();
             trace.LlmCall(maxIter, "answer", "answer_fallback", messages, null);
             var answerContent = new System.Text.StringBuilder();
-            await foreach (var chunk in llmClient.StreamChat(AgentLLMRole.Answer, messages, llmConfig))
+            TokenUsage? streamUsage = null;
+            await foreach (var chunk in llmClient.StreamChatAsync(llmConfig, messages, System.Threading.CancellationToken.None))
             {
-                finalAnswerParts.Add(chunk);
-                answerContent.Append(chunk);
-                yield return new FinalChunkEvent { Content = chunk, Iteration = maxIter };
+                if (chunk.Content != null)
+                {
+                    finalAnswerParts.Add(chunk.Content);
+                    answerContent.Append(chunk.Content);
+                    yield return new FinalChunkEvent { Content = chunk.Content, Iteration = maxIter };
+                }
+                if (chunk.Usage != null) streamUsage = chunk.Usage;
             }
             ansSw.Stop();
             trace.LlmResponse(maxIter, "answer", answerContent.ToString(), null, "stop",
-                llmClient.LastStreamUsage, (int)ansSw.ElapsedMilliseconds);
-            if (llmClient.LastStreamUsage != null)
+                streamUsage, (int)ansSw.ElapsedMilliseconds);
+            if (streamUsage != null)
             {
                 yield return new UsageEvent
                 {
                     Iteration = maxIter,
                     Role = "answer",
-                    PromptTokens = llmClient.LastStreamUsage.PromptTokens,
-                    CompletionTokens = llmClient.LastStreamUsage.CompletionTokens,
-                    CacheHitTokens = llmClient.LastStreamUsage.CacheHitTokens,
+                    PromptTokens = streamUsage.PromptTokens,
+                    CompletionTokens = streamUsage.CompletionTokens,
+                    CacheHitTokens = streamUsage.CacheHitTokens,
                 };
             }
         }

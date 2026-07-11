@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using TaiwuEncyclopedia.Core.Agent;
-using TaiwuEncyclopedia.Core.Http;
+using TaiwuEncyclopedia.Core.Rag;
 using TaiwuEncyclopedia.Core.Llm;
 using TaiwuEncyclopedia.Core.Session;
 using TaiwuEncyclopedia.Threading;
