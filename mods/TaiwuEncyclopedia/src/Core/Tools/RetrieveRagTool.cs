@@ -13,6 +13,9 @@ public sealed class RetrieveRagTool : ToolBase
 {
     private readonly IRagClient _ragClient;
 
+    /// <summary>是否启用 RAG 远程检索。关闭时 ExecuteAsync 直接返回 rag_disabled。</summary>
+    public bool RagEnabled { get; set; } = true;
+
     /// <summary>初始化 RetrieveRagTool 实例。</summary>
     /// <param name="ragClient">RAG 检索客户端。</param>
     public RetrieveRagTool(IRagClient ragClient) : base(
@@ -77,6 +80,17 @@ public sealed class RetrieveRagTool : ToolBase
     /// <returns>检索结果字典。</returns>
     public override async Task<Dictionary<string, object>> ExecuteAsync(Dictionary<string, object> args, CancellationToken ct = default)
     {
+        if (!RagEnabled)
+        {
+            return new Dictionary<string, object>
+            {
+                ["context"] = "",
+                ["references"] = new List<Reference>(),
+                ["retrieval_info"] = new Dictionary<string, object> { ["source"] = "rag_disabled" },
+                ["error"] = "rag_disabled",
+            };
+        }
+
         var query = args.GetValueOrDefault("query")?.ToString() ?? "";
         var mode = args.GetValueOrDefault("mode")?.ToString() ?? "hybrid";
         var topK = 15;
