@@ -262,16 +262,7 @@ public static class AgentLoop
 
                     foreach (var r in refs)
                     {
-                        var fullDocId = r.FullDocId ?? "";
-                        var existing = collectedRefs.Find(x => x.FullDocId == fullDocId);
-                        if (existing != null)
-                        {
-                            existing.HitCount += r.HitCount;
-                        }
-                        else
-                        {
-                            collectedRefs.Add(r);
-                        }
+                        AddOrMergeRef(collectedRefs, r);
                     }
                 }
                 catch { /* 解析失败忽略，不影响主流程 */ }
@@ -332,6 +323,59 @@ public static class AgentLoop
             return JObject.Parse(arguments).ToObject<Dictionary<string, object>>() ?? new();
         }
         catch { return new(); }
+    }
+
+    /// <summary>
+    /// 对 references 列表进行去重合并：FullDocId 相同时合并 HitCount；
+    /// FullDocId 为空时以 FilePath 作为备用键，避免不同文档被误聚合。
+    /// </summary>
+    internal static void DedupReferences(List<Reference> collectedRefs)
+    {
+        // 原地去重：从后往前扫描，遇到重复则合并到前面并移除当前项
+        for (int i = collectedRefs.Count - 1; i >= 0; i--)
+        {
+            var current = collectedRefs[i];
+            var key = RefKey(current);
+            if (string.IsNullOrEmpty(key)) continue; // 无键则不参与去重
+
+            for (int j = 0; j < i; j++)
+            {
+                var earlier = collectedRefs[j];
+                var earlierKey = RefKey(earlier);
+                if (earlierKey == key)
+                {
+                    earlier.HitCount += current.HitCount;
+                    collectedRefs.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    /// <summary>将单条 reference 添加到列表，如已存在则合并 HitCount。</summary>
+    private static void AddOrMergeRef(List<Reference> collectedRefs, Reference r)
+    {
+        var key = RefKey(r);
+        if (string.IsNullOrEmpty(key)) { collectedRefs.Add(r); return; }
+
+        for (int i = 0; i < collectedRefs.Count; i++)
+        {
+            if (RefKey(collectedRefs[i]) == key)
+            {
+                collectedRefs[i].HitCount += r.HitCount;
+                return;
+            }
+        }
+        collectedRefs.Add(r);
+    }
+
+    /// <summary>计算引用去重键：FullDocId 优先，FilePath 兜底，SourceUrl 再次兜底。</summary>
+    private static string RefKey(Reference r)
+    {
+        if (!string.IsNullOrEmpty(r.FullDocId)) return r.FullDocId;
+        if (!string.IsNullOrEmpty(r.FilePath)) return r.FilePath;
+        if (!string.IsNullOrEmpty(r.SourceUrl)) return r.SourceUrl;
+        return "";
     }
 
     /// <summary>生成工具调用的显示文本(纯文本,无 emoji)。</summary>

@@ -297,6 +297,60 @@ guidance:
         }
     }
 
+    // --- References dedup tests (Task 7: P1-7) ---
+
+    [Fact]
+    public void DedupReferences_EmptyFullDocId_DifferentFilePath_KeepsBoth()
+    {
+        // Empty FullDocId + different FilePath => should NOT merge
+        var refs = new List<Reference>
+        {
+            new() { FullDocId = "", FilePath = "剑冢攻略.md", HitCount = 1 },
+            new() { FullDocId = "", FilePath = "门派关系.md", HitCount = 1 },
+        };
+        AgentLoop.DedupReferences(refs);
+        refs.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void DedupReferences_SameFullDocId_MergesHitCount()
+    {
+        var refs = new List<Reference>
+        {
+            new() { FullDocId = "doc-1", FilePath = "剑冢攻略.md", HitCount = 2 },
+            new() { FullDocId = "doc-1", FilePath = "剑冢攻略.md", HitCount = 3 },
+        };
+        AgentLoop.DedupReferences(refs);
+        refs.Should().HaveCount(1);
+        refs[0].HitCount.Should().Be(5);
+    }
+
+    [Fact]
+    public void DedupReferences_EmptyFullDocId_SameFilePath_MergesHitCount()
+    {
+        var refs = new List<Reference>
+        {
+            new() { FullDocId = "", FilePath = "剑冢攻略.md", HitCount = 2 },
+            new() { FullDocId = "", FilePath = "剑冢攻略.md", HitCount = 3 },
+        };
+        AgentLoop.DedupReferences(refs);
+        refs.Should().HaveCount(1);
+        refs[0].HitCount.Should().Be(5);
+    }
+
+    [Fact]
+    public void DedupReferences_AllKeysEmpty_KeepsAll()
+    {
+        // Both FullDocId and FilePath are empty => no key to merge on, keep all
+        var refs = new List<Reference>
+        {
+            new() { FullDocId = "", FilePath = "", HitCount = 1 },
+            new() { FullDocId = "", FilePath = "", HitCount = 1 },
+        };
+        AgentLoop.DedupReferences(refs);
+        refs.Should().HaveCount(2);
+    }
+
     /// <summary>始终抛 ContextTooLong，用于测试重试也失败场景。</summary>
     private sealed class ContextTooLongLlmClient : ILlmClient
     {
