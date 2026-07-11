@@ -80,11 +80,11 @@ public sealed class LlmConfigSection : MonoBehaviour
     public void Refresh()
     {
         var config = FrontendServices.LoadedLlmConfig;
-        if (_baseUrlInput != null) _baseUrlInput.text = config.BaseUrl;
-        if (_apiKeyInput != null) _apiKeyInput.text = config.ApiKey;
-        if (_modelInput != null) _modelInput.text = config.Model;
+        if (_baseUrlInput != null) _baseUrlInput.SetTextWithoutNotify(config.BaseUrl);
+        if (_apiKeyInput != null) _apiKeyInput.SetTextWithoutNotify(config.ApiKey);
+        if (_modelInput != null) _modelInput.SetTextWithoutNotify(config.Model);
         RefreshProviderButton();
-        _testPassed = false;
+        // 不重置 _testPassed——Refresh 只是回显已保存的配置，值没有变
         if (_statusText != null) _statusText.text = "";
     }
 
