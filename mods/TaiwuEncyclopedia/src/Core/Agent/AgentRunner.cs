@@ -95,7 +95,8 @@ public sealed class AgentRunner
 
         // 1. 加载组件
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        var systemPrompt = _prompts.BuildSystemPrompt(personaId);
+        var systemPrompt = _prompts.BuildThinkPrompt();
+        var finalPrompt = _prompts.BuildFinalPrompt(personaId);
         _trace.ContextStep("load_system_prompt", (int)sw.ElapsedMilliseconds, new Dictionary<string, object>
         {
             ["chars"] = systemPrompt.Length,
@@ -163,7 +164,8 @@ public sealed class AgentRunner
             _llmClient, _executor, _ctx, _toolsSchema, messages, _llmConfig,
             worldId, _maxIter, collectedRefs, finalAnswerParts, loopResult,
             trace: _trace,
-            thinkingBuilder: thinkingBuilder))
+            thinkingBuilder: thinkingBuilder,
+            finalPrompt: finalPrompt))
         {
             if (evt is UsageEvent u)
             {

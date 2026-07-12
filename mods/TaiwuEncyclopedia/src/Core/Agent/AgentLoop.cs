@@ -46,7 +46,8 @@ public static class AgentLoop
         List<string> finalAnswerParts,
         AgentLoopResult result,
         IAgentTrace trace,
-        System.Text.StringBuilder? thinkingBuilder = null)
+        System.Text.StringBuilder? thinkingBuilder = null,
+        string? finalPrompt = null)
     {
         List<ToolCall>? prevToolCalls = null;
         var totalIterations = 0;
@@ -119,7 +120,9 @@ public static class AgentLoop
                 messages.Add(new LlmMessage
                 {
                     Role = "user",
-                    Content = "请根据以上思考过程和检索到的资料，以选中 persona 的口吻给出最终回答。",
+                    Content = finalPrompt != null
+                        ? $"{finalPrompt}\n\n---\n请根据前面的检索结果回答玩家问题。"
+                        : "请根据以上思考过程和检索到的资料，以选中 persona 的口吻给出最终回答。",
                 });
 
                 var ansSw = System.Diagnostics.Stopwatch.StartNew();
@@ -161,7 +164,9 @@ public static class AgentLoop
                 messages.Add(new LlmMessage
                 {
                     Role = "user",
-                    Content = "你似乎在重复检索相同的内容。请根据已检索到的资料，以选中 persona 的口吻给出最终回答。",
+                    Content = finalPrompt != null
+                        ? $"{finalPrompt}\n\n---\n你似乎在重复检索相同的内容。请根据已检索到的资料直接回答。"
+                        : "你似乎在重复检索相同的内容。请根据已检索到的资料，以选中 persona 的口吻给出最终回答。",
                 });
 
                 var ansSw = System.Diagnostics.Stopwatch.StartNew();
@@ -278,7 +283,9 @@ public static class AgentLoop
             messages.Add(new LlmMessage
             {
                 Role = "user",
-                Content = "你已用完所有工具调用轮次。请根据已检索到的资料和思考过程，以选中 persona 的口吻给出最终回答。如果资料不足，诚实说明并给出已有的判断。",
+                Content = finalPrompt != null
+                    ? $"{finalPrompt}\n\n---\n你已用完所有工具调用轮次。请根据已检索到的资料直接回答。如果资料不足，诚实说明并给出已有的判断。"
+                    : "你已用完所有工具调用轮次。请根据已检索到的资料和思考过程，以选中 persona 的口吻给出最终回答。如果资料不足，诚实说明并给出已有的判断。",
             });
 
             var ansSw = System.Diagnostics.Stopwatch.StartNew();
