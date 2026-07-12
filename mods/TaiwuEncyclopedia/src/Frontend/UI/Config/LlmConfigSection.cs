@@ -25,6 +25,7 @@ public sealed class LlmConfigSection : MonoBehaviour
     private int _currentProviderIndex = -1;
     private int _fetchGeneration;
     private bool _testPassed;
+    private TextMeshProUGUI? _saveStatusText;
     private List<string> _fetchedModels = [];
     private OverlayDropdown? _providerDropdown;
     private OverlayDropdown? _modelDropdown;
@@ -37,6 +38,9 @@ public sealed class LlmConfigSection : MonoBehaviour
     public event Action? OnConfigChanged;
     public event Action<string, string>? OnFetchModels;
     public event Action<string, string>? OnTestConnection;
+
+    /// <summary>保存 LLM 配置（仅三字段）。由 ConfigPanel 订阅。</summary>
+    public event Action? OnSaveLlmConfig;
 
     public void Build(Transform content, TMP_FontAsset? font, RectTransform canvasRt)
     {
@@ -64,12 +68,48 @@ public sealed class LlmConfigSection : MonoBehaviour
         _modelInput = BuildInput(inner, "Model（手动）", "deepseek-chat", false, out _modelError);
         _modelInput.onValueChanged.AddListener(_ => NotifyChanged());
 
-        // 按钮行
-        var btnRow = CreateButtonRow(inner);
-        _fetchBtn = CreateSmallButton(btnRow, "拉取模型");
+        // 按钮行：[拉取模型] [测试连接] <spacer> [保存配置]
+        var btnRow = new GameObject("BtnRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+        btnRow.transform.SetParent(inner, false);
+        var hlg = btnRow.GetComponent<HorizontalLayoutGroup>();
+        hlg.childForceExpandWidth = false;
+        hlg.childForceExpandHeight = false;
+        hlg.childControlWidth = true;
+        hlg.childControlHeight = true;
+        hlg.spacing = 12f;
+        hlg.padding = new RectOffset(0, 0, 6, 6);
+
+        _fetchBtn = CreateSmallButton(btnRow.transform, "拉取模型");
         _fetchBtn.onClick.AddListener(FetchModels);
-        _testBtn = CreateSmallButton(btnRow, "测试连接");
+        _testBtn = CreateSmallButton(btnRow.transform, "测试连接");
         _testBtn.onClick.AddListener(TestConnection);
+
+        // spacer — 把保存按钮推到右侧
+        var spacer = new GameObject("Spacer", typeof(RectTransform));
+        spacer.transform.SetParent(btnRow.transform, false);
+        spacer.AddComponent<LayoutElement>().flexibleWidth = 1f;
+
+        var saveBtn = CreateSmallButton(btnRow.transform, "保存配置");
+        saveBtn.onClick.AddListener(() =>
+        {
+            if (_testPassed)
+            {
+                if (_saveStatusText != null) _saveStatusText.text = "";
+                OnSaveLlmConfig?.Invoke();
+            }
+            else
+            {
+                if (_saveStatusText != null)
+                {
+                    _saveStatusText.text = "请先测试模型连接情况";
+                    _saveStatusText.color = UiTheme.ErrorText;
+                }
+            }
+        });
+
+        // 保存状态文本（在按钮行下方，与 _statusText 同样式）
+        _saveStatusText = UiFactory.CreateText(inner, "SaveStatus", "", 14,
+            new Color(0.55f, 0.58f, 0.60f, 1f), TextAlignmentOptions.Left);
 
         _statusText = UiFactory.CreateText(inner, "Status", "", 16,
             new Color(0.55f, 0.58f, 0.60f, 1f), TextAlignmentOptions.Left);
@@ -241,6 +281,16 @@ public sealed class LlmConfigSection : MonoBehaviour
             _statusText.color = passed
                 ? new Color(0.70f, 0.84f, 0.66f, 1f)
                 : UiTheme.ErrorText;
+        }
+    }
+
+    /// <summary>设置保存状态提示（由 ConfigPanel 在保存完成后调用）。</summary>
+    public void SetSavedMessage(string message)
+    {
+        if (_saveStatusText != null)
+        {
+            _saveStatusText.text = message;
+            _saveStatusText.color = new Color(0.45f, 0.72f, 0.45f, 1f);
         }
     }
 
