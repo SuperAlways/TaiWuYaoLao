@@ -39,6 +39,9 @@ public sealed class PersonaSection : MonoBehaviour
 
     public event Action? OnConfigChanged;
 
+    /// <summary>Persona 切换后立即触发。参数为新 personaId。由 ConfigPanel 订阅以即改即存。</summary>
+    public event Action<string>? OnPersonaChanged;
+
     public void Build(Transform content, TMP_FontAsset? font, RectTransform canvasRt)
     {
         _font = font;
@@ -93,7 +96,7 @@ public sealed class PersonaSection : MonoBehaviour
         _currentPersonaIdx = idx;
 
         UpdatePersonaButtonLabel();
-        OnPersonaChanged(_currentPersonaIdx);
+        UpdatePersonaPreview(_currentPersonaIdx);
     }
 
     // ========== 构建 UI ==========
@@ -175,7 +178,8 @@ public sealed class PersonaSection : MonoBehaviour
         {
             _currentPersonaIdx = idx;
             UpdatePersonaButtonLabel();
-            OnPersonaChanged(idx);
+            UpdatePersonaPreview(idx);
+            OnPersonaChanged?.Invoke(_personaIdList[idx]);  // 即改即存
             OnConfigChanged?.Invoke();
         }, _font);
     }
@@ -189,7 +193,7 @@ public sealed class PersonaSection : MonoBehaviour
         _personaBtnLabel.text = cn + "  >>";
     }
 
-    private void OnPersonaChanged(int idx)
+    private void UpdatePersonaPreview(int idx)
     {
         if (_personaIdList == null || idx < 0 || idx >= _personaIdList.Count) return;
 

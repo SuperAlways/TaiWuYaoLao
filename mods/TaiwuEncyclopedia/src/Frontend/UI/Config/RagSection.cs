@@ -15,6 +15,9 @@ public sealed class RagSection : MonoBehaviour
     private Toggle? _ragToggle;
     private TextMeshProUGUI? _statusText;
 
+    /// <summary>RAG toggle 切换后立即触发。参数为 isOn。由 ConfigPanel 订阅以即改即存。</summary>
+    public event Action<bool>? OnRagToggled;
+
     /// <summary>当前 RAG 开关状态。</summary>
     public bool RagEnabled => _ragToggle?.isOn ?? true;
 
@@ -90,6 +93,7 @@ public sealed class RagSection : MonoBehaviour
                 ? new Color(0.45f, 0.72f, 0.45f, 1f)
                 : new Color(0.85f, 0.70f, 0.30f, 1f);
         }
+        OnRagToggled?.Invoke(isOn);
     }
 
     private static GameObject CreateSection(Transform parent, string title)
