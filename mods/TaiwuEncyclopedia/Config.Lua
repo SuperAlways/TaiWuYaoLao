@@ -3,9 +3,10 @@ return {
   Source = 0,
   FileId = 0,
   Version = "1.0.0",
-  GameVersion = "1.0.0",
+  GameVersion = "1.0.56.0",
   Author = "alwayssuper",
-  WorkshopCover = "封面.png",
+  Cover = "cover.png",
+  WorkshopCover = "cover.png",
   Description = [[
 药老随身AI —— 你的太吾绘卷智能问答助手
 
@@ -50,8 +51,11 @@ return {
     "TaiwuEncyclopedia.Frontend.dll",
   },
   Visibility = 0,
-  TagList = {"游戏助手", "AI", "问答", "知识库", "百晓册"},
+  TagList = {
+    [1] = "Extensions",
+    [2] = "Compatible Mods",
+  },
   ChangeConfig = false,
-  HasArchive = true,
+  HasArchive = false,
   NeedRestartWhenSettingChanged = false,
 }
