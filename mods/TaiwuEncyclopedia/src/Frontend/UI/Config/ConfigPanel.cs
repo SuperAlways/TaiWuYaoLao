@@ -72,6 +72,34 @@ public class ConfigPanel : MonoBehaviour, IPanel
         _dataSection = gameObject.AddComponent<DataSection>();
         _dataSection.Build(content, _font);
         _dataSection.OnOpenLog += () => PlayerLogViewer.Open(_font);
+
+        // LlmConfigSection 保存事件
+        _llmSection.OnSaveLlmConfig += () =>
+        {
+            string baseUrl = _llmSection.BaseUrl;
+            string apiKey = _llmSection.ApiKey;
+            string model = _llmSection.Model;
+            string personaId = _personaSection!.SelectedPersonaId;
+            bool ragEnabled = _ragSection?.RagEnabled ?? true;
+            if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(apiKey)
+                || string.IsNullOrWhiteSpace(model))
+                return;
+            _ = SaveAndRebuild(baseUrl, apiKey, model, personaId, ragEnabled);
+        };
+
+        // PersonaSection 即改事件
+        _personaSection.OnPersonaChanged += (personaId) =>
+        {
+            _ = SaveAndRebuild(_llmSection!.BaseUrl, _llmSection.ApiKey, _llmSection.Model,
+                personaId, _ragSection?.RagEnabled ?? true);
+        };
+
+        // RagSection 即改事件
+        _ragSection.OnRagToggled += (isOn) =>
+        {
+            _ = SaveAndRebuild(_llmSection!.BaseUrl, _llmSection.ApiKey, _llmSection.Model,
+                _personaSection!.SelectedPersonaId, isOn);
+        };
     }
 
     // ========== IPanel 实现 ==========
@@ -86,6 +114,15 @@ public class ConfigPanel : MonoBehaviour, IPanel
     }
 
     public void Hide() => _view?.Hide();
+
+    // ========== 保存并重建 ==========
+    private async System.Threading.Tasks.Task SaveAndRebuild(string baseUrl, string apiKey,
+        string model, string personaId, bool ragEnabled)
+    {
+        await FrontendServices.SaveLlmConfig(baseUrl, apiKey, model, personaId,
+            ragEnabled: ragEnabled);
+        _llmSection?.SetSavedMessage("配置已保存");
+    }
 
     // ========== 测试连接（协程转发） ==========
     private void RunTestConnection(string baseUrl, string apiKey)
