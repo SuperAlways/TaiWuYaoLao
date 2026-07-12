@@ -1,13 +1,13 @@
 return {
-  Title = "太吾药老 V1.0.24",
+  Title = "药老随身AI V1.0.0",
   Source = 0,
   FileId = 0,
-  Version = "1.0.24",
-  GameVersion = "1.0.24",
+  Version = "1.0.0",
+  GameVersion = "1.0.0",
   Author = "alwayssuper",
   WorkshopCover = "封面.png",
   Description = [[
-太吾药老 —— 你的AI百晓生助手
+药老随身AI —— 你的太吾绘卷AI助手
 
 [使用方法]
 按 F8 打开/关闭问答面板，输入问题后回车发送。
