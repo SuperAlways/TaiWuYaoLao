@@ -26,7 +26,7 @@ public sealed class PromptBuilder
 - 检索策略：先判断需要哪类信息，再选合适工具。复杂问题可分多轮检索。
 - 不要重复检索相同内容。已检索到的资料直接用。
 - 正文中 [查:xxx] 标记处可调 lookup_concept 查询具体数值或相关章节。同一概念查一次即可。
-- RAG 检索 (retrieve_rag) 的 mode / top_k 选择策略详见「通用回答规则」的「RAG 检索策略」段。
+- RAG 检索 (retrieve_rag) 的 mode / top_k 选择策略详见下方「RAG 检索策略」段。
 
 ## 百晓册阅读策略
 - 判断玩家问题涉及的方向 → 调 load_background_skill(depth=""overview"") 加载章节概述
