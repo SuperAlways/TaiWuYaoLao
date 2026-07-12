@@ -13,6 +13,7 @@ public sealed class PromptBuilder
     private readonly string _defaultPersonaId;
     private string? _cached;
     private string _cachedPersonaId = "";
+    private string? _cachedThink;
 
     // 工具使用规范段（静态，引导 skill 索引在 BuildSystemPrompt 中动态追加）
     private const string _toolSpec = @"
@@ -61,6 +62,109 @@ public sealed class PromptBuilder
     }
 
     /// <summary>
+    /// 构建 Think 阶段 system prompt（纯检索助手，无 persona）。
+    /// 内容完全静态，不依赖 personaId。
+    /// </summary>
+    public string BuildThinkPrompt()
+    {
+        if (_cachedThink != null) return _cachedThink;
+
+        var parts = new StringBuilder();
+
+        // 1. 极简身份
+        parts.AppendLine(@"# 太吾绘卷AI检索助手
+
+你是太吾绘卷的游戏知识检索助手。
+你的唯一任务是：根据当前玩家问题和玩家提问历史脉络，调用工具检索相关资料。
+- 不要尝试直接回答玩家问题
+- 不要以任何角色口吻说话
+- 当信息收集足够时，只输出简短确认（如""检索完毕""），然后调用 0 个工具
+- 最终回答由后续阶段生成
+- 即使对话历史中包含类似问题的回答，也必须重新检索确认——历史回答可能已过时或不完整。
+
+");
+
+        // 2. 工具使用规范
+        parts.AppendLine(_toolSpec);
+        parts.Append(BuildGuidanceIndex());
+
+        parts.AppendLine("\n---\n");
+
+        // 3. RAG 检索策略（从 answer-rules.md 中提取）
+        var allRules = _sm.LoadAnswerRules();
+        if (!string.IsNullOrEmpty(allRules))
+        {
+            var ragSection = ExtractSection(allRules, "RAG 检索策略");
+            if (!string.IsNullOrEmpty(ragSection))
+            {
+                parts.AppendLine("## RAG 检索策略（retrieve_rag 工具使用指南）");
+                parts.AppendLine(ragSection);
+                parts.AppendLine();
+            }
+        }
+
+        parts.AppendLine("---\n");
+
+        // 4. 百晓册总纲
+        var overview = _sm.LoadOverview();
+        if (!string.IsNullOrEmpty(overview)) parts.AppendLine(overview);
+
+        _cachedThink = parts.ToString();
+        return _cachedThink;
+    }
+
+    /// <summary>
+    /// 构建 Final 阶段 prompt（persona + 回答规则 + 格式）。
+    /// 通过桥接消息注入，不替换 messages[0]。按 personaId 缓存。
+    /// </summary>
+    public string BuildFinalPrompt(string? personaId = null)
+    {
+        var pid = string.IsNullOrEmpty(personaId) ? _defaultPersonaId : personaId;
+        if (_cached != null && _cachedPersonaId == pid) return _cached;
+
+        var parts = new StringBuilder();
+
+        // 1. persona
+        var persona = _sm.LoadPersona(pid!);
+        if (!string.IsNullOrEmpty(persona)) parts.AppendLine(persona);
+        else parts.AppendLine("# 百晓问答助手\n你是太吾绘卷的 AI 助手。");
+
+        parts.AppendLine("\n---\n");
+
+        // 2. 通用回答规则（信息处理 + 玩家保护，不含 RAG 检索策略）
+        var allRules = _sm.LoadAnswerRules();
+        if (!string.IsNullOrEmpty(allRules))
+        {
+            var infoSection = ExtractSection(allRules, "信息处理");
+            var protectSection = ExtractSection(allRules, "玩家保护");
+            if (!string.IsNullOrEmpty(infoSection))
+            {
+                parts.AppendLine("## 通用回答规则");
+                parts.AppendLine();
+                parts.AppendLine("### 信息处理");
+                parts.AppendLine(infoSection);
+                parts.AppendLine();
+            }
+            if (!string.IsNullOrEmpty(protectSection))
+            {
+                parts.AppendLine("### 玩家保护");
+                parts.AppendLine(protectSection);
+                parts.AppendLine();
+            }
+        }
+
+        parts.AppendLine("---\n");
+
+        // 3. 回答格式
+        var style = _sm.LoadOutputStyle();
+        if (!string.IsNullOrEmpty(style)) parts.AppendLine(style);
+
+        _cached = parts.ToString();
+        _cachedPersonaId = pid;
+        return _cached;
+    }
+
+    /// <summary>
     /// 构建完整 system prompt。personaId 为空时用默认 persona。结果缓存。
     /// </summary>
     /// <param name="personaId">persona ID（可选）。</param>
@@ -106,5 +210,27 @@ public sealed class PromptBuilder
         _cached = parts.ToString();
         _cachedPersonaId = pid;
         return _cached;
+    }
+
+    /// <summary>从 markdown 文本中提取指定 ## 标题下的内容（到下一个 ## 或文末）。</summary>
+    private static string? ExtractSection(string markdown, string sectionName)
+    {
+        var header = $"## {sectionName}";
+        var startIdx = markdown.IndexOf(header, System.StringComparison.Ordinal);
+        if (startIdx < 0) return null;
+
+        var contentStart = startIdx + header.Length;
+        // 跳过标题行剩余部分（如 "（retrieve_rag 工具使用指南）"）
+        var newlineIdx = markdown.IndexOf('\n', contentStart);
+        if (newlineIdx < 0) return markdown.Substring(contentStart).Trim();
+        contentStart = newlineIdx + 1;
+
+        // 找下一个 ## 标题
+        var nextHeaderIdx = markdown.IndexOf("\n## ", contentStart, System.StringComparison.Ordinal);
+        if (nextHeaderIdx < 0)
+        {
+            return markdown.Substring(contentStart).Trim();
+        }
+        return markdown.Substring(contentStart, nextHeaderIdx - contentStart).Trim();
     }
 }
