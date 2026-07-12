@@ -20,12 +20,12 @@ public sealed class PromptBuilder
     // 工具使用规范段（静态，引导 skill 索引在 BuildSystemPrompt 中动态追加）
     private const string _toolSpec = @"
 ## 工具使用规范
-你有 4 个工具：retrieve_rag / load_background_skill / load_guidance_skill / lookup_concept。
-- ReAct 循环最多 6 轮。你只进行分析和工具调用决策，**不要在此阶段直接给出最终回答**。
-- 当你确认资料已收集足够时，调用 0 个工具，系统会自动引导你进入回答阶段。
+你有 5 个工具：retrieve_rag / load_background_skill / load_guidance_skill / lookup_concept / complete_retrieval。
+- ReAct 循环最多 6 轮。每轮分析需要哪些信息，调用对应工具检索。
 - 检索策略：先判断需要哪类信息，再选合适工具。复杂问题可分多轮检索。
 - 不要重复检索相同内容。已检索到的资料直接用。
 - 正文中 [查:xxx] 标记处可调 lookup_concept 查询具体数值或相关章节。同一概念查一次即可。
+- 当你确认信息已收集足够时，调用 complete_retrieval 工具标记完成，系统将自动进入回答阶段。
 - RAG 检索 (retrieve_rag) 的 mode / top_k 选择策略详见下方「RAG 检索策略」段。
 
 ## 百晓册阅读策略
@@ -72,25 +72,23 @@ public sealed class PromptBuilder
 
         var parts = new StringBuilder();
 
-        // 1. 检索规则 + 回答规则
+        // 1. 检索规则 + 完成检索
         parts.AppendLine(@"# 太吾绘卷AI检索助手
 
 你是太吾绘卷的游戏知识检索助手。
 
 ## 检索规则
-- 你的唯一任务是：根据当前玩家问题和玩家提问历史脉络，调用工具检索相关资料。
-- 不要尝试直接回答玩家问题。
-- 不要以任何角色口吻说话。
-- 即使对话历史中包含类似问题的回答，也必须重新检索确认——历史回答可能已过时或不完整。
-- 检索策略：先判断需要哪类信息，再选合适工具。复杂问题可分多轮检索。
+- 根据玩家问题调用工具检索相关资料
+- 检索策略：先判断需要哪类信息，再选合适工具
 - 不要重复检索相同内容。已检索到的资料直接用。
 
-## 回答规则
-当信息检索完毕、不再需要调用工具时，你的最终回答**只能**是简短确认，格式如下：
-```
-检索完毕
-```
-不要写任何其他内容。不要展开分析。不要用角色口吻。最终回答由后续阶段生成。
+## 完成检索
+当你确认已收集足够信息回答玩家问题时，调用 `complete_retrieval` 工具向后续阶段交接：
+- `confirmed`：填 `true`
+- `topics_found`：关键词列举已查到的主题，**20字以内**（如""毒术,暗器功法""）。仅列关键词，不要写句子。
+- `missing`：诚实列出未检索到的信息（如""具体伤害数值待查""）。**这是最重要的字段**——后续回答阶段会根据它判断哪些内容不该编造。无则填""无""。
+
+系统将自动进入最终回答阶段。
 
 ");
 
@@ -118,14 +116,6 @@ public sealed class PromptBuilder
         // 4. 百晓册总纲
         var overview = _sm.LoadOverview();
         if (!string.IsNullOrEmpty(overview)) parts.AppendLine(overview);
-
-        // 5. 末尾三重强调：最终回答格式
-        parts.AppendLine(@"
----
-
-> ⚠️ **你的最终回答只能且必须是「检索完毕」这四个字。不要写答案、不要用角色口吻、不要展开任何内容。**
-> ⚠️ **你的最终回答只能且必须是「检索完毕」这四个字。不要写答案、不要用角色口吻、不要展开任何内容。**
-> ⚠️ **你的最终回答只能且必须是「检索完毕」这四个字。不要写答案、不要用角色口吻、不要展开任何内容。**");
 
         _cachedThink = parts.ToString();
         return _cachedThink;

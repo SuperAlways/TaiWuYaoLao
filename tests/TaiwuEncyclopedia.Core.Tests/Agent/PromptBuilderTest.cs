@@ -175,16 +175,17 @@ personas:
     }
 
     /// <summary>
-    /// system prompt 包含"只分析不答题"指令，阻止 Thinking 阶段直接回答。
+    /// system prompt 包含 complete_retrieval 工具引导指令。
     /// </summary>
     [Fact]
-    public void BuildSystemPrompt_ContainsAnalyzeOnlyDirective()
+    public void BuildSystemPrompt_ContainsCompleteRetrievalGuidance()
     {
         var sm = MakeSm();
         var pb = new PromptBuilder(sm, "sword-will");
         var prompt = pb.BuildSystemPrompt();
-        prompt.Should().Contain("只进行分析");
-        prompt.Should().Contain("不要在此阶段直接给出最终回答");
+        prompt.Should().Contain("complete_retrieval");
+        prompt.Should().Contain("5 个工具");
+        prompt.Should().NotContain("不要在此阶段直接给出最终回答");
     }
 
     // === BuildThinkPrompt / BuildFinalPrompt 新方法测试 ===
@@ -195,16 +196,19 @@ personas:
         var sm = MakeSm();
         var pb = new PromptBuilder(sm, "sword-will");
         var prompt = pb.BuildThinkPrompt();
-        // 应包含：工具规范、百晓册、检索策略
+        // 应包含：工具规范、百晓册、检索策略、complete_retrieval 引导
         prompt.Should().Contain("工具使用规范");
         prompt.Should().Contain("百晓册阅读策略");
         prompt.Should().Contain("百晓册总纲");
         prompt.Should().Contain("检索助手");
-        prompt.Should().Contain("即使对话历史中包含类似问题的回答，也必须重新检索确认");
-        // 不应包含：persona、回答规则、回答格式
+        prompt.Should().Contain("complete_retrieval");
+        prompt.Should().Contain("完成检索");
+        // 不应包含：persona、回答规则、回答格式、旧的强制约束
         prompt.Should().NotContain("剑中虚影");
         prompt.Should().NotContain("规则内容");
         prompt.Should().NotContain("格式内容");
+        prompt.Should().NotContain("检索完毕");
+        prompt.Should().NotContain("不要在此阶段直接给出最终回答");
     }
 
     [Fact]
