@@ -200,6 +200,73 @@ public static class AgentLoop
                 break;
             }
 
+            // 4.3.5 检测 complete_retrieval 工具 → 快速通道进 final
+            var completeTool = response.ToolCalls?.Find(tc => tc.Function.Name == "complete_retrieval");
+            if (completeTool != null)
+            {
+                var args = ParseArgs(completeTool.Function.Arguments);
+                var confirmed = args.TryGetValue("confirmed", out var c) && System.Convert.ToBoolean(c);
+                if (!confirmed)
+                {
+                    // confirmed 为 false → 模型认为还需要检索，忽略此工具，继续循环
+                    response.ToolCalls!.Remove(completeTool);
+                    if (response.ToolCalls!.Count == 0) continue;
+                }
+                else
+                {
+                    // confirmed 为 true → 进 final
+                    totalIterations = iteration;
+                    var topics = args.TryGetValue("topics_found", out var t) ? t?.ToString() : "";
+                    var missing = args.TryGetValue("missing", out var m) ? m?.ToString() : "";
+
+                    yield return new StatusEvent { Message = "[检索完成] 正在生成答案 大约需要10S" };
+
+                    // 构建交接消息（missing 是核心信息）
+                    var bridgeMsg = finalPrompt != null
+                        ? $"{finalPrompt}\n\n---\n"
+                        : "";
+                    if (!string.IsNullOrEmpty(topics))
+                        bridgeMsg += $"【已检索到】{topics}\n";
+                    if (!string.IsNullOrEmpty(missing) && missing != "无")
+                        bridgeMsg += $"【未检索到】{missing}\n";
+                    bridgeMsg += "\n**重要**：对于【未检索到】的内容，请诚实告知玩家信息不足，不要编造。";
+                    bridgeMsg += "\n\n请根据以上信息回答玩家问题。";
+
+                    messages.Add(new LlmMessage { Role = "user", Content = bridgeMsg });
+
+                    // 流式 final 回答
+                    var ansSw = System.Diagnostics.Stopwatch.StartNew();
+                    trace.LlmCall(iteration, "answer", "answer_complete_tool", messages, null);
+                    var answerContent = new System.Text.StringBuilder();
+                    TokenUsage? streamUsage = null;
+                    await foreach (var chunk in llmClient.StreamChatAsync(llmConfig, messages, System.Threading.CancellationToken.None))
+                    {
+                        if (chunk.Content != null)
+                        {
+                            finalAnswerParts.Add(chunk.Content);
+                            answerContent.Append(chunk.Content);
+                            yield return new FinalChunkEvent { Content = chunk.Content, Iteration = iteration };
+                        }
+                        if (chunk.Usage != null) streamUsage = chunk.Usage;
+                    }
+                    ansSw.Stop();
+                    trace.LlmResponse(iteration, "answer", answerContent.ToString(), null, "stop",
+                        streamUsage, (int)ansSw.ElapsedMilliseconds);
+                    if (streamUsage != null)
+                    {
+                        yield return new UsageEvent
+                        {
+                            Iteration = iteration,
+                            Role = "answer",
+                            PromptTokens = streamUsage.PromptTokens,
+                            CompletionTokens = streamUsage.CompletionTokens,
+                            CacheHitTokens = streamUsage.CacheHitTokens,
+                        };
+                    }
+                    break;
+                }
+            }
+
             // 4.4 有 tool_calls → yield tool_call → 执行 → yield tool_result → 回写
             foreach (var tc in response.ToolCalls)
             {
@@ -396,6 +463,7 @@ public static class AgentLoop
                 : $"[百晓册] {Str(args, "chapter")}",
             "load_guidance_skill" => $"[引导] 加载{Str(args, "skill")}",
             "lookup_concept" => $"[查询] 查概念'{Str(args, "name")}'",
+            "complete_retrieval" => "[检索完成] 正在生成答案 大约需要10S",
             _ => $"[工具] {toolName}",
         };
     }
