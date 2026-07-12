@@ -317,6 +317,9 @@ public static class FrontendServices
                 _toolRegistry.Register(new LookupConceptTool(sm));
             }
 
+            // CompleteRetrievalTool (不依赖 SkillManager)
+            _toolRegistry.Register(new CompleteRetrievalTool());
+
             // 4. ToolExecutor
             _toolExecutor = new ToolExecutor(_toolRegistry);
 
