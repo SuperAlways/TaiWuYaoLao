@@ -301,13 +301,16 @@ public static class FrontendServices
             // RetrieveRagTool (需要 IRagClient)
             if (_ragClient == null)
             {
-                // RAG 服务端点:优先用 config.json 的 rag_base_url,缺省用远程服务。
-                string ragUrl = !string.IsNullOrWhiteSpace(_ragBaseUrl) ? _ragBaseUrl : "https://rag.goodcooking.top";
-                _ragClient = new RagTransportHost(ragUrl);
+                // RAG 服务端点:从 config.json 的 rag_base_url 加载
+                if (!string.IsNullOrWhiteSpace(_ragBaseUrl))
+                    _ragClient = new RagTransportHost(_ragBaseUrl);
             }
-            var ragTool = new RetrieveRagTool(_ragClient);
-            ragTool.RagEnabled = _ragEnabled;
-            _toolRegistry.Register(ragTool);
+            if (_ragClient != null)
+            {
+                var ragTool = new RetrieveRagTool(_ragClient);
+                ragTool.RagEnabled = _ragEnabled;
+                _toolRegistry.Register(ragTool);
+            }
 
             // LoadBackgroundSkillTool (需要 SkillManager)
             if (sm != null)
