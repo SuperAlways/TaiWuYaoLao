@@ -72,8 +72,6 @@ public class ConfigPanel : MonoBehaviour, IPanel
         _dataSection = gameObject.AddComponent<DataSection>();
         _dataSection.Build(content, _font);
         _dataSection.OnOpenLog += () => PlayerLogViewer.Open(_font);
-
-        _view.SaveBtn!.onClick.AddListener(OnSaveAndClose);
     }
 
     // ========== IPanel 实现 ==========
@@ -110,35 +108,5 @@ public class ConfigPanel : MonoBehaviour, IPanel
         _llmSection.SetTestResult(success, message);
     }
 
-    // ========== 保存并关闭 ==========
-    private async void OnSaveAndClose()
-    {
-        string baseUrl = _llmSection!.BaseUrl;
-        string apiKey = _llmSection.ApiKey;
-        string model = _llmSection.Model;
-        string personaId = _personaSection!.SelectedPersonaId;
-        bool ragEnabled = _ragSection?.RagEnabled ?? true;
-
-        // 验证非空
-        if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(apiKey)
-            || string.IsNullOrWhiteSpace(model))
-        {
-            if (_view?.ValidationText != null)
-                _view.ValidationText.text = "请填写完整的大模型配置";
-            return;
-        }
-
-        // 测试 gate
-        if (!_llmSection.TestPassed)
-        {
-            if (_view?.ValidationText != null)
-                _view.ValidationText.text = "请先测试连接";
-            return;
-        }
-
-        await FrontendServices.SaveLlmConfig(baseUrl, apiKey, model, personaId,
-            ragEnabled: ragEnabled);
-        PanelStack.Pop();
-    }
 }
 #pragma warning restore CS8604, CS8618, IDE0008, IDE0011, RCS1181, IDE0090, IDE0031, RCS1146, IDE0058, IDE0074, RCS1048, CA1822, CA1812, IDE0051, IDE0052, CA1001, CA2012, IDE0055, IDE0110, IDE0010, IDE0022, IDE0048, RCS1123, CA1307, RCS1238, CA1852, CS0414, RCS1201, RCS1124, IDE0057, CA1031, RCS1001, IDE0370, RCS1085, IDE0028, RCS1161

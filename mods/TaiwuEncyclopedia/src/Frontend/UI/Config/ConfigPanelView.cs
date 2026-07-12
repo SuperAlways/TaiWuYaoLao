@@ -18,8 +18,6 @@ public sealed class ConfigPanelView : MonoBehaviour
 
     public RectTransform? ContentTransform { get; private set; }
     public TextMeshProUGUI? ValidationText { get; private set; }
-    public Button? SaveBtn { get; private set; }
-    public Button? CancelBtn { get; private set; }
     public TMP_FontAsset? Font => _font;
 
     public void Build(GameObject root, TMP_FontAsset? font)
@@ -124,16 +122,13 @@ public sealed class ConfigPanelView : MonoBehaviour
         hlg.childControlWidth = true; hlg.childControlHeight = true;
         hlg.spacing = 12f; hlg.childAlignment = TextAnchor.MiddleRight;
 
-        CancelBtn = UiFactory.CreateButton(btnRow.transform, "CancelBtn", "取消", 19, UiTheme.Accent, out _);
-        CancelBtn.GetComponentInChildren<TextMeshProUGUI>().fontSize = 19;
-        CancelBtn.onClick.AddListener(PanelStack.Pop);
-        LayoutElement cle = CancelBtn.gameObject.AddComponent<LayoutElement>();
-        cle.preferredWidth = 110; cle.preferredHeight = 42;
-
-        SaveBtn = UiFactory.CreateButton(btnRow.transform, "SaveBtn", "保存并关闭", 19, UiTheme.Accent, out _);
-        SaveBtn.GetComponentInChildren<TextMeshProUGUI>().fontSize = 19;
-        LayoutElement sle = SaveBtn.gameObject.AddComponent<LayoutElement>();
-        sle.preferredWidth = 140; sle.preferredHeight = 42;
+        // 返回按钮（右对齐，点后 PanelStack.Pop）
+        Button backBtn = UiFactory.CreateButton(btnRow.transform, "BackBtn", "返回", 19,
+            UiTheme.Accent, out _);
+        backBtn.GetComponentInChildren<TextMeshProUGUI>().fontSize = 19;
+        backBtn.onClick.AddListener(PanelStack.Pop);
+        LayoutElement ble = backBtn.gameObject.AddComponent<LayoutElement>();
+        ble.preferredWidth = 110; ble.preferredHeight = 42;
     }
 
     public void Show() { if (_root != null) _root.SetActive(true); }
