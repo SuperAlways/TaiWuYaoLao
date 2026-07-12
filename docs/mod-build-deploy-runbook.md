@@ -171,6 +171,20 @@ sed -i "s/Title = \"\(.*\)\"/Title = \"\1 (${TIMESTAMP})\"/" "$GAME_MOD/Config.L
 
 清空游戏 mod 目录时，`find ... -exec rm -rf {} +` 偶发报 `No such file or directory`（find 遍历中目录已被删）。这是无害的竞态，不影响最终结果——只要复制后用 `find "$GAME_MOD/Skills" -name "*.md" | wc -l` 验证完整性即可。
 
+### 坑 5：Config.lua 字段须对齐 Workshop 标准
+
+自编的 TagList / GameVersion 等字段值在 Steam Workshop 上不合法。参照已发布 mod（如太吾WorldTalk `3729307604`）逐字段对齐：
+
+| 字段 | 要求 | 说明 |
+|------|------|------|
+| `TagList` | 必须用 Workshop 合法标签 | 已知合法：Extensions / Stories / Frameworks / Compatible Mods / Optimizations / Modifications / Display / Configurations |
+| `GameVersion` | 填实际游戏版本号 | 不是 `"1.0.0"` 占位符。参照同期已发布 mod 的 GameVersion |
+| `Cover` | 必须有，指向封面图 | 和 `WorkshopCover` 值相同 |
+| `Visibility` | `0` | 显式声明，0 = 公开可见 |
+| `HasArchive` | `false` | 除非 mod 确实使用游戏存档数据 |
+
+**应对**：每次发布前检查上述字段，以已上架 mod 的 `config.lua` 为参照。
+
 ## 回滚
 
 ```bash
