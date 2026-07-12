@@ -27,7 +27,8 @@ public class ContextManagerTest
         messages[2].Role.Should().Be("user");
         messages[2].Content.Should().Be("old");
         messages[3].Role.Should().Be("user");
-        messages[3].Content.Should().Be("怎么打剑冢");
+        messages[3].Content.Should().Contain("怎么打剑冢");
+        messages[3].Content.Should().Contain("必须先调用工具检索验证");
     }
 
     [Fact]
@@ -38,7 +39,8 @@ public class ContextManagerTest
         messages.Should().HaveCount(2); // system + user_query
         messages[0].Role.Should().Be("system");
         messages[1].Role.Should().Be("user");
-        messages[1].Content.Should().Be("hi");
+        messages[1].Content.Should().Contain("hi");
+        messages[1].Content.Should().Contain("必须先调用工具检索验证");
     }
 
     [Fact]
@@ -104,7 +106,8 @@ public class ContextManagerTest
         messages[1].Content.Should().Contain("【历史摘要】");
         messages[1].Content.Should().Contain("历史摘要内容");
         messages[2].Role.Should().Be("user");
-        messages[2].Content.Should().Be("继续问");
+        messages[2].Content.Should().Contain("继续问");
+        messages[2].Content.Should().Contain("必须先调用工具检索验证");
     }
 
     [Fact]
@@ -115,7 +118,33 @@ public class ContextManagerTest
         messages.Should().HaveCount(2); // system + user_query，无 summary
         messages[0].Role.Should().Be("system");
         messages[1].Role.Should().Be("user");
-        messages[1].Content.Should().Be("hi");
+        messages[1].Content.Should().Contain("hi");
+        messages[1].Content.Should().Contain("必须先调用工具检索验证");
+    }
+
+    [Fact]
+    public void BuildInitialMessages_InjectsSearchNudgeBeforeQuery()
+    {
+        var cm = new ContextManager();
+
+        var messages = cm.BuildInitialMessages(
+            "system prompt",
+            new List<LlmMessage>(),
+            null,
+            "百花谷有啥功法",
+            null);
+
+        // 最后一条 user 消息应包含检索引导
+        LlmMessage? lastUser = null;
+        foreach (var m in messages)
+            if (m.Role == "user") lastUser = m;
+        lastUser.Should().NotBeNull();
+        lastUser!.Content.Should().Contain("必须先调用工具检索验证");
+        lastUser.Content.Should().Contain("百花谷有啥功法");
+        // 引导文本在查询之前
+        var nudgeIdx = lastUser.Content!.IndexOf("必须先调用工具检索验证");
+        var queryIdx = lastUser.Content.IndexOf("百花谷有啥功法");
+        nudgeIdx.Should().BeLessThan(queryIdx);
     }
 
     [Fact]

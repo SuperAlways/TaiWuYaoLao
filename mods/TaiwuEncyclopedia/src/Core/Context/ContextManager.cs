@@ -72,7 +72,9 @@ public sealed class ContextManager
             messages.Add(new LlmMessage { Role = "system", Content = $"【历史摘要】\n{summary}" });
         }
         if (history != null) messages.AddRange(history);
-        messages.Add(new LlmMessage { Role = "user", Content = userQuery });
+        // 查询引导注入：打破 LLM 模仿历史"问→答"模式的惯性
+        var queryWithNudge = $"涉及游戏具体信息（门派/功法/物品/数值等）时，必须先调用工具检索验证。\n\n---\n{userQuery}";
+        messages.Add(new LlmMessage { Role = "user", Content = queryWithNudge });
         return messages;
     }
 
