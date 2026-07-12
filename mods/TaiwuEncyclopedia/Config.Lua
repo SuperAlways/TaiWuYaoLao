@@ -1,9 +1,9 @@
 return {
-  Title = "药老随身AI V1.0.0",
+  Title = "药老随身AI V1.0.1",
   Source = 0,
   FileId = 0,
-  Version = "1.0.0",
-  GameVersion = "1.0.0",
+  Version = "1.0.1",
+  GameVersion = "1.0.1",
   Author = "alwayssuper",
   WorkshopCover = "封面.png",
   Description = [[
