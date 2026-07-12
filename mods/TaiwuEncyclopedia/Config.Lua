@@ -1,9 +1,9 @@
 return {
-  Title = "太吾药老 V1.0.20",
+  Title = "太吾药老 V1.0.21",
   Source = 0,
   FileId = 0,
-  Version = "1.0.20",
-  GameVersion = "1.0.20",
+  Version = "1.0.21",
+  GameVersion = "1.0.21",
   Author = "alwayssuper",
   WorkshopCover = "封面.png",
   Description = [[
