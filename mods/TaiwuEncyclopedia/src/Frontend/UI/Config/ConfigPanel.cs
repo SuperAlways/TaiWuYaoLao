@@ -120,7 +120,7 @@ public class ConfigPanel : MonoBehaviour, IPanel
         string model, string personaId, bool ragEnabled)
     {
         await FrontendServices.SaveLlmConfig(baseUrl, apiKey, model, personaId,
-            ragEnabled: ragEnabled, agentTrace: true); // 临时硬编码：开发调试用
+            ragEnabled: ragEnabled);
         _llmSection?.SetSavedMessage("配置已保存");
     }
 
