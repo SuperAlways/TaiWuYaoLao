@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup Condition="'$(UsePublicizer)' == 'true'">
+    <PublicizerClearCacheOnClean>true</PublicizerClearCacheOnClean>
+  </PropertyGroup>
+</Project>

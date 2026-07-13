@@ -1,0 +1,5 @@
+# {{ mod.name }}
+
+{{ mod.name }} 是太吾绘卷 Mod。
+
+本文面向安装和使用 {{ mod.name }} 的读者。源码维护入口见 [DEVELOPMENT.md](DEVELOPMENT.md)。

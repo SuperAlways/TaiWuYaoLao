@@ -1,0 +1,44 @@
+<Project>
+  <Import
+    Project="$([MSBuild]::GetPathOfFileAbove('Taiwu.Mods.Paths.props', '$(MSBuildThisFileDirectory)'))"
+  />
+  <Import Project="$(TaiwuModsRoot)Directory.Build.props" />
+  <Import
+    Project="$(MSBuildProjectDirectory)/Taiwu.Mod.props"
+    Condition="Exists('$(MSBuildProjectDirectory)/Taiwu.Mod.props')"
+  />
+
+  <PropertyGroup>
+    <TargetFramework
+      Condition="'$(TargetFramework)' == '' And '$(TaiwuModSide)' == 'Frontend'"
+    >netstandard2.1</TargetFramework>
+    <TargetFramework
+      Condition="'$(TargetFramework)' == '' And '$(TaiwuModSide)' == 'Backend'"
+    >net8.0</TargetFramework>
+    <AssemblyName Condition="'$(AssemblyName)' == ''"
+    >$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace Condition="'$(RootNamespace)' == ''"
+    >$(MSBuildProjectName)</RootNamespace>
+    <GenerateDependencyFile
+      Condition="'$(GenerateDependencyFile)' == '' And ('$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend')"
+    >false</GenerateDependencyFile>
+    <UsePublicizer
+      Condition="'$(UsePublicizer)' == '' And ('$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend')"
+    >true</UsePublicizer>
+  </PropertyGroup>
+
+  <ItemGroup
+    Condition="'$(TaiwuModSide)' == 'Frontend' Or '$(TaiwuModSide)' == 'Backend'"
+  >
+    <PackageReference
+      Include="Krafs.Publicizer"
+      PrivateAssets="all"
+      ExcludeAssets="runtime"
+      Condition="'$(UsePublicizer)' == 'true'"
+    />
+    <PackageReference
+      Include="Taiwu.ModKit.References.Plugin"
+      PrivateAssets="all"
+    />
+  </ItemGroup>
+</Project>

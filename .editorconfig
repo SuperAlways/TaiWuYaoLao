@@ -1,0 +1,20 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+[*.cs]
+dotnet_analyzer_diagnostic.severity = warning
+
+csharp_style_namespace_declarations = file_scoped:warning
+
+# CA2007 adds noise in application and tool code; use ConfigureAwait only when it is meaningful.
+dotnet_diagnostic.CA2007.severity = none
+
+# Enforcing IDE0005 during build requires XML docs. Keep that burden out of ordinary mod projects by default.
+dotnet_diagnostic.IDE0005.severity = none
+
+# Guard clauses are clearer than conditional return expressions in this repository.
+dotnet_style_prefer_conditional_expression_over_return = false:warning

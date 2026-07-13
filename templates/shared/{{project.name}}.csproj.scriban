@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>{{ project.target_framework }}</TargetFramework>
+  </PropertyGroup>
+</Project>

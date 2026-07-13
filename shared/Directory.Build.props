@@ -1,0 +1,15 @@
+<Project>
+  <Import
+    Project="$([MSBuild]::GetPathOfFileAbove('Taiwu.Mods.Paths.props', '$(MSBuildThisFileDirectory)'))"
+  />
+  <Import Project="$(TaiwuModsRoot)Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- XML docs are part of the reusable API contract exposed by shared projects. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Relax code analysis for Task 3 to match the brief's code style -->
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

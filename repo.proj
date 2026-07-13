@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <DprintCommand>aqua exec -- dprint</DprintCommand>
+  </PropertyGroup>
+
+  <Target Name="Check">
+    <Exec Command="$(DprintCommand) check" />
+  </Target>
+
+  <Target Name="Format">
+    <Exec Command="$(DprintCommand) fmt" />
+  </Target>
+
+  <Target Name="InstallTools">
+    <Exec Command="aqua install" />
+  </Target>
+
+  <Target Name="UpdateToolChecksums">
+    <Exec Command="aqua update-checksum" />
+  </Target>
+</Project>

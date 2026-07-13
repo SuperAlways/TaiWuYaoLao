@@ -1,0 +1,257 @@
+<Project>
+  <PropertyGroup>
+    <TaiwuModPackDependsOn Condition="'$(TaiwuModPackDependsOn)' == ''"
+    >Build</TaiwuModPackDependsOn>
+    <_TaiwuSharedProjectPathPrefix
+    >$([System.String]::Copy('$(TaiwuModsSharedDir)').Replace('\',
+      '/').ToLowerInvariant())</_TaiwuSharedProjectPathPrefix>
+  </PropertyGroup>
+
+  <Target
+    Name="EnablePublicizerUnsafeRuntimeAccess"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="ResolveReferences"
+    Condition="'$(AllowUnsafeBlocks)' != 'true'"
+  >
+    <!-- 合并依赖可能携带 Krafs.Publicizer 的 Unsafe 运行时访问策略。
+         ILRepack 将这些依赖并入入口 DLL 后，入口项目也必须在编译时启用 unsafe。 -->
+    <ItemGroup>
+      <_TaiwuSharedReferenceCopyLocalPath
+        Include="@(ReferenceCopyLocalPaths)"
+        Condition="'@(TaiwuModPackEntry)' != '' And '%(ReferenceCopyLocalPaths.MSBuildSourceProjectFile)' != '' And $([System.String]::Copy('%(ReferenceCopyLocalPaths.MSBuildSourceProjectFile)').Replace('\', '/').ToLowerInvariant().StartsWith('$(_TaiwuSharedProjectPathPrefix)'))"
+      />
+    </ItemGroup>
+
+    <PropertyGroup
+      Condition="'@(TaiwuModMergeDependency)' != '' Or '@(_TaiwuSharedReferenceCopyLocalPath)' != ''"
+    >
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+  </Target>
+
+  <Target
+    Name="ResolveTaiwuProjectPackAssets"
+    DependsOnTargets="$(TaiwuModPackDependsOn)"
+  >
+    <ItemGroup>
+      <_TaiwuPackEntryWithoutPath
+        Include="@(TaiwuModPackEntry)"
+        Condition="'%(TaiwuModPackEntry.PackagePath)' == ''"
+      />
+      <_TaiwuPackFileWithoutPath
+        Include="@(TaiwuModPackFile)"
+        Condition="'%(TaiwuModPackFile.PackagePath)' == ''"
+      />
+      <_TaiwuPackDirectoryWithoutPath
+        Include="@(TaiwuModPackDirectory)"
+        Condition="'%(TaiwuModPackDirectory.PackagePath)' == ''"
+      />
+    </ItemGroup>
+
+    <Error
+      Condition="'@(_TaiwuPackEntryWithoutPath)' != ''"
+      Text="TaiwuModPackEntry 必须声明 PackagePath：@(_TaiwuPackEntryWithoutPath, ', ')"
+    />
+    <Error
+      Condition="'@(_TaiwuPackFileWithoutPath)' != ''"
+      Text="TaiwuModPackFile 必须声明 PackagePath：@(_TaiwuPackFileWithoutPath, ', ')"
+    />
+    <Error
+      Condition="'@(_TaiwuPackDirectoryWithoutPath)' != ''"
+      Text="TaiwuModPackDirectory 必须声明 PackagePath：@(_TaiwuPackDirectoryWithoutPath, ', ')"
+    />
+
+    <ItemGroup>
+      <_TaiwuCopyLocalDll
+        Include="$(OutDir)%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)"
+        Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll'"
+      >
+        <AssemblyFileName
+        >%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</AssemblyFileName>
+        <AssemblyFileNameKey
+        >$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)').ToLowerInvariant())</AssemblyFileNameKey>
+        <SourceProjectFile
+        >%(ReferenceCopyLocalPaths.MSBuildSourceProjectFile)</SourceProjectFile>
+        <SourceProjectFileKey
+        >$([System.String]::Copy('%(ReferenceCopyLocalPaths.MSBuildSourceProjectFile)').Replace('\',
+          '/').ToLowerInvariant())</SourceProjectFileKey>
+      </_TaiwuCopyLocalDll>
+      <_TaiwuPackableDll
+        Include="@(_TaiwuCopyLocalDll)"
+        Condition="Exists('%(_TaiwuCopyLocalDll.FullPath)')"
+      />
+      <_TaiwuUniquePackableDll
+        Include="@(_TaiwuPackableDll)"
+        KeepDuplicates="false"
+      />
+      <_TaiwuExplicitMergeRequest Include="@(TaiwuModMergeDependency)">
+        <AssemblyFileName>%(TaiwuModMergeDependency.Identity)</AssemblyFileName>
+        <AssemblyFileNameKey
+        >$([System.String]::Copy('%(TaiwuModMergeDependency.Identity)').ToLowerInvariant())</AssemblyFileNameKey>
+      </_TaiwuExplicitMergeRequest>
+      <_TaiwuSharedMergeRequest
+        Include="@(_TaiwuUniquePackableDll)"
+        Condition="'@(TaiwuModPackEntry)' != '' And '%(_TaiwuUniquePackableDll.SourceProjectFileKey)' != '' And $([System.String]::Copy('%(_TaiwuUniquePackableDll.SourceProjectFileKey)').StartsWith('$(_TaiwuSharedProjectPathPrefix)'))"
+      >
+        <AssemblyFileName
+        >%(_TaiwuUniquePackableDll.AssemblyFileName)</AssemblyFileName>
+        <AssemblyFileNameKey
+        >%(_TaiwuUniquePackableDll.AssemblyFileNameKey)</AssemblyFileNameKey>
+      </_TaiwuSharedMergeRequest>
+      <_TaiwuCopyRequest Include="@(TaiwuModCopyDependency)">
+        <AssemblyFileName>%(TaiwuModCopyDependency.Identity)</AssemblyFileName>
+        <AssemblyFileNameKey
+        >$([System.String]::Copy('%(TaiwuModCopyDependency.Identity)').ToLowerInvariant())</AssemblyFileNameKey>
+      </_TaiwuCopyRequest>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_TaiwuMergeRequest Include="@(_TaiwuExplicitMergeRequest)" />
+      <_TaiwuMergeRequest Include="@(_TaiwuSharedMergeRequest)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_TaiwuPackableDllKeys
+      >;@(_TaiwuUniquePackableDll->'%(AssemblyFileNameKey)',
+        ';');</_TaiwuPackableDllKeys>
+      <_TaiwuMergeRequestKeys>;@(_TaiwuMergeRequest->'%(AssemblyFileNameKey)',
+        ';');</_TaiwuMergeRequestKeys>
+      <_TaiwuSharedMergeRequestKeys
+      >;@(_TaiwuSharedMergeRequest->'%(AssemblyFileNameKey)',
+        ';');</_TaiwuSharedMergeRequestKeys>
+      <_TaiwuCopyRequestKeys>;@(_TaiwuCopyRequest->'%(AssemblyFileNameKey)',
+        ';');</_TaiwuCopyRequestKeys>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_TaiwuRedundantSharedMergeDependency
+        Include="@(_TaiwuExplicitMergeRequest)"
+        Condition="$([System.String]::Copy('$(_TaiwuSharedMergeRequestKeys)').Contains(';%(_TaiwuExplicitMergeRequest.AssemblyFileNameKey);'))"
+      />
+      <_TaiwuConflictingDependency
+        Include="@(_TaiwuMergeRequest)"
+        Condition="$([System.String]::Copy('$(_TaiwuCopyRequestKeys)').Contains(';%(_TaiwuMergeRequest.AssemblyFileNameKey);'))"
+      />
+
+      <_TaiwuMergeDll
+        Include="@(_TaiwuUniquePackableDll)"
+        Condition="$([System.String]::Copy('$(_TaiwuMergeRequestKeys)').Contains(';%(_TaiwuUniquePackableDll.AssemblyFileNameKey);'))"
+      />
+      <_TaiwuCopyDll
+        Include="@(_TaiwuUniquePackableDll)"
+        Condition="$([System.String]::Copy('$(_TaiwuCopyRequestKeys)').Contains(';%(_TaiwuUniquePackableDll.AssemblyFileNameKey);'))"
+      />
+
+      <_TaiwuMatchedMergeRequest
+        Include="@(_TaiwuMergeRequest)"
+        Condition="$([System.String]::Copy('$(_TaiwuPackableDllKeys)').Contains(';%(_TaiwuMergeRequest.AssemblyFileNameKey);'))"
+      />
+      <_TaiwuMatchedCopyRequest
+        Include="@(_TaiwuCopyRequest)"
+        Condition="$([System.String]::Copy('$(_TaiwuPackableDllKeys)').Contains(';%(_TaiwuCopyRequest.AssemblyFileNameKey);'))"
+      />
+
+      <_TaiwuMissingMergeRequest Include="@(_TaiwuMergeRequest)" />
+      <_TaiwuMissingCopyRequest Include="@(_TaiwuCopyRequest)" />
+      <_TaiwuMissingMergeRequest
+        Remove="@(_TaiwuMatchedMergeRequest)"
+        MatchOnMetadata="AssemblyFileNameKey"
+      />
+      <_TaiwuMissingCopyRequest
+        Remove="@(_TaiwuMatchedCopyRequest)"
+        MatchOnMetadata="AssemblyFileNameKey"
+      />
+
+      <_TaiwuUniqueMergeDll
+        Include="@(_TaiwuMergeDll)"
+        KeepDuplicates="false"
+      />
+      <_TaiwuUniqueCopyDll
+        Include="@(_TaiwuCopyDll)"
+        KeepDuplicates="false"
+      />
+      <_TaiwuPackLibraryDir
+        Include="@(ReferencePath->'%(RootDir)%(Directory)')"
+      />
+      <_TaiwuPackLibraryDir
+        Include="@(_TaiwuUniquePackableDll->'%(RootDir)%(Directory)')"
+      />
+      <_TaiwuUniquePackLibraryDir
+        Include="@(_TaiwuPackLibraryDir)"
+        KeepDuplicates="false"
+      />
+    </ItemGroup>
+
+    <Error
+      Condition="'@(_TaiwuRedundantSharedMergeDependency)' != ''"
+      Text="shared 项目由 ProjectReference 自动合并，不要再声明 TaiwuModMergeDependency：@(_TaiwuRedundantSharedMergeDependency->'%(AssemblyFileName)', ', ')"
+    />
+    <Error
+      Condition="'@(_TaiwuConflictingDependency)' != ''"
+      Text="同一个依赖不能同时合并到入口程序集又作为独立 DLL 复制：@(_TaiwuConflictingDependency->'%(AssemblyFileName)', ', ')"
+    />
+    <Error
+      Condition="'@(_TaiwuMissingMergeRequest)' != ''"
+      Text="TaiwuModMergeDependency 未在本次构建的 copy-local 输出中找到：@(_TaiwuMissingMergeRequest->'%(AssemblyFileName)', ', ')"
+    />
+    <Error
+      Condition="'@(_TaiwuMissingCopyRequest)' != ''"
+      Text="TaiwuModCopyDependency 未在本次构建的 copy-local 输出中找到：@(_TaiwuMissingCopyRequest->'%(AssemblyFileName)', ', ')"
+    />
+    <Error
+      Condition="'@(TaiwuModPackEntry)' == '' And '@(_TaiwuUniqueMergeDll)' != ''"
+      Text="TaiwuModMergeDependency 需要声明 TaiwuModPackEntry。"
+    />
+  </Target>
+
+  <Target
+    Name="ResolveTaiwuModPackOutputs"
+    DependsOnTargets="ResolveTaiwuProjectPackAssets"
+    Outputs="@(_TaiwuPackOutput)"
+  >
+    <PropertyGroup>
+      <_TaiwuDependencyPackageDir>Plugins/</_TaiwuDependencyPackageDir>
+      <_TaiwuEntryPackageDir Condition="'@(TaiwuModPackEntry)' != ''"
+      >$([System.IO.Path]::GetDirectoryName('%(TaiwuModPackEntry.PackagePath)'))</_TaiwuEntryPackageDir>
+      <_TaiwuDependencyPackageDir Condition="'@(TaiwuModPackEntry)' != ''"
+      >$([System.String]::Copy('$(_TaiwuEntryPackageDir)').Replace('\',
+        '/'))/</_TaiwuDependencyPackageDir>
+      <_TaiwuDependencyPackageDir
+        Condition="'@(TaiwuModPackEntry)' != '' And '$(_TaiwuEntryPackageDir)' == ''"
+      />
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_TaiwuPackOutput Include="@(TaiwuModPackEntry)">
+        <Kind>Entry</Kind>
+        <SourcePath>%(TaiwuModPackEntry.FullPath)</SourcePath>
+        <PackagePath>%(TaiwuModPackEntry.PackagePath)</PackagePath>
+        <KeyFile>$(KeyFile)</KeyFile>
+      </_TaiwuPackOutput>
+      <_TaiwuPackOutput Include="@(_TaiwuUniqueMergeDll)">
+        <Kind>Merge</Kind>
+        <SourcePath>%(_TaiwuUniqueMergeDll.FullPath)</SourcePath>
+      </_TaiwuPackOutput>
+      <_TaiwuPackOutput Include="@(_TaiwuUniqueCopyDll)">
+        <Kind>File</Kind>
+        <SourcePath>%(_TaiwuUniqueCopyDll.FullPath)</SourcePath>
+        <PackagePath
+        >$(_TaiwuDependencyPackageDir)%(Filename)%(Extension)</PackagePath>
+      </_TaiwuPackOutput>
+      <_TaiwuPackOutput Include="@(TaiwuModPackFile)">
+        <Kind>File</Kind>
+        <SourcePath>%(TaiwuModPackFile.FullPath)</SourcePath>
+        <PackagePath>%(TaiwuModPackFile.PackagePath)</PackagePath>
+      </_TaiwuPackOutput>
+      <_TaiwuPackOutput Include="@(TaiwuModPackDirectory)">
+        <Kind>Directory</Kind>
+        <SourcePath>%(TaiwuModPackDirectory.FullPath)</SourcePath>
+        <PackagePath>%(TaiwuModPackDirectory.PackagePath)</PackagePath>
+      </_TaiwuPackOutput>
+      <_TaiwuPackOutput Include="@(_TaiwuUniquePackLibraryDir)">
+        <Kind>Library</Kind>
+        <SourcePath>%(_TaiwuUniquePackLibraryDir.FullPath)</SourcePath>
+      </_TaiwuPackOutput>
+    </ItemGroup>
+  </Target>
+</Project>

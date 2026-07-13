@@ -1,0 +1,47 @@
+<Project>
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+  </PropertyGroup>
+
+  <Target
+    Name="ResolveTaiwuModPackOutputs"
+    Outputs="@(_TaiwuPackOutput)"
+  >
+    <ItemGroup>
+      <_TaiwuPackFileWithoutPath
+        Include="@(TaiwuModPackFile)"
+        Condition="'%(TaiwuModPackFile.PackagePath)' == ''"
+      />
+      <_TaiwuPackDirectoryWithoutPath
+        Include="@(TaiwuModPackDirectory)"
+        Condition="'%(TaiwuModPackDirectory.PackagePath)' == ''"
+      />
+    </ItemGroup>
+
+    <Error
+      Condition="'@(_TaiwuPackFileWithoutPath)' != ''"
+      Text="TaiwuModPackFile 必须声明 PackagePath：@(_TaiwuPackFileWithoutPath, ', ')"
+    />
+    <Error
+      Condition="'@(_TaiwuPackDirectoryWithoutPath)' != ''"
+      Text="TaiwuModPackDirectory 必须声明 PackagePath：@(_TaiwuPackDirectoryWithoutPath, ', ')"
+    />
+
+    <ItemGroup>
+      <_TaiwuPackOutput Include="@(TaiwuModPackFile)">
+        <Kind>File</Kind>
+        <SourcePath>%(TaiwuModPackFile.FullPath)</SourcePath>
+        <PackagePath>%(TaiwuModPackFile.PackagePath)</PackagePath>
+      </_TaiwuPackOutput>
+      <_TaiwuPackOutput Include="@(TaiwuModPackDirectory)">
+        <Kind>Directory</Kind>
+        <SourcePath>%(TaiwuModPackDirectory.FullPath)</SourcePath>
+        <PackagePath>%(TaiwuModPackDirectory.PackagePath)</PackagePath>
+      </_TaiwuPackOutput>
+      <_TaiwuPackOutput Include="@(TaiwuModPackProject)">
+        <Kind>Project</Kind>
+        <SourcePath>%(TaiwuModPackProject.FullPath)</SourcePath>
+      </_TaiwuPackOutput>
+    </ItemGroup>
+  </Target>
+</Project>

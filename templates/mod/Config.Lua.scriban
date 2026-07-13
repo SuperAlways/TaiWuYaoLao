@@ -1,0 +1,15 @@
+return {
+  Title = "{{ mod.name }}",
+  Source = 0,
+  FileId = 0,
+  Version = "{{ mod.version }}",
+  GameVersion = "1.0.20",
+  Author = "",
+  Description = "",
+  BackendPlugins = {
+    "{{ mod.name }}.Backend.dll",
+  },
+  FrontendPlugins = {
+    "{{ mod.name }}.Frontend.dll",
+  },
+}

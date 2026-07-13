@@ -1,0 +1,20 @@
+<Project>
+  <Import
+    Project="$([MSBuild]::GetPathOfFileAbove('Taiwu.Mods.Paths.props', '$(MSBuildThisFileDirectory)'))"
+  />
+  <Import Project="$(TaiwuModsModsDir)Taiwu.Mod.Pack.targets" />
+
+  <ItemGroup>
+    <!-- mod 清单(游戏靠它识别 mod + 声明 FrontendPlugins) -->
+    <TaiwuModPackFile Include="Config.Lua" PackagePath="Config.Lua" />
+
+    <!-- 封面图(Steam Workshop 预览图) -->
+    <TaiwuModPackFile Include="cover.png" PackagePath="cover.png" />
+
+    <!-- 前端插件项目(入口程序集 TaiwuEncyclopedia.Frontend.dll + 依赖 Core/Markdown 自动带上) -->
+    <TaiwuModPackProject Include="src/Frontend/TaiwuEncyclopedia.Frontend.csproj" />
+
+    <!-- 百晓册知识库数据(随 mod 分发:总纲 + 10 章 + registry + concept_index) -->
+    <TaiwuModPackDirectory Include="Skills" PackagePath="Skills" />
+  </ItemGroup>
+</Project>

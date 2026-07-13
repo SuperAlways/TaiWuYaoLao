@@ -1,0 +1,25 @@
+<Project>
+  <PropertyGroup>
+    <TaiwuModPublishPackagePath
+      Condition="'$(TaiwuModPublishPackagePath)' == ''"
+    >Processes/$(MSBuildProjectName)</TaiwuModPublishPackagePath>
+  </PropertyGroup>
+
+  <Target
+    Name="AddTaiwuModPublishDirectoryToPack"
+    BeforeTargets="ResolveTaiwuModPackOutputs"
+    DependsOnTargets="Publish"
+  >
+    <Error
+      Condition="'$(PublishDir)' == ''"
+      Text="PublishDir 为空。请确认该项目可以运行 Publish 目标后再参与太吾 mod 组包。"
+    />
+
+    <ItemGroup>
+      <TaiwuModPackDirectory
+        Include="$(PublishDir)"
+        PackagePath="$(TaiwuModPublishPackagePath)"
+      />
+    </ItemGroup>
+  </Target>
+</Project>
