@@ -577,8 +577,7 @@ Backend Hook 游戏事件（月度推进/战斗/事件触发）→ `RpcPeer.Noti
 
 ## 13. 致谢
 
-- [太吾绘卷 The Scroll of Taiwu](https://store.steampowered.com/app/838350/) — ConchShip Games
 - [万象 Sanctum 的 taiwu-mods 脚手架](https://github.com/Wanxiang-Sanctum/taiwu-mods) — Mod 构建工具链、游戏引用包（Taiwu.ModKit）和解决方案模板
 - [LightRAG](https://github.com/HKUDS/LightRAG) — 知识图谱 RAG 引擎，远程检索服务的核心框架
-- [DeepSeek](https://platform.deepseek.com/) — 默认 LLM API 服务
 - 交流群 **1058899374** 的所有玩家 — 反馈、测试和建议
+  
