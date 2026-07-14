@@ -1,9 +1,12 @@
+using System;
+using System.Threading.Tasks;
 using UnityEngine;
+using TaiwuEncyclopedia.Core.Probe;
 using TaiwuEncyclopedia.Core.Session;
 
 namespace TaiwuEncyclopedia;
 
-/// <summary>F10 触发探针 dump。step1 骨架: 验证热键+文件落盘链路。Task5 接真实读取。</summary>
+/// <summary>F10 触发探针 dump。Task5: 接真实 GameStateProvider 读取。</summary>
 internal sealed class ProbeDebuggerHost : MonoBehaviour
 {
     private static ProbeDebuggerHost? _instance;
@@ -27,12 +30,30 @@ internal sealed class ProbeDebuggerHost : MonoBehaviour
     private void Update()
     {
         if (!Input.GetKeyDown(KeyCode.F10)) return;
-        // 骨架: 先只写一行, 验证热键+文件落盘
         if (WorldIdReader.CurrentWorldId() == SessionManager.PregameWorldId)
         {
             _ = _writer.WriteSkipAsync("未载入存档");
             return;
         }
-        _ = _writer.WriteAsync("probe_combat_skills", new { skeleton = "F10 triggered, read not wired yet" });
+        _ = DumpCombatSkillsAsync();
+    }
+
+    private async Task DumpCombatSkillsAsync()
+    {
+        try
+        {
+            var provider = new GameStateProvider();
+            var collector = new Core.Probe.ProbeErrorCollector();
+            var snap = await provider.GetCombatSkills(collector);
+            await _writer.WriteAsync("probe_combat_skills", new
+            {
+                snapshot = snap,
+                failures = collector.Failures,  // 字段级降级记录, 对照用
+            });
+        }
+        catch (Exception e)
+        {
+            await _writer.WriteErrorAsync("probe_combat_skills", e.Message);
+        }
     }
 }
