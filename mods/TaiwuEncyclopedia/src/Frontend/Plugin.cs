@@ -26,6 +26,10 @@ public class Plugin : TaiwuRemakePlugin
         // FrontendServices: 尝试从已有配置初始化 AgentRunner
         FrontendServices.TryInitializeAgentRunner();
 
+        // 探针调试采集器 (step1: F10 dump)
+        ProbeDriver.Ensure();
+        ProbeDebuggerHost.Ensure();
+
         Debug.Log("[TaiwuEncyclopedia] plugin initialized");
     }
 
