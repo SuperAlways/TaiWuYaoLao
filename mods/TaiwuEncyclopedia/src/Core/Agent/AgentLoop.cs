@@ -308,6 +308,17 @@ public static class AgentLoop
                 });
                 trace.ToolResult(tc.Function.Name, tc.Id, resultItem.Content, iteration);
                 yield return new ToolResultEvent { Name = tc.Function.Name, Iteration = iteration };
+
+                // 探针降级提示(路2): 检查 tool_result 是否探针且非 ok, yield 思考面板提示
+                if (ProbeStatusParser.TryGetProbeStatus(resultItem.Content, out var pStatus, out var pCode, out var pApi, out var pProbe)
+                    && pStatus != "ok")
+                {
+                    var level = pStatus == "unavailable" ? "error" : "warn";
+                    var msg = pStatus == "unavailable"
+                        ? $"探针 {pProbe} 不可用（{pApi}），游戏可能已更新，请联系 mod 作者维护（报错码 {pCode}）"
+                        : $"探针 {pProbe} 部分信息缺失（{pApi}），建议联系 mod 作者（报错码 {pCode}）";
+                    yield return new StatusEvent { Level = level, Message = msg };
+                }
             }
 
             // 累积 retrieve_rag 工具返回的 references（跨轮去重，按 full_doc_id 合并 hit_count）
