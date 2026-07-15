@@ -12,6 +12,8 @@ using TaiwuEncyclopedia.Core.Skills;
 using TaiwuEncyclopedia.Core.Soul;
 using TaiwuEncyclopedia.Core.Storage;
 using TaiwuEncyclopedia.Core.Tools;
+using TaiwuEncyclopedia.Core.Probe;
+using TaiwuEncyclopedia.Core.Probe.Tools;
 using TaiwuEncyclopedia.Frontend.Networking;
 using UnityEngine;
 
@@ -75,6 +77,7 @@ public static class FrontendServices
     private static ContextManager? _contextManager;
     private static PromptBuilder? _promptBuilder;
     private static IRagClient? _ragClient;
+    private static GameStateProvider? _gameStateProvider;
 
     /// <summary>
     /// 会话管理器。
@@ -319,6 +322,10 @@ public static class FrontendServices
 
             // CompleteRetrievalTool (不依赖 SkillManager)
             _toolRegistry.Register(new CompleteRetrievalTool());
+
+            // ---- 探针工具(Phase 1: Frontend 直读, 零 Backend) ----
+            _gameStateProvider = new GameStateProvider();
+            _toolRegistry.Register(new ProbeCombatSkillsTool(_gameStateProvider));
 
             // 4. ToolExecutor
             _toolExecutor = new ToolExecutor(_toolRegistry);
