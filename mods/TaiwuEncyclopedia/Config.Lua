@@ -1,8 +1,8 @@
 return {
-  Title = "药老随身AI V1.0.0",
+  Title = "药老随身AI V1.0.02",
   Source = 0,
   FileId = 0,
-  Version = "1.0.0",
+  Version = "1.0.02",
   GameVersion = "1.0.56.0",
   Author = "alwayssuper",
   Cover = "cover.png",
@@ -41,6 +41,14 @@ return {
 [list]
 [*][b]F8[/b]：打开/关闭问答面板
 [*][b]F9[/b]：打开设置面板
+[/list]
+
+[h2]社区与反馈[/h2]
+欢迎加入 QQ 群 [b]1058899374[/b]：
+[list]
+[*]反馈 bug 和使用问题
+[*]参与玩家攻略的上传与维护
+[*]参与引导 skill 的整理与优化
 [/list]
 
 百晓册资料正在持续完善中，部分冷门内容可能存在滞后或缺失，敬请谅解。
