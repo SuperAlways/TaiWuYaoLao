@@ -19,6 +19,9 @@ internal sealed class FakeGameStateProvider : IGameStateProvider
         if (_throwOnRead) throw new System.Exception("core api gone");
         return Task.FromResult(_snapshot);
     }
+    public Task<TaiwuSnapshot> GetTaiwu(IProbeErrorCollector collector) => Task.FromResult(new TaiwuSnapshot());
+    public Task<NpcSnapshot> GetNpcDetail(int charId, IProbeErrorCollector collector) => Task.FromResult(new NpcSnapshot { CharId = charId });
+    public Task<InventorySnapshot> GetInventory(int charId, IProbeErrorCollector collector) => Task.FromResult(new InventorySnapshot());
 }
 
 // 测试用 tool: 继承 ProbeToolBase, 只实现 ProbeReadAsync
