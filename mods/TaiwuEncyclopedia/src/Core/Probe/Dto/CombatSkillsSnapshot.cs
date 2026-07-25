@@ -24,4 +24,10 @@ public sealed class LearnedSkillRaw
     public int Power { get; set; }                // <- DisplayData.Power
     public int MaxPower { get; set; }             // <- DisplayData.MaxPower
     public bool Mastered { get; set; }            // <- DisplayData.Mastered
+    public string? SkillDesc { get; set; }              // 功法描述(Config查)
+    public int SkillFiveElements { get; set; }          // 功法五行
+    public string? SkillFiveElementName { get; set; }   // 五行名
+    public string? MasteredText { get; set; }           // 大成/空
+    public string? PracticeText { get; set; }           // 正练/逆练
+    public bool BreakSuccess { get; set; }              // 突破成功
 }

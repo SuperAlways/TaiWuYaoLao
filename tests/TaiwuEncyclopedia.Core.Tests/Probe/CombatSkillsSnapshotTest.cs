@@ -25,4 +25,15 @@ public class CombatSkillsSnapshotTest
         r.Name.Should().Be("狮子吼");
         r.GradeRaw.Should().Be(2);
     }
+
+    [Fact]
+    public void LearnedSkillRaw_NewFields_Defaults()
+    {
+        var r = new LearnedSkillRaw { TemplateId = 1, Name = "X" };
+        r.SkillDesc.Should().BeNull();
+        r.SkillFiveElementName.Should().BeNull();
+        r.MasteredText.Should().BeNull();
+        r.PracticeText.Should().BeNull();
+        r.BreakSuccess.Should().BeFalse();
+    }
 }
