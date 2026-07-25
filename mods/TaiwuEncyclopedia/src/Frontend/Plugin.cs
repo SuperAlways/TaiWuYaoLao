@@ -29,6 +29,7 @@ public class Plugin : TaiwuRemakePlugin
         // 探针调试采集器 (step1: F10 dump)
         ProbeDriver.Ensure();
         ProbeDebuggerHost.Ensure();
+        NpcEntryInjector.Ensure();
 
         Debug.Log("[TaiwuEncyclopedia] plugin initialized");
     }
