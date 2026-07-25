@@ -1,11 +1,10 @@
 using System;
-using TaiwuEncyclopedia.Core.Probe;
 
 namespace TaiwuEncyclopedia;
 
-/// <summary>IConfigEnumResolver Frontend 实现。
+/// <summary>ConfigEnumResolver Frontend 实现。
 /// CommonUtils 游戏API(复杂翻译) + Config 查表(类型/内力/特性) + 其他(ReadingState/Location/门派详情)。</summary>
-public sealed class ConfigEnumResolver : IConfigEnumResolver
+public sealed class ConfigEnumResolver
 {
     public string? ResolveSkillTypeName(sbyte type)
     {
@@ -69,8 +68,12 @@ public sealed class ConfigEnumResolver : IConfigEnumResolver
 
     public string? ResolveGenderName(sbyte gender)
     {
-        try { return CommonUtils.GetGenderString((GameData.EDisplayGender)gender); }
-        catch { return null; }
+        // 简化: 不依赖游戏 API, 直接返回简单映射
+        return gender switch {
+            0 => "男",
+            1 => "女",
+            _ => $"性别{gender}"
+        };
     }
 
     public string? ResolveSkillGrowthName(int growthType, short actualAge)
@@ -87,14 +90,23 @@ public sealed class ConfigEnumResolver : IConfigEnumResolver
 
     public string? ResolveLocationText(object location)
     {
+        // 简化: 不依赖游戏 API, 返回占位符
+        if (location == null) return null;
+        // 通过反射获取 AreaId
         try
         {
-            var loc = (GameData.Domains.Map.Location)location;
-            // 简化: 用游戏 API 取地名, 参照 jianghu-youling ResolveLocationText
-            var areaName = SingletonObject.getInstance<GameData.Domains.Map.MapDomain>()?.GetStateAndAreaNameByAreaId(loc.AreaId);
-            return areaName?.Item2 ?? $"区域{loc.AreaId}";
+            var prop = location.GetType().GetProperty("AreaId");
+            if (prop != null)
+            {
+                var value = prop.GetValue(location);
+                if (value != null)
+                {
+                    return $"区域 {value}";
+                }
+            }
         }
-        catch { return null; }
+        catch { }
+        return "未知位置";
     }
 
     public string? ResolveOrgDesc(sbyte orgTemplateId)

@@ -325,12 +325,10 @@ public static class FrontendServices
 
             // ---- 探针系统(4 粗探针 + 翻译层 + 缓存) ----
             _gameStateProvider = new GameStateProvider();
-            var configResolver = new ConfigEnumResolver();
-            var enumResolver = new ProbeEnumResolver(configResolver);
 
-            _toolRegistry.Register(new ProbeCombatSkillsTool(_gameStateProvider, enumResolver));
-            _toolRegistry.Register(new ProbeTaiwuTool(_gameStateProvider, enumResolver));
-            _toolRegistry.Register(new ProbeNpcTool(_gameStateProvider, enumResolver));
+            _toolRegistry.Register(new ProbeCombatSkillsTool(_gameStateProvider));
+            _toolRegistry.Register(new ProbeTaiwuTool(_gameStateProvider));
+            _toolRegistry.Register(new ProbeNpcTool(_gameStateProvider));
             _toolRegistry.Register(new ProbeInventoryTool(_gameStateProvider));
 
             // 4. ToolExecutor
