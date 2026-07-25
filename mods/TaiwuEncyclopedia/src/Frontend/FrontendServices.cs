@@ -323,9 +323,15 @@ public static class FrontendServices
             // CompleteRetrievalTool (不依赖 SkillManager)
             _toolRegistry.Register(new CompleteRetrievalTool());
 
-            // ---- 探针工具(Phase 1: Frontend 直读, 零 Backend) ----
+            // ---- 探针系统(4 粗探针 + 翻译层 + 缓存) ----
             _gameStateProvider = new GameStateProvider();
-            _toolRegistry.Register(new ProbeCombatSkillsTool(_gameStateProvider));
+            var configResolver = new ConfigEnumResolver();
+            var enumResolver = new ProbeEnumResolver(configResolver);
+
+            _toolRegistry.Register(new ProbeCombatSkillsTool(_gameStateProvider, enumResolver));
+            _toolRegistry.Register(new ProbeTaiwuTool(_gameStateProvider, enumResolver));
+            _toolRegistry.Register(new ProbeNpcTool(_gameStateProvider, enumResolver));
+            _toolRegistry.Register(new ProbeInventoryTool(_gameStateProvider));
 
             // 4. ToolExecutor
             _toolExecutor = new ToolExecutor(_toolRegistry);
