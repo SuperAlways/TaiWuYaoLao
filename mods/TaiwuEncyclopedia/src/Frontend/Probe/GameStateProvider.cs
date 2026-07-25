@@ -24,6 +24,27 @@ public sealed class GameStateProvider : IGameStateProvider
         return tcs.Task;
     }
 
+    public Task<TaiwuSnapshot> GetTaiwu(IProbeErrorCollector collector)
+    {
+        var tcs = new TaskCompletionSource<TaiwuSnapshot>();
+        ProbeDriver.Instance.StartCoroutine(FetchTaiwuCoroutine(tcs, collector));
+        return tcs.Task;
+    }
+
+    public Task<NpcSnapshot> GetNpcDetail(int charId, IProbeErrorCollector collector)
+    {
+        var tcs = new TaskCompletionSource<NpcSnapshot>();
+        ProbeDriver.Instance.StartCoroutine(FetchNpcCoroutine(charId, tcs, collector));
+        return tcs.Task;
+    }
+
+    public Task<InventorySnapshot> GetInventory(int charId, IProbeErrorCollector collector)
+    {
+        var tcs = new TaskCompletionSource<InventorySnapshot>();
+        ProbeDriver.Instance.StartCoroutine(FetchInventoryCoroutine(charId, tcs, collector));
+        return tcs.Task;
+    }
+
     private IEnumerator FetchCombatSkillsCoroutine(
         TaskCompletionSource<CombatSkillsSnapshot> tcs, IProbeErrorCollector collector)
     {
@@ -130,11 +151,79 @@ public sealed class GameStateProvider : IGameStateProvider
             }
             snap.Learned = learned.ToArray();
         }
-        // ReadingState 位翻译(Frontend, 依赖游戏DLL)。Core 翻译(Grade/Type)由 tool 调。
+        // ReadingState 位翻译(Frontend, 依赖游戏 DLL)。Core 翻译(Grade/Type)由 tool 调。
         try { ProbeReadingStateTranslator.Translate(snap); }
         catch (Exception e) { errors.Add("ReadingState translate: " + e.Message); }
         snap.Errors = errors.ToArray();
         tcs.TrySetResult(snap);
+    }
+
+    private IEnumerator FetchTaiwuCoroutine(
+        TaskCompletionSource<TaiwuSnapshot> tcs, IProbeErrorCollector collector)
+    {
+        var snap = new TaiwuSnapshot();
+        var errors = new List<string>();
+
+        // 1. 太吾 charId
+        int taiwuId = -1;
+        try { taiwuId = SingletonObject.getInstance<BasicGameData>().TaiwuCharId; }
+        catch (Exception e) { errors.Add("TaiwuCharId: " + e.Message); }
+
+        if (taiwuId <= 0)
+        {
+            snap.Errors = errors.ToArray();
+            tcs.TrySetResult(snap);
+            yield break;
+        }
+
+        snap.CharId = taiwuId;
+
+        // Just try to get as much as we can without field access
+        // For now, just mark in errors that we're stubbed
+        errors.Add("GetTaiwu: Implementation stubbed - game API types not available");
+
+        snap.Errors = errors.ToArray();
+        tcs.TrySetResult(snap);
+        yield break;
+    }
+
+    private IEnumerator FetchNpcCoroutine(
+        int charId, TaskCompletionSource<NpcSnapshot> tcs, IProbeErrorCollector collector)
+    {
+        var snap = new NpcSnapshot();
+        var errors = new List<string>();
+
+        snap.CharId = charId;
+
+        if (charId <= 0)
+        {
+            snap.Errors = errors.ToArray();
+            tcs.TrySetResult(snap);
+            yield break;
+        }
+
+        // Just try to get as much as we can without field access
+        // For now, just mark in errors that we're stubbed
+        errors.Add("GetNpcDetail: Implementation stubbed - game API types not available");
+
+        snap.Errors = errors.ToArray();
+        tcs.TrySetResult(snap);
+        yield break;
+    }
+
+    private IEnumerator FetchInventoryCoroutine(
+        int charId, TaskCompletionSource<InventorySnapshot> tcs, IProbeErrorCollector collector)
+    {
+        var snap = new InventorySnapshot();
+        var errors = new List<string>();
+
+        // Just try to get as much as we can without field access
+        // For now, just mark in errors that we're stubbed
+        errors.Add("GetInventory: Implementation stubbed - game API types not available");
+
+        snap.Errors = errors.ToArray();
+        tcs.TrySetResult(snap);
+        yield break;
     }
 
     private IEnumerator WaitDone(System.Func<bool> ready)
