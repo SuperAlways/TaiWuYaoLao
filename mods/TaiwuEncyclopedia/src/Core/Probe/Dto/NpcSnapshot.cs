@@ -40,6 +40,9 @@ public sealed class NpcSnapshot
     public int AliveState { get; set; }
     public bool CompletelyInfected { get; set; }
     public int InfluencePower { get; set; }
+    public string? OrgFullTitle { get; set; }
+    public string? ConsummateGrade { get; set; }
+    public string? AliveStateName { get; set; }
     // 属性层(同 TaiwuSnapshot 属性字段)
     public short[] CurMainAttributes { get; set; } = new short[6];
     public string[]? MainAttributeKeys { get; set; }

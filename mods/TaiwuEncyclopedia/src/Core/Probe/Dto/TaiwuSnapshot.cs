@@ -36,6 +36,9 @@ public sealed class TaiwuSnapshot
     public int AliveState { get; set; }
     public bool CompletelyInfected { get; set; }
     public int InfluencePower { get; set; }
+    public string? OrgFullTitle { get; set; }
+    public string? ConsummateGrade { get; set; }
+    public string? AliveStateName { get; set; }
     // 内力层
     public int NeiliTypeRaw { get; set; }
     public string? NeiliTypeName { get; set; }

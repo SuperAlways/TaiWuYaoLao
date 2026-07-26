@@ -232,6 +232,8 @@ public sealed class GameStateProvider : IGameStateProvider
             snap.CompletelyInfected = dd.CompletelyInfected;
             snap.InfluencePower = dd.InfluencePower;
             snap.LocationText = ProbeTranslator.ResolveLocationText(dd.Location);
+            try { snap.OrgFullTitle = dd.OrgInfo.OrgTemplateId > 0 ? dd.OrgInfo.ToString() : "无门派"; }
+            catch (Exception e) { errors.Add("OrgFullTitle: " + e.Message); }
         }
         else
         {
@@ -495,6 +497,8 @@ public sealed class GameStateProvider : IGameStateProvider
             snap.CompletelyInfected = dd.CompletelyInfected;
             snap.InfluencePower = dd.InfluencePower;
             snap.LocationText = ProbeTranslator.ResolveLocationText(dd.Location);
+            try { snap.OrgFullTitle = dd.OrgInfo.OrgTemplateId > 0 ? dd.OrgInfo.ToString() : "无门派"; }
+            catch (Exception e) { errors.Add("OrgFullTitle: " + e.Message); }
             // 额外字段: FavorRaw + RelationBits (带兜底)
             snap.FavorRaw = (dd.FavorabilityToTaiwu != short.MinValue) ? dd.FavorabilityToTaiwu : (short)0;
             snap.RelationBits = (dd.RelationToTaiwu != ushort.MaxValue) ? dd.RelationToTaiwu : (ushort)0;

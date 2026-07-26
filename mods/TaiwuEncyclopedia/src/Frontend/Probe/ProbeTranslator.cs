@@ -75,8 +75,8 @@ public static class ProbeTranslator
     public static string? ResolveFameName(sbyte fameType)
     { try { return Strip(CommonUtils.GetFameString(fameType)); } catch { return null; } }
 
-    public static string? ResolveHappinessName(sbyte happiness)
-    { try { return Strip(CommonUtils.GetHappinessString(happiness)); } catch { return null; } }
+    public static string? ResolveHappinessName(sbyte happiness) =>
+        (happiness >= 0 && happiness < HappinessLevelNames.Length) ? HappinessLevelNames[happiness] : null;
 
     public static string? ResolveGenderName(sbyte gender)
     { try { return gender == 1 ? "男" : gender == 0 ? "女" : "?"; } catch { return null; } }
@@ -114,7 +114,26 @@ public static class ProbeTranslator
         catch { return null; }
     }
 
+    public static string? ResolveAliveStateName(int aliveState) =>
+        (aliveState >= 0 && aliveState < AliveStateNames.Length) ? AliveStateNames[aliveState] : "未知";
+
+    // 精纯 0-18 -> 品级 (Config.ConsummateLevel 查表, 失败用 (level-2)/2 兜底). 参考 worldtalk ResolveConsummateGrade.
+    public static string? ResolveConsummateGrade(int level)
+    {
+        if (level < 0) return null;
+        int grade;
+        try { grade = Config.ConsummateLevel.Instance[(sbyte)level]?.Grade ?? ((level - 2) / 2); }
+        catch { grade = (level - 2) / 2; }
+        grade = grade < 0 ? 0 : grade > 8 ? 8 : grade;
+        return TranslateGrade((sbyte)grade);
+    }
+
     // ========== 数组 Key 常量 ==========
+
+    // 权威值: Language_CN/ui_language.txt LK_HappinessLevel_0..6
+    private static readonly string[] HappinessLevelNames = { "悲极","痛苦","沮丧","寻常","开怀","欢喜","乐极" };
+    // 共识: AliveState==1||==2 为已故 (江湖有灵/worldtalk 一致)
+    private static readonly string[] AliveStateNames = { "存活","已故","已故" };
 
     // 权威值: 反编译 TaiwuEventTagHandler.PersonalityTypeName + Language_CN/ui_language.txt 交叉验证
     // (沉稳/热忱/勇毅/幸运/洞察 是按英文 key 字面硬翻的旧值, 全错; 游戏UI实际用 冷静/热情/勇壮/福缘/合道)
@@ -155,8 +174,9 @@ public static class ProbeTranslator
         s.GenderName ??= ResolveGenderName((sbyte)s.GenderRaw);
         s.StanceName ??= ResolveStanceName((sbyte)s.StanceRaw);
         s.FameName ??= ResolveFameName((sbyte)s.Fame);
-        // HappinessName: jianghu-youling 不翻译, 直接给 raw 值; CommonUtils 返回"不详"不可靠
-        // s.HappinessName 留 null, LLM 从 Happiness raw 值理解
+        s.HappinessName ??= ResolveHappinessName((sbyte)s.Happiness);
+        s.AliveStateName ??= ResolveAliveStateName(s.AliveState);
+        s.ConsummateGrade ??= ResolveConsummateGrade(s.ConsummateLevel);
         s.CharmLevel ??= ResolveCharmLevel((short)s.Charm, (sbyte)s.GenderRaw, (short)s.Age, 0, false, true);
         s.AlertnessLevel ??= ResolveAlertnessLevel(s.Alertness);
         s.NeiliTypeName ??= ResolveNeiliTypeName((sbyte)s.NeiliTypeRaw);
@@ -216,8 +236,9 @@ public static class ProbeTranslator
         s.CharmLevel ??= ResolveCharmLevel((short)s.Charm, (sbyte)s.GenderRaw, (short)s.Age, 0, false, true);
         s.AlertnessLevel ??= ResolveAlertnessLevel(s.Alertness);
         s.FameName ??= ResolveFameName((sbyte)s.Fame);
-        // HappinessName: jianghu-youling 不翻译, 直接给 raw 值; CommonUtils 返回"不详"不可靠
-        // s.HappinessName 留 null, LLM 从 Happiness raw 值理解
+        s.HappinessName ??= ResolveHappinessName((sbyte)s.Happiness);
+        s.AliveStateName ??= ResolveAliveStateName(s.AliveState);
+        s.ConsummateGrade ??= ResolveConsummateGrade(s.ConsummateLevel);
         s.CombatSkillGrowthName ??= ResolveSkillGrowthName(s.CombatSkillGrowthType, (short)s.Age);
         s.LifeSkillGrowthName ??= ResolveSkillGrowthName(s.LifeSkillGrowthType, (short)s.Age);
         if (s.FeatureIds != null && s.FeatureIds.Length > 0 && s.FeatureNames == null)
