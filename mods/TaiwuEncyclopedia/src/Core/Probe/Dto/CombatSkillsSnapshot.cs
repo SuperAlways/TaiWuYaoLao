@@ -19,6 +19,7 @@ public sealed class LearnedSkillRaw
     [JsonProperty("修习等级")] public int PracticeLevel { get; set; }
     [JsonProperty("正练")] public bool IsPositive { get; set; }
     [JsonProperty("逆练")] public bool IsReverse { get; set; }
+    [JsonProperty("运功中")] public bool IsEquipped { get; set; }
     [JsonProperty("阅读状态值")] public ushort ReadingStateRaw { get; set; }
     [JsonProperty("已读页数")] public string? PagesRead { get; set; }
     [JsonProperty("当前威力")] public int Power { get; set; }

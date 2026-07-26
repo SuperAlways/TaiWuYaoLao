@@ -113,6 +113,25 @@ public sealed class GameStateProvider : IGameStateProvider
         catch (Exception e) { errors.Add("GetCombatSkillDisplayData: " + e.Message); done2 = true; }
         yield return WaitDone(() => done2);
 
+        // 3. 当前激活运功方案 (P-CS-003): 拿 CurrentEquipPlan 用于打"运功中"标记
+        //    注意: 用 GetEquipCombatSkillDisplayData (methodId=14), 不是 GetCharacterEquipCombatSkillDisplayData (methodId=2)。
+        //    后者后端返回 List<> 不填充 CurrentEquipPlan; 前者后端调 Character.GetCombatSkillEquipment() 填充 CurrentEquipPlan。
+        EquipCombatSkillDisplayData equipData = null!;
+        bool doneEquip = false;
+        try
+        {
+            CombatSkillDomainMethod.AsyncCall.GetEquipCombatSkillDisplayData(
+                null, taiwuId,
+                (offset, pool) =>
+                {
+                    try { Serializer.Deserialize(pool, offset, ref equipData); }
+                    catch (Exception e) { errors.Add("GetEquipCombatSkillDisplayData deser: " + e.Message); }
+                    finally { doneEquip = true; }
+                });
+        }
+        catch (Exception e) { errors.Add("GetEquipCombatSkillDisplayData: " + e.Message); doneEquip = true; }
+        yield return WaitDone(() => doneEquip);
+
         // 4. 映射 DisplayData -> LearnedSkillRaw
         // 注意: 协程(IEnumerator)内不能 await。ProbeBase.TryRead 供 Task 型探针用;
         // combat_skills 是协程型, 字段级失败在此用 collector.AddFailed 直接记录(等价于 TryRead 的 catch 分支)。
@@ -150,6 +169,7 @@ public sealed class GameStateProvider : IGameStateProvider
                     PracticeLevel = d.PracticeLevel,
                     IsPositive = !d.Revoked,
                     IsReverse = d.Revoked,
+                    IsEquipped = SafeIsEquipped(equipData?.CurrentEquipPlan, d.TemplateId),
                     ReadingStateRaw = d.ReadingState,
                     Power = d.Power,
                     MaxPower = d.MaxPower,
@@ -772,5 +792,13 @@ public sealed class GameStateProvider : IGameStateProvider
     {
         float dl = Time.realtimeSinceStartup + TIMEOUT;
         yield return new WaitUntil(() => ready() || Time.realtimeSinceStartup >= dl);
+    }
+
+    /// <summary>判断某功法是否在当前激活运功方案中。plan 为 null(运功 API 失败)或判抛时返回 false, 不影响其他功法。</summary>
+    private static bool SafeIsEquipped(CombatSkillEquipment plan, short templateId)
+    {
+        if (plan == null) return false;
+        try { return plan.IsCombatSkillEquipped(templateId); }
+        catch { return false; }
     }
 }

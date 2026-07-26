@@ -24,7 +24,7 @@
         "type": "Direct",
         "requested": "[1.0.44, )",
         "resolved": "1.0.44",
-        "contentHash": "oET/fy+UI0vpR5OTe38XQs2lq1INOHUnWnEA1RhS6NLBXMcpOB4L0IIhtP9SsHTDzlz53q04zk34dOjPgSBnEw==",
+        "contentHash": "AHE/+KCzxft1KK1Y+jZimS/kyIZcxUy4S93urkgJmBJGrmFBlb8/ji6F3wr9BvXuGjJC6+av/bthh/wBn8MADQ==",
         "dependencies": {
           "Taiwu.ModKit.References.Plugin": "[1.0.44]",
           "Taiwu.ModKit.References.Shared": "[1.0.44]",
@@ -35,7 +35,7 @@
         "type": "Direct",
         "requested": "[1.0.44, )",
         "resolved": "1.0.44",
-        "contentHash": "zzbN3AAzf2aCEh1ZL7KXNOE0Axnt5TmUqJdP+scu1XRfn1VJJMKg/oISeXXqnhRQnJ3x71yk+2oXuu7amQcstw=="
+        "contentHash": "rNpFG7yH//aOdO97R7lb4ciz8VzMddxfHUq2zyr+IHE0ZddhCqX15aq456xfD7Ge1IV+fFtZ+OJKFsZHHfnAGg=="
       },
       "taiwuencyclopedia.core": {
         "type": "Project",
@@ -57,7 +57,7 @@
         "type": "CentralTransitive",
         "requested": "[1.0.44, )",
         "resolved": "1.0.44",
-        "contentHash": "Xchh5rf2kt5ZEOUrzFvkz8jA6uUqGa6BCHkOishjgiKiFQlWpsyfdAdMF1IHZFJsELKGLRLazDzOgvURnRcJAQ==",
+        "contentHash": "etCKyc7XIOfundUfCQXIWwycbtmJE1KQNMU7KRLM4wgZ9BUTbejH8oczNebuUwQ9JSOj31hJ/53+bAgcDJR3mA==",
         "dependencies": {
           "Taiwu.ModKit.References.Plugin": "[1.0.44]"
         }
@@ -66,7 +66,7 @@
         "type": "CentralTransitive",
         "requested": "[1.0.44, )",
         "resolved": "1.0.44",
-        "contentHash": "fSLRFgCYortzOevJ3EeewIETVaDupjkhhXPrTbf45CcqVgKt/JAsG7C6Yi9U5f18+X0UjoxuHrtAY/BnqVJELw=="
+        "contentHash": "Tl9s14ItLExoJMFmRt0XPcEG4srIZMtO5WkrbMjMC/NOoZIpEUrb8P2lOEkKHhR+CIcyMW+NJty17XVDz65+Ng=="
       },
       "YamlDotNet": {
         "type": "CentralTransitive",
