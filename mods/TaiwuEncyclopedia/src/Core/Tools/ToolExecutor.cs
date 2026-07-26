@@ -126,7 +126,7 @@ public sealed class ToolExecutor
                 return new ToolResult
                 {
                     CallId = tc.Id,
-                    Content = JsonConvert.SerializeObject(result),
+                    Content = JsonConvert.SerializeObject(result, Formatting.Indented),
                 };
             }
             catch (OperationCanceledException)
