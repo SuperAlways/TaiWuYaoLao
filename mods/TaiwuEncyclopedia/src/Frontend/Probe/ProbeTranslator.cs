@@ -114,6 +114,14 @@ public static class ProbeTranslator
         catch { return null; }
     }
 
+    // ========== 数组 Key 常量 ==========
+
+    private static readonly string[] PersonalityKeyNames = { "沉稳","聪颖","热忱","勇毅","坚毅","幸运","洞察" };
+    private static readonly string[] MainAttributeKeyNames = { "膂力","灵敏","定力","体质","根骨","悟性" };
+    private static readonly string[] ResourceKeyNames = { "食物","木材","金铁","玉石","织物","药材","银钱","威望" };
+    private static readonly string[] CombatSkillTypeKeyNames = { "内功","身法","绝技","拳掌","指法","腿法","暗器","剑法","刀法","长兵","杂学","软兵","射御","乐理" };
+    private static readonly string[] FiveElementKeyNames = { "金","木","水","火","土" };
+
     // ========== 门派详情(Config.Organization) ==========
 
     public static string? ResolveOrgName(sbyte orgTemplateId)
@@ -172,6 +180,28 @@ public static class ProbeTranslator
             s.SectVow ??= ResolveOrgVow((sbyte)s.SectTemplateId);
             s.SectStory ??= ResolveOrgStory((sbyte)s.SectTemplateId);
         }
+        // 填充平行 Key 数组
+        s.PersonalityKeys ??= PersonalityKeyNames;
+        s.MainAttributeKeys ??= MainAttributeKeyNames;
+        s.ResourceKeys ??= ResourceKeyNames;
+        s.CombatSkillTypeKeys ??= CombatSkillTypeKeyNames;
+        s.FiveElementKeys ??= FiveElementKeyNames;
+        // LifeSkillTypeKeys 从 Config 动态获取
+        if (s.LifeSkillTypeKeys == null)
+        {
+            try
+            {
+                var keys = new System.Collections.Generic.List<string>();
+                for (sbyte i = 0; ; i++)
+                {
+                    var item = Config.LifeSkillType.Instance[i];
+                    if (item == null) break;
+                    keys.Add(item.Name);
+                }
+                s.LifeSkillTypeKeys = keys.ToArray();
+            }
+            catch { }
+        }
     }
 
     public static void Translate(NpcSnapshot s)
@@ -204,6 +234,26 @@ public static class ProbeTranslator
             s.SectDesc ??= ResolveOrgDesc((sbyte)s.SectTemplateId);
             s.SectVow ??= ResolveOrgVow((sbyte)s.SectTemplateId);
             s.SectStory ??= ResolveOrgStory((sbyte)s.SectTemplateId);
+        }
+        // 填充平行 Key 数组
+        s.PersonalityKeys ??= PersonalityKeyNames;
+        s.MainAttributeKeys ??= MainAttributeKeyNames;
+        s.CombatSkillTypeKeys ??= CombatSkillTypeKeyNames;
+        s.FiveElementKeys ??= FiveElementKeyNames;
+        if (s.LifeSkillTypeKeys == null)
+        {
+            try
+            {
+                var keys = new System.Collections.Generic.List<string>();
+                for (sbyte i = 0; ; i++)
+                {
+                    var item = Config.LifeSkillType.Instance[i];
+                    if (item == null) break;
+                    keys.Add(item.Name);
+                }
+                s.LifeSkillTypeKeys = keys.ToArray();
+            }
+            catch { }
         }
     }
 
