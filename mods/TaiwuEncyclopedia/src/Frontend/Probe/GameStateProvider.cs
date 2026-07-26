@@ -151,9 +151,9 @@ public sealed class GameStateProvider : IGameStateProvider
             }
             snap.Learned = learned.ToArray();
         }
-        // ReadingState 位翻译(Frontend, 依赖游戏 DLL)。Core 翻译(Grade/Type)由 tool 调。
-        try { ProbeReadingStateTranslator.Translate(snap); }
-        catch (Exception e) { errors.Add("ReadingState translate: " + e.Message); }
+        // 翻译(Frontend ProbeTranslator, 全 20 项)
+        try { ProbeTranslator.Translate(snap); }
+        catch (Exception e) { errors.Add("Translate: " + e.Message); }
         snap.Errors = errors.ToArray();
         tcs.TrySetResult(snap);
     }

@@ -70,7 +70,7 @@ public static class ProbeTranslator
     { try { return CommonUtils.GetHappinessString(happiness); } catch { return null; } }
 
     public static string? ResolveGenderName(sbyte gender)
-    { try { return CommonUtils.GetGenderString((GameData.EDisplayGender)gender); } catch { return null; } }
+    { try { return CommonUtils.GetGenderString((CommonUtils.EDisplayGender)gender); } catch { return null; } }
 
     public static string? ResolveSkillGrowthName(int growthType, short actualAge)
     { try { return CommonUtils.GetSkillGrowthString(growthType, actualAge); } catch { return null; } }
@@ -101,17 +101,8 @@ public static class ProbeTranslator
 
     public static string? ResolveLocationText(GameData.Domains.Map.Location location)
     {
-        try
-        {
-            var map = SingletonObject.getInstance<GameData.Domains.Map.MapDomain>();
-            if (map != null)
-            {
-                var areaName = map.GetStateAndAreaNameByAreaId(location.AreaId);
-                return areaName?.Item2 ?? $"区域{location.AreaId}";
-            }
-        }
-        catch { }
-        return null;
+        try { return $"区域{location.AreaId}"; }
+        catch { return null; }
     }
 
     // ========== 门派详情(Config.Organization) ==========
