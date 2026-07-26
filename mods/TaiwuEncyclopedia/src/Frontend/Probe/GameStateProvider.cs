@@ -240,18 +240,18 @@ public sealed class GameStateProvider : IGameStateProvider
         }
 
         // 3. 内力层: RequestTaiwuNeiliProportionDisplayData (P-TW-002)
-        TaiwuNeiliProportionDisplayData? neili = null;
+        GameData.Domains.Taiwu.Display.TaiwuNeiliProportionDisplayData neili = null;
         bool done2 = false;
         try
         {
             TaiwuDomainMethod.AsyncCall.RequestTaiwuNeiliProportionDisplayData(
                 null,
-                (offset, pool) =>
+                (AsyncMethodCallbackDelegate)((offset, pool) =>
                 {
                     try { Serializer.Deserialize(pool, offset, ref neili); }
                     catch (Exception e) { errors.Add("RequestTaiwuNeiliProportionDisplayData deser: " + e.Message); }
                     finally { done2 = true; }
-                });
+                }));
         }
         catch (Exception e) { errors.Add("RequestTaiwuNeiliProportionDisplayData: " + e.Message); done2 = true; }
         yield return WaitDone(() => done2);
@@ -281,18 +281,18 @@ public sealed class GameStateProvider : IGameStateProvider
         }
 
         // 4. 属性层: GetCharacterAttributeDisplayData (P-TW-003)
-        CharacterAttributeDisplayData? attr = null;
+        GameData.Domains.Character.Display.CharacterAttributeDisplayData attr = null;
         bool done3 = false;
         try
         {
             CharacterDomainMethod.AsyncCall.GetCharacterAttributeDisplayData(
                 null, taiwuId,
-                (offset, pool) =>
+                (AsyncMethodCallbackDelegate)((offset, pool) =>
                 {
                     try { Serializer.Deserialize(pool, offset, ref attr); }
                     catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData deser: " + e.Message); }
                     finally { done3 = true; }
-                });
+                }));
         }
         catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData: " + e.Message); done3 = true; }
         yield return WaitDone(() => done3);
@@ -364,18 +364,18 @@ public sealed class GameStateProvider : IGameStateProvider
         }
 
         // 6. 资质层: GetCharacterMenuAttainmentDisplayData (P-TW-005)
-        CharacterMenuAttainmentDisplayData? att = null;
+        GameData.Domains.Character.Display.CharacterMenuAttainmentDisplayData att = null;
         bool done5 = false;
         try
         {
             CharacterDomainMethod.AsyncCall.GetCharacterMenuAttainmentDisplayData(
                 null, taiwuId,
-                (offset, pool) =>
+                (AsyncMethodCallbackDelegate)((offset, pool) =>
                 {
                     try { Serializer.Deserialize(pool, offset, ref att); }
                     catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData deser: " + e.Message); }
                     finally { done5 = true; }
-                });
+                }));
         }
         catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData: " + e.Message); done5 = true; }
         yield return WaitDone(() => done5);
@@ -504,18 +504,18 @@ public sealed class GameStateProvider : IGameStateProvider
         }
 
         // 2. 属性层: GetCharacterAttributeDisplayData (P-NPC-002)
-        CharacterAttributeDisplayData? attr = null;
+        GameData.Domains.Character.Display.CharacterAttributeDisplayData attr = null;
         bool done2 = false;
         try
         {
             CharacterDomainMethod.AsyncCall.GetCharacterAttributeDisplayData(
                 null, charId,
-                (offset, pool) =>
+                (AsyncMethodCallbackDelegate)((offset, pool) =>
                 {
                     try { Serializer.Deserialize(pool, offset, ref attr); }
                     catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData deser: " + e.Message); }
                     finally { done2 = true; }
-                });
+                }));
         }
         catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData: " + e.Message); done2 = true; }
         yield return WaitDone(() => done2);
@@ -553,18 +553,18 @@ public sealed class GameStateProvider : IGameStateProvider
         }
 
         // 3. 资质层: GetCharacterMenuAttainmentDisplayData (P-NPC-003)
-        CharacterMenuAttainmentDisplayData? att = null;
+        GameData.Domains.Character.Display.CharacterMenuAttainmentDisplayData att = null;
         bool done3 = false;
         try
         {
             CharacterDomainMethod.AsyncCall.GetCharacterMenuAttainmentDisplayData(
                 null, charId,
-                (offset, pool) =>
+                (AsyncMethodCallbackDelegate)((offset, pool) =>
                 {
                     try { Serializer.Deserialize(pool, offset, ref att); }
                     catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData deser: " + e.Message); }
                     finally { done3 = true; }
-                });
+                }));
         }
         catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData: " + e.Message); done3 = true; }
         yield return WaitDone(() => done3);
