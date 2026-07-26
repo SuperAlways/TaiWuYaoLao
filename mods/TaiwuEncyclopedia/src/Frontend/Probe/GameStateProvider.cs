@@ -314,11 +314,11 @@ public sealed class GameStateProvider : IGameStateProvider
                 }
             }
             catch (Exception e) { errors.Add("MainAttributes: " + e.Message); }
-            try { snap.AtkHitOuter = attr.AtkHitAttribute[0]; snap.AtkHitInner = attr.AtkHitAttribute[1]; }
+            try { for (int i = 0; i < 4; i++) snap.AtkHit[i] = attr.AtkHitAttribute[i]; }
             catch (Exception e) { errors.Add("AtkHitAttribute: " + e.Message); }
             try { snap.AtkPenetrateOuter = attr.AtkPenetrability.Outer; snap.AtkPenetrateInner = attr.AtkPenetrability.Inner; }
             catch (Exception e) { errors.Add("AtkPenetrability: " + e.Message); }
-            try { snap.DefHitOuter = attr.DefHitAttribute[0]; snap.DefHitInner = attr.DefHitAttribute[1]; }
+            try { for (int i = 0; i < 4; i++) snap.DefHit[i] = attr.DefHitAttribute[i]; }
             catch (Exception e) { errors.Add("DefHitAttribute: " + e.Message); }
             try { snap.DefPenetrateOuter = attr.DefPenetrability.Outer; snap.DefPenetrateInner = attr.DefPenetrability.Inner; }
             catch (Exception e) { errors.Add("DefPenetrability: " + e.Message); }
@@ -540,11 +540,11 @@ public sealed class GameStateProvider : IGameStateProvider
                 }
             }
             catch (Exception e) { errors.Add("MainAttributes: " + e.Message); }
-            try { snap.AtkHitOuter = attr.AtkHitAttribute[0]; snap.AtkHitInner = attr.AtkHitAttribute[1]; }
+            try { for (int i = 0; i < 4; i++) snap.AtkHit[i] = attr.AtkHitAttribute[i]; }
             catch (Exception e) { errors.Add("AtkHitAttribute: " + e.Message); }
             try { snap.AtkPenetrateOuter = attr.AtkPenetrability.Outer; snap.AtkPenetrateInner = attr.AtkPenetrability.Inner; }
             catch (Exception e) { errors.Add("AtkPenetrability: " + e.Message); }
-            try { snap.DefHitOuter = attr.DefHitAttribute[0]; snap.DefHitInner = attr.DefHitAttribute[1]; }
+            try { for (int i = 0; i < 4; i++) snap.DefHit[i] = attr.DefHitAttribute[i]; }
             catch (Exception e) { errors.Add("DefHitAttribute: " + e.Message); }
             try { snap.DefPenetrateOuter = attr.DefPenetrability.Outer; snap.DefPenetrateInner = attr.DefPenetrability.Inner; }
             catch (Exception e) { errors.Add("DefPenetrability: " + e.Message); }

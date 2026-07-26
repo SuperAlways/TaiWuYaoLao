@@ -150,6 +150,10 @@ public static class ProbeTranslator
     private static readonly string[] PersonalityKeyNames = { "冷静","聪颖","热情","勇壮","坚毅","福缘","合道" };
     private static readonly string[] MainAttributeKeyNames = { "膂力","灵敏","定力","体质","根骨","悟性" };
 
+    // 权威值: Language_CN/ui_language.txt LK_HitType_0..3 / LK_AvoidType_0..3
+    private static readonly string[] AtkHitKeyNames = { "力道","精妙","迅疾","动心" };
+    private static readonly string[] DefHitKeyNames = { "卸力","拆招","闪避","守心" };
+
     // 权威值: Language_CN/ui_language.txt LK_FiveElements_Type_0..4 (旧硬编码 金木水火土 是错的)
     private static readonly string[] FiveElementFallbackNames = { "金刚","紫霞","玄阴","纯阳","归元" };
     private static string[]? _fiveElementKeys;
@@ -272,6 +276,8 @@ public static class ProbeTranslator
         s.ResourceKeys ??= ResourceKeysCache;
         s.CombatSkillTypeKeys ??= CombatSkillTypeKeysCache;
         s.FiveElementKeys ??= FiveElementKeysCache;
+        s.AtkHitKeys ??= AtkHitKeyNames;
+        s.DefHitKeys ??= DefHitKeyNames;
         // LifeSkillTypeKeys 从 Config 动态获取
         if (s.LifeSkillTypeKeys == null)
         {
@@ -327,6 +333,8 @@ public static class ProbeTranslator
         s.MainAttributeKeys ??= MainAttributeKeyNames;
         s.CombatSkillTypeKeys ??= CombatSkillTypeKeysCache;
         s.FiveElementKeys ??= FiveElementKeysCache;
+        s.AtkHitKeys ??= AtkHitKeyNames;
+        s.DefHitKeys ??= DefHitKeyNames;
         if (s.LifeSkillTypeKeys == null)
         {
             try

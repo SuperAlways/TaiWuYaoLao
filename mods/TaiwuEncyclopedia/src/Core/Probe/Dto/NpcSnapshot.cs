@@ -47,12 +47,12 @@ public sealed class NpcSnapshot
     public short[] CurMainAttributes { get; set; } = new short[6];
     public string[]? MainAttributeKeys { get; set; }
     public short[] MaxMainAttributes { get; set; } = new short[6];
-    public int AtkHitOuter { get; set; }
-    public int AtkHitInner { get; set; }
+    public int[] AtkHit { get; set; } = new int[4];
+    public string[]? AtkHitKeys { get; set; }
     public int AtkPenetrateOuter { get; set; }
     public int AtkPenetrateInner { get; set; }
-    public int DefHitOuter { get; set; }
-    public int DefHitInner { get; set; }
+    public int[] DefHit { get; set; } = new int[4];
+    public string[]? DefHitKeys { get; set; }
     public int DefPenetrateOuter { get; set; }
     public int DefPenetrateInner { get; set; }
     public int MoveSpeed { get; set; }
