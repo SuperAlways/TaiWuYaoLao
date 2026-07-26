@@ -49,18 +49,24 @@ public sealed class NpcSnapshot
     [JsonProperty("当前主属性")] public short[] CurMainAttributes { get; set; } = new short[6];
     [JsonProperty("主属性名")] public string[]? MainAttributeKeys { get; set; }
     [JsonProperty("主属性上限")] public short[] MaxMainAttributes { get; set; } = new short[6];
-    [JsonProperty("力道")] public int[] AtkHit { get; set; } = new int[4];
-    [JsonProperty("力道名")] public string[]? AtkHitKeys { get; set; }
+    [JsonProperty("命中")] public int[] AtkHit { get; set; } = new int[4];
+    [JsonProperty("命中名")] public string[]? AtkHitKeys { get; set; }
     [JsonProperty("破体")] public int AtkPenetrateOuter { get; set; }
     [JsonProperty("破气")] public int AtkPenetrateInner { get; set; }
-    [JsonProperty("卸力")] public int[] DefHit { get; set; } = new int[4];
-    [JsonProperty("卸力名")] public string[]? DefHitKeys { get; set; }
+    [JsonProperty("化解")] public int[] DefHit { get; set; } = new int[4];
+    [JsonProperty("化解名")] public string[]? DefHitKeys { get; set; }
     [JsonProperty("御体")] public int DefPenetrateOuter { get; set; }
     [JsonProperty("御气")] public int DefPenetrateInner { get; set; }
+    [JsonProperty("架势恢复")] public int StanceRecovery { get; set; }
+    [JsonProperty("提气恢复")] public int BreathRecovery { get; set; }
     [JsonProperty("移动速度")] public int MoveSpeed { get; set; }
+    [JsonProperty("步伐稳健")] public int FlawRecovery { get; set; }
     [JsonProperty("施展速度")] public int CastSpeed { get; set; }
-    [JsonProperty("攻击速度")] public int AttackSpeed { get; set; }
+    [JsonProperty("引气冲关")] public int BlockedAcupointRecovery { get; set; }
+    [JsonProperty("武具运用")] public int AttackSpeed { get; set; }
+    [JsonProperty("攻击速度")] public int WeaponSwitchSpeed { get; set; }
     [JsonProperty("内功发挥")] public int InnerRatio { get; set; }
+    [JsonProperty("调息吐纳")] public int QiDisorderRecovery { get; set; }
     [JsonProperty("外毒抗")] public int PoisonResistOuter { get; set; }
     [JsonProperty("内毒抗")] public int PoisonResistInner { get; set; }
     // 资质层

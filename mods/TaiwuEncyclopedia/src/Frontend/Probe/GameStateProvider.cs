@@ -322,10 +322,20 @@ public sealed class GameStateProvider : IGameStateProvider
             catch (Exception e) { errors.Add("DefHitAttribute: " + e.Message); }
             try { snap.DefPenetrateOuter = attr.DefPenetrability.Outer; snap.DefPenetrateInner = attr.DefPenetrability.Inner; }
             catch (Exception e) { errors.Add("DefPenetrability: " + e.Message); }
+            try { snap.StanceRecovery = attr.RecoveryOfStanceAndBreath.Outer; snap.BreathRecovery = attr.RecoveryOfStanceAndBreath.Inner; }
+            catch (Exception e) { errors.Add("RecoveryOfStanceAndBreath: " + e.Message); }
             snap.MoveSpeed = attr.MoveSpeed;
+            try { snap.FlawRecovery = attr.RecoveryOfFlaw; }
+            catch (Exception e) { errors.Add("RecoveryOfFlaw: " + e.Message); }
             snap.CastSpeed = attr.CastSpeed;
+            try { snap.BlockedAcupointRecovery = attr.RecoveryOfBlockedAcupoint; }
+            catch (Exception e) { errors.Add("RecoveryOfBlockedAcupoint: " + e.Message); }
             snap.AttackSpeed = attr.AttackSpeed;
+            try { snap.WeaponSwitchSpeed = attr.WeaponSwitchSpeed; }
+            catch (Exception e) { errors.Add("WeaponSwitchSpeed: " + e.Message); }
             snap.InnerRatio = attr.InnerRatio;
+            try { snap.QiDisorderRecovery = attr.RecoveryOfQiDisorder; }
+            catch (Exception e) { errors.Add("RecoveryOfQiDisorder: " + e.Message); }
             // PoisonResists mapping skipped - unknown structure
         }
         else
@@ -548,10 +558,20 @@ public sealed class GameStateProvider : IGameStateProvider
             catch (Exception e) { errors.Add("DefHitAttribute: " + e.Message); }
             try { snap.DefPenetrateOuter = attr.DefPenetrability.Outer; snap.DefPenetrateInner = attr.DefPenetrability.Inner; }
             catch (Exception e) { errors.Add("DefPenetrability: " + e.Message); }
+            try { snap.StanceRecovery = attr.RecoveryOfStanceAndBreath.Outer; snap.BreathRecovery = attr.RecoveryOfStanceAndBreath.Inner; }
+            catch (Exception e) { errors.Add("RecoveryOfStanceAndBreath: " + e.Message); }
             snap.MoveSpeed = attr.MoveSpeed;
+            try { snap.FlawRecovery = attr.RecoveryOfFlaw; }
+            catch (Exception e) { errors.Add("RecoveryOfFlaw: " + e.Message); }
             snap.CastSpeed = attr.CastSpeed;
+            try { snap.BlockedAcupointRecovery = attr.RecoveryOfBlockedAcupoint; }
+            catch (Exception e) { errors.Add("RecoveryOfBlockedAcupoint: " + e.Message); }
             snap.AttackSpeed = attr.AttackSpeed;
+            try { snap.WeaponSwitchSpeed = attr.WeaponSwitchSpeed; }
+            catch (Exception e) { errors.Add("WeaponSwitchSpeed: " + e.Message); }
             snap.InnerRatio = attr.InnerRatio;
+            try { snap.QiDisorderRecovery = attr.RecoveryOfQiDisorder; }
+            catch (Exception e) { errors.Add("RecoveryOfQiDisorder: " + e.Message); }
         }
         else
         {
