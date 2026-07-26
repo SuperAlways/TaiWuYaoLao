@@ -26,6 +26,7 @@ public sealed class NpcSnapshot
     public int Alertness { get; set; }
     public string? AlertnessLevel { get; set; }
     public int[] FeatureIds { get; set; } = System.Array.Empty<int>();
+    public string[]? FiveElementKeys { get; set; }
     public string[]? FeatureNames { get; set; }
     public int Health { get; set; }
     public int MaxHealth { get; set; }
@@ -34,12 +35,14 @@ public sealed class NpcSnapshot
     public int Fame { get; set; }
     public string? FameName { get; set; }
     public sbyte[] Personalities { get; set; } = System.Array.Empty<sbyte>();
+    public string[]? PersonalityKeys { get; set; }
     public string? LocationText { get; set; }
     public int AliveState { get; set; }
     public bool CompletelyInfected { get; set; }
     public int InfluencePower { get; set; }
     // 属性层(同 TaiwuSnapshot 属性字段)
     public short[] CurMainAttributes { get; set; } = new short[6];
+    public string[]? MainAttributeKeys { get; set; }
     public short[] MaxMainAttributes { get; set; } = new short[6];
     public int AtkHitOuter { get; set; }
     public int AtkHitInner { get; set; }
@@ -57,10 +60,12 @@ public sealed class NpcSnapshot
     public int PoisonResistInner { get; set; }
     // 资质层(同 TaiwuSnapshot 资质字段)
     public short[] CombatSkillQualifications { get; set; } = new short[14];
+    public string[]? CombatSkillTypeKeys { get; set; }
     public short[] CombatSkillAttainments { get; set; } = new short[14];
     public int CombatSkillGrowthType { get; set; }
     public string? CombatSkillGrowthName { get; set; }
     public short[] LifeSkillQualifications { get; set; } = System.Array.Empty<short>();
+    public string[]? LifeSkillTypeKeys { get; set; }
     public short[] LifeSkillAttainments { get; set; } = System.Array.Empty<short>();
     public int LifeSkillGrowthType { get; set; }
     public string? LifeSkillGrowthName { get; set; }

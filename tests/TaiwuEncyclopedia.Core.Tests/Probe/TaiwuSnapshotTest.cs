@@ -19,4 +19,16 @@ public class TaiwuSnapshotTest
         s.StanceName.Should().BeNull();
         s.GenderName.Should().BeNull();
     }
+
+    [Fact]
+    public void KeyArrays_DefaultNull()
+    {
+        var s = new TaiwuSnapshot();
+        s.PersonalityKeys.Should().BeNull();
+        s.MainAttributeKeys.Should().BeNull();
+        s.ResourceKeys.Should().BeNull();
+        s.CombatSkillTypeKeys.Should().BeNull();
+        s.LifeSkillTypeKeys.Should().BeNull();
+        s.FiveElementKeys.Should().BeNull();
+    }
 }
