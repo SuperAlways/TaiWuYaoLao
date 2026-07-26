@@ -246,12 +246,12 @@ public sealed class GameStateProvider : IGameStateProvider
         {
             TaiwuDomainMethod.AsyncCall.RequestTaiwuNeiliProportionDisplayData(
                 null,
-                (AsyncMethodCallbackDelegate)((offset, pool) =>
+                (AsyncMethodCallbackDelegate)delegate(int offset, RawDataPool pool)
                 {
                     try { Serializer.Deserialize(pool, offset, ref neili); }
                     catch (Exception e) { errors.Add("RequestTaiwuNeiliProportionDisplayData deser: " + e.Message); }
                     finally { done2 = true; }
-                }));
+                });
         }
         catch (Exception e) { errors.Add("RequestTaiwuNeiliProportionDisplayData: " + e.Message); done2 = true; }
         yield return WaitDone(() => done2);
@@ -287,12 +287,12 @@ public sealed class GameStateProvider : IGameStateProvider
         {
             CharacterDomainMethod.AsyncCall.GetCharacterAttributeDisplayData(
                 null, taiwuId,
-                (AsyncMethodCallbackDelegate)((offset, pool) =>
+                (AsyncMethodCallbackDelegate)delegate(int offset, RawDataPool pool)
                 {
                     try { Serializer.Deserialize(pool, offset, ref attr); }
                     catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData deser: " + e.Message); }
                     finally { done3 = true; }
-                }));
+                });
         }
         catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData: " + e.Message); done3 = true; }
         yield return WaitDone(() => done3);
@@ -370,12 +370,12 @@ public sealed class GameStateProvider : IGameStateProvider
         {
             CharacterDomainMethod.AsyncCall.GetCharacterMenuAttainmentDisplayData(
                 null, taiwuId,
-                (AsyncMethodCallbackDelegate)((offset, pool) =>
+                (AsyncMethodCallbackDelegate)delegate(int offset, RawDataPool pool)
                 {
                     try { Serializer.Deserialize(pool, offset, ref att); }
                     catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData deser: " + e.Message); }
                     finally { done5 = true; }
-                }));
+                });
         }
         catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData: " + e.Message); done5 = true; }
         yield return WaitDone(() => done5);
@@ -510,12 +510,12 @@ public sealed class GameStateProvider : IGameStateProvider
         {
             CharacterDomainMethod.AsyncCall.GetCharacterAttributeDisplayData(
                 null, charId,
-                (AsyncMethodCallbackDelegate)((offset, pool) =>
+                (AsyncMethodCallbackDelegate)delegate(int offset, RawDataPool pool)
                 {
                     try { Serializer.Deserialize(pool, offset, ref attr); }
                     catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData deser: " + e.Message); }
                     finally { done2 = true; }
-                }));
+                });
         }
         catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData: " + e.Message); done2 = true; }
         yield return WaitDone(() => done2);
@@ -559,12 +559,12 @@ public sealed class GameStateProvider : IGameStateProvider
         {
             CharacterDomainMethod.AsyncCall.GetCharacterMenuAttainmentDisplayData(
                 null, charId,
-                (AsyncMethodCallbackDelegate)((offset, pool) =>
+                (AsyncMethodCallbackDelegate)delegate(int offset, RawDataPool pool)
                 {
                     try { Serializer.Deserialize(pool, offset, ref att); }
                     catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData deser: " + e.Message); }
                     finally { done3 = true; }
-                }));
+                });
         }
         catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData: " + e.Message); done3 = true; }
         yield return WaitDone(() => done3);
