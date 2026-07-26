@@ -37,6 +37,7 @@ public sealed class NpcSnapshot
     public string? LocationText { get; set; }
     public int AliveState { get; set; }
     public bool CompletelyInfected { get; set; }
+    public int InfluencePower { get; set; }
     // 属性层(同 TaiwuSnapshot 属性字段)
     public short[] CurMainAttributes { get; set; } = new short[6];
     public short[] MaxMainAttributes { get; set; } = new short[6];

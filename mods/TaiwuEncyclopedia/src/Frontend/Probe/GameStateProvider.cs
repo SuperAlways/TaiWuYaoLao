@@ -444,13 +444,177 @@ public sealed class GameStateProvider : IGameStateProvider
             yield break;
         }
 
-        // Just try to get as much as we can without field access
-        // For now, just mark in errors that we're stubbed
-        errors.Add("GetNpcDetail: Implementation stubbed - game API types not available");
+        // 1. 画像层: GetCharacterDisplayData (P-NPC-001)
+        CharacterDisplayData? dd = null;
+        bool done1 = false;
+        try
+        {
+            CharacterDomainMethod.AsyncCall.GetCharacterDisplayData(
+                null, charId,
+                (offset, pool) =>
+                {
+                    try { Serializer.Deserialize(pool, offset, ref dd); }
+                    catch (Exception e) { errors.Add("GetCharacterDisplayData deser: " + e.Message); }
+                    finally { done1 = true; }
+                });
+        }
+        catch (Exception e) { errors.Add("GetCharacterDisplayData: " + e.Message); done1 = true; }
+        yield return WaitDone(() => done1);
+
+        if (dd != null)
+        {
+            try { snap.Name = NameCenter.GetMonasticTitleOrDisplayName(dd, false) ?? ""; }
+            catch (Exception e) { errors.Add("NameCenter.GetMonasticTitleOrDisplayName: " + e.Message); }
+            snap.GenderRaw = dd.Gender;
+            snap.Age = dd.ActualAge;
+            snap.StanceRaw = dd.BehaviorType;
+            snap.SectTemplateId = dd.OrgInfo.OrgTemplateId;
+            snap.GradeRaw = dd.OrgInfo.Grade;
+            snap.ConsummateLevel = dd.ConsummateLevel;
+            snap.Charm = dd.Charm;
+            snap.Alertness = dd.Alertness;
+            snap.FeatureIds = dd.FeatureIds?.Select(x => (int)x).ToArray() ?? Array.Empty<int>();
+            snap.Health = dd.Health;
+            snap.MaxHealth = dd.LeftMaxHealth;
+            snap.Happiness = dd.Happiness;
+            snap.Fame = dd.FameType;
+            snap.Personalities = new sbyte[7];
+            try
+            {
+                var personalities = dd.Personalities;
+                for (int i = 0; i < 7; i++)
+                    snap.Personalities[i] = personalities[i];
+            }
+            catch (Exception e) { errors.Add("Personalities: " + e.Message); }
+            snap.AliveState = dd.AliveState;
+            snap.CompletelyInfected = dd.CompletelyInfected;
+            snap.InfluencePower = dd.InfluencePower;
+            snap.LocationText = ProbeTranslator.ResolveLocationText(dd.Location);
+            // 额外字段: FavorRaw + RelationBits (带兜底)
+            snap.FavorRaw = (dd.FavorabilityToTaiwu != short.MinValue) ? dd.FavorabilityToTaiwu : (short)0;
+            snap.RelationBits = (dd.RelationToTaiwu != ushort.MaxValue) ? dd.RelationToTaiwu : (ushort)0;
+        }
+        else
+        {
+            collector.AddFailed("GetCharacterDisplayData", "P-NPC-001",
+                new InvalidOperationException("dd null after AsyncCall"));
+        }
+
+        // 2. 属性层: GetCharacterAttributeDisplayData (P-NPC-002)
+        CharacterAttributeDisplayData? attr = null;
+        bool done2 = false;
+        try
+        {
+            CharacterDomainMethod.AsyncCall.GetCharacterAttributeDisplayData(
+                null, charId,
+                (offset, pool) =>
+                {
+                    try { Serializer.Deserialize(pool, offset, ref attr); }
+                    catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData deser: " + e.Message); }
+                    finally { done2 = true; }
+                });
+        }
+        catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData: " + e.Message); done2 = true; }
+        yield return WaitDone(() => done2);
+
+        if (attr != null)
+        {
+            snap.CurMainAttributes = new short[6];
+            snap.MaxMainAttributes = new short[6];
+            try
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    snap.CurMainAttributes[i] = attr.CurMainAttributes[i];
+                    snap.MaxMainAttributes[i] = attr.MaxMainAttributes[i];
+                }
+            }
+            catch (Exception e) { errors.Add("MainAttributes: " + e.Message); }
+            try { snap.AtkHitOuter = attr.AtkHitAttribute[0]; snap.AtkHitInner = attr.AtkHitAttribute[1]; }
+            catch (Exception e) { errors.Add("AtkHitAttribute: " + e.Message); }
+            try { snap.AtkPenetrateOuter = attr.AtkPenetrability.Outer; snap.AtkPenetrateInner = attr.AtkPenetrability.Inner; }
+            catch (Exception e) { errors.Add("AtkPenetrability: " + e.Message); }
+            try { snap.DefHitOuter = attr.DefHitAttribute[0]; snap.DefHitInner = attr.DefHitAttribute[1]; }
+            catch (Exception e) { errors.Add("DefHitAttribute: " + e.Message); }
+            try { snap.DefPenetrateOuter = attr.DefPenetrability.Outer; snap.DefPenetrateInner = attr.DefPenetrability.Inner; }
+            catch (Exception e) { errors.Add("DefPenetrability: " + e.Message); }
+            snap.MoveSpeed = attr.MoveSpeed;
+            snap.CastSpeed = attr.CastSpeed;
+            snap.AttackSpeed = attr.AttackSpeed;
+            snap.InnerRatio = attr.InnerRatio;
+        }
+        else
+        {
+            collector.AddFailed("GetCharacterAttributeDisplayData", "P-NPC-002",
+                new InvalidOperationException("attr null after AsyncCall"));
+        }
+
+        // 3. 资质层: GetCharacterMenuAttainmentDisplayData (P-NPC-003)
+        CharacterMenuAttainmentDisplayData? att = null;
+        bool done3 = false;
+        try
+        {
+            CharacterDomainMethod.AsyncCall.GetCharacterMenuAttainmentDisplayData(
+                null, charId,
+                (offset, pool) =>
+                {
+                    try { Serializer.Deserialize(pool, offset, ref att); }
+                    catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData deser: " + e.Message); }
+                    finally { done3 = true; }
+                });
+        }
+        catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData: " + e.Message); done3 = true; }
+        yield return WaitDone(() => done3);
+
+        if (att != null)
+        {
+            snap.CombatSkillQualifications = new short[14];
+            snap.CombatSkillAttainments = new short[14];
+            try
+            {
+                for (int i = 0; i < 14; i++)
+                {
+                    snap.CombatSkillQualifications[i] = att.CombatSkillQualifications[i];
+                    snap.CombatSkillAttainments[i] = att.CombatSkillAttainments[i];
+                }
+            }
+            catch (Exception e) { errors.Add("CombatSkillQualifications/Attainments: " + e.Message); }
+            snap.CombatSkillGrowthType = att.CombatSkillGrowthType;
+            try
+            {
+                var lifeQ = new List<short>();
+                var lifeA = new List<short>();
+                int idx = 0;
+                while (true)
+                {
+                    try
+                    {
+                        lifeQ.Add(att.LifeSkillQualifications[idx]);
+                        lifeA.Add(att.LifeSkillAttainments[idx]);
+                        idx++;
+                    }
+                    catch { break; }
+                }
+                snap.LifeSkillQualifications = lifeQ.ToArray();
+                snap.LifeSkillAttainments = lifeA.ToArray();
+            }
+            catch (Exception e) { errors.Add("LifeSkillQualifications/Attainments: " + e.Message); }
+            snap.LifeSkillGrowthType = att.LifeSkillGrowthType;
+            snap.DivinePower = att.DivinePower;
+            snap.GhostTechnique = att.GhostTechnique;
+        }
+        else
+        {
+            collector.AddFailed("GetCharacterMenuAttainmentDisplayData", "P-NPC-003",
+                new InvalidOperationException("att null after AsyncCall"));
+        }
+
+        // 4. 翻译(Frontend ProbeTranslator)
+        try { ProbeTranslator.Translate(snap); }
+        catch (Exception e) { errors.Add("Translate: " + e.Message); }
 
         snap.Errors = errors.ToArray();
         tcs.TrySetResult(snap);
-        yield break;
     }
 
     private IEnumerator FetchInventoryCoroutine(
@@ -459,13 +623,107 @@ public sealed class GameStateProvider : IGameStateProvider
         var snap = new InventorySnapshot();
         var errors = new List<string>();
 
-        // Just try to get as much as we can without field access
-        // For now, just mark in errors that we're stubbed
-        errors.Add("GetInventory: Implementation stubbed - game API types not available");
+        // charId <= 0 时使用太吾 charId
+        int targetCharId = charId;
+        if (targetCharId <= 0)
+        {
+            try { targetCharId = SingletonObject.getInstance<BasicGameData>().TaiwuCharId; }
+            catch (Exception e) { errors.Add("TaiwuCharId: " + e.Message); }
+        }
+
+        if (targetCharId <= 0)
+        {
+            snap.Errors = errors.ToArray();
+            tcs.TrySetResult(snap);
+            yield break;
+        }
+
+        // 1. GetCharacterItemsDisplayData (P-INV-001)
+        CharacterItemsDisplayData? pkg = null;
+        bool done1 = false;
+        try
+        {
+            CharacterDomainMethod.AsyncCall.GetCharacterItemsDisplayData(
+                null, targetCharId,
+                (offset, pool) =>
+                {
+                    try { Serializer.Deserialize(pool, offset, ref pkg); }
+                    catch (Exception e) { errors.Add("GetCharacterItemsDisplayData deser: " + e.Message); }
+                    finally { done1 = true; }
+                });
+        }
+        catch (Exception e) { errors.Add("GetCharacterItemsDisplayData: " + e.Message); done1 = true; }
+        yield return WaitDone(() => done1);
+
+        var itemsList = new List<InventoryItemRaw>();
+        if (pkg != null)
+        {
+            // Resources
+            snap.Resources = new int[8];
+            try
+            {
+                for (int i = 0; i < 8; i++)
+                    snap.Resources[i] = pkg.Resources[i];
+            }
+            catch (Exception e) { errors.Add("Resources: " + e.Message); }
+
+            // InventoryItems
+            try
+            {
+                if (pkg.InventoryItems != null)
+                {
+                    foreach (var item in pkg.InventoryItems)
+                    {
+                        if (item == null || item.Amount <= 0) continue;
+                        var key = item.RealKey;
+                        itemsList.Add(new InventoryItemRaw
+                        {
+                            Name = "",
+                            TemplateId = key.TemplateId,
+                            ItemType = key.ItemType,
+                            Grade = 0,
+                            Amount = item.Amount,
+                            ModificationState = key.ModificationState,
+                            AllowTrade = false,
+                            IsSpecial = false,
+                        });
+                    }
+                }
+            }
+            catch (Exception e) { errors.Add("InventoryItems: " + e.Message); }
+        }
+        else
+        {
+            collector.AddFailed("GetCharacterItemsDisplayData", "P-INV-001",
+                new InvalidOperationException("pkg null after AsyncCall"));
+        }
+        snap.Items = itemsList.ToArray();
+
+        // 2. GetAllEquipmentItems (P-INV-002)
+        var equipList = new List<EquipmentRaw>();
+        GameData.Domains.Item.ItemKey[]? equipment = null;
+        bool done2 = false;
+        try
+        {
+            // 按照 FetchTaiwuCoroutine 的模式尝试 - 先在 CharacterDomainMethod 查找
+            // 由于不确定确切方法名，先尝试 GetCharacterEquipDisplayData 或类似命名
+            // 先注释掉装备部分，只实现背包物品，后续可扩展装备
+            errors.Add("GetAllEquipmentItems: Skipping equipment for now - method lookup pending");
+            done2 = true;
+        }
+        catch (Exception e) { errors.Add("GetAllEquipmentItems: " + e.Message); done2 = true; }
+
+        yield return WaitDone(() => done2);
+
+        // 装备暂时留空，已实现背包物品和资源
+        snap.Equipment = equipList.ToArray();
+
+        // 3. 翻译(Frontend ProbeTranslator)
+        try { ProbeTranslator.Translate(snap); }
+        catch (Exception e) { errors.Add("Translate: " + e.Message); }
 
         snap.Errors = errors.ToArray();
         tcs.TrySetResult(snap);
-        yield break;
     }
 
     private IEnumerator WaitDone(System.Func<bool> ready)
