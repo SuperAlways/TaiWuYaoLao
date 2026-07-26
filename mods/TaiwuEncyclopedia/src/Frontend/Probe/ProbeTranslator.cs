@@ -79,7 +79,7 @@ public static class ProbeTranslator
     { try { return Strip(CommonUtils.GetHappinessString(happiness)); } catch { return null; } }
 
     public static string? ResolveGenderName(sbyte gender)
-    { try { return Strip(CommonUtils.GetGenderString((CommonUtils.EDisplayGender)gender)); } catch { return null; } }
+    { try { return gender == 1 ? "男" : gender == 0 ? "女" : "?"; } catch { return null; } }
 
     public static string? ResolveSkillGrowthName(int growthType, short actualAge)
     { try { return Strip(CommonUtils.GetSkillGrowthString(growthType, actualAge)); } catch { return null; } }
@@ -145,7 +145,8 @@ public static class ProbeTranslator
         s.GenderName ??= ResolveGenderName((sbyte)s.GenderRaw);
         s.StanceName ??= ResolveStanceName((sbyte)s.StanceRaw);
         s.FameName ??= ResolveFameName((sbyte)s.Fame);
-        s.HappinessName ??= ResolveHappinessName((sbyte)s.Happiness);
+        // HappinessName: jianghu-youling 不翻译, 直接给 raw 值; CommonUtils 返回"不详"不可靠
+        // s.HappinessName 留 null, LLM 从 Happiness raw 值理解
         s.CharmLevel ??= ResolveCharmLevel((short)s.Charm, (sbyte)s.GenderRaw, (short)s.Age, 0, false, true);
         s.AlertnessLevel ??= ResolveAlertnessLevel(s.Alertness);
         s.NeiliTypeName ??= ResolveNeiliTypeName((sbyte)s.NeiliTypeRaw);
@@ -183,7 +184,8 @@ public static class ProbeTranslator
         s.CharmLevel ??= ResolveCharmLevel((short)s.Charm, (sbyte)s.GenderRaw, (short)s.Age, 0, false, true);
         s.AlertnessLevel ??= ResolveAlertnessLevel(s.Alertness);
         s.FameName ??= ResolveFameName((sbyte)s.Fame);
-        s.HappinessName ??= ResolveHappinessName((sbyte)s.Happiness);
+        // HappinessName: jianghu-youling 不翻译, 直接给 raw 值; CommonUtils 返回"不详"不可靠
+        // s.HappinessName 留 null, LLM 从 Happiness raw 值理解
         s.CombatSkillGrowthName ??= ResolveSkillGrowthName(s.CombatSkillGrowthType, (short)s.Age);
         s.LifeSkillGrowthName ??= ResolveSkillGrowthName(s.LifeSkillGrowthType, (short)s.Age);
         if (s.FeatureIds != null && s.FeatureIds.Length > 0 && s.FeatureNames == null)
