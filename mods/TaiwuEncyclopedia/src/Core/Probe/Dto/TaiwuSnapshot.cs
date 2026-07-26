@@ -34,8 +34,8 @@ public sealed class TaiwuSnapshot
     [JsonProperty("心情")] public string? HappinessName { get; set; }
     [JsonProperty("侠名值")] public int Fame { get; set; }
     [JsonProperty("侠名")] public string? FameName { get; set; }
-    [JsonProperty("性格值")] public sbyte[] Personalities { get; set; } = System.Array.Empty<sbyte>();
-    [JsonProperty("性格")] public string[]? PersonalityKeys { get; set; }
+    [JsonProperty("七元赋性值")] public sbyte[] Personalities { get; set; } = System.Array.Empty<sbyte>();
+    [JsonProperty("七元赋性")] public string[]? PersonalityKeys { get; set; }
     [JsonProperty("所在地")] public string? LocationText { get; set; }
     [JsonProperty("存活状态值")] public int AliveState { get; set; }
     [JsonProperty("存活状态")] public string? AliveStateName { get; set; }
