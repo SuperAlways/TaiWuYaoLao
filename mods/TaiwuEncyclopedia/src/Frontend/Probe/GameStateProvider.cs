@@ -145,6 +145,8 @@ public sealed class GameStateProvider : IGameStateProvider
                     Name = name,
                     GradeRaw = grade,
                     SkillTypeRaw = skillType,
+                    SkillDesc = d.SkillConfig?.Desc,
+                    SkillFiveElements = d.SkillConfig?.FiveElements ?? 0,
                     PracticeLevel = d.PracticeLevel,
                     IsPositive = !d.Revoked,
                     IsReverse = d.Revoked,
@@ -152,6 +154,7 @@ public sealed class GameStateProvider : IGameStateProvider
                     Power = d.Power,
                     MaxPower = d.MaxPower,
                     Mastered = d.Mastered,
+                    BreakSuccess = d.BreakSuccess,
                 });
             }
             snap.Learned = learned.ToArray();
@@ -261,7 +264,7 @@ public sealed class GameStateProvider : IGameStateProvider
             {
                 var proportion = neili.NeiliProportion;
                 for (int i = 0; i < 5; i++)
-                    snap.FiveElementsProportion[i] = proportion[i];
+                    snap.FiveElementsProportion[i] = neili.NeiliProportion[i];
             }
             catch (Exception e) { errors.Add("NeiliProportion: " + e.Message); }
             try
@@ -676,16 +679,28 @@ public sealed class GameStateProvider : IGameStateProvider
                     {
                         if (item == null || item.Amount <= 0) continue;
                         var key = item.RealKey;
+                        string itemName = "";
+                        try { itemName = GameData.Domains.Item.ItemTemplateHelper.GetName(key.ItemType, key.TemplateId) ?? ""; }
+                        catch { }
+                        sbyte itemGrade = 0;
+                        try { itemGrade = GameData.Domains.Item.ItemTemplateHelper.GetGrade(key.ItemType, key.TemplateId); }
+                        catch { }
+                        bool allowTrade = false;
+                        try { allowTrade = GameData.Domains.Item.ItemTemplateHelper.AllowTrade(key.ItemType, key.TemplateId); }
+                        catch { }
+                        bool isSpecial = false;
+                        try { isSpecial = GameData.Domains.Item.ItemTemplateHelper.IsSpecial(key.ItemType, key.TemplateId); }
+                        catch { }
                         itemsList.Add(new InventoryItemRaw
                         {
-                            Name = "",
+                            Name = itemName,
                             TemplateId = key.TemplateId,
                             ItemType = key.ItemType,
-                            Grade = 0,
+                            Grade = itemGrade,
                             Amount = item.Amount,
                             ModificationState = key.ModificationState,
-                            AllowTrade = false,
-                            IsSpecial = false,
+                            AllowTrade = allowTrade,
+                            IsSpecial = isSpecial,
                         });
                     }
                 }

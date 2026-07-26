@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using GameData.Domains.CombatSkill;
 using GameData.Domains.Map;
 using TaiwuEncyclopedia.Core.Probe.Dto;
@@ -11,6 +12,14 @@ namespace TaiwuEncyclopedia;
 /// 在 GameStateProvider 内部读完 raw 后调。</summary>
 public static class ProbeTranslator
 {
+    // ========== 富文本去标签 ==========
+
+    private static string? Strip(string? s)
+    {
+        if (string.IsNullOrEmpty(s)) return s;
+        return Regex.Replace(s, "<[^>]+>", "").Trim();
+    }
+
     // ========== Core 纯表 5 项 ==========
 
     private static readonly string?[] GradeNames = { "九品","八品","七品","六品","五品","四品","三品","二品","一品" };
@@ -46,34 +55,34 @@ public static class ProbeTranslator
     // ========== CommonUtils 10 项 ==========
 
     public static string? ResolveStanceName(sbyte behavior)
-    { try { return CommonUtils.GetBehaviorString(behavior); } catch { return null; } }
+    { try { return Strip(CommonUtils.GetBehaviorString(behavior)); } catch { return null; } }
 
     public static string? ResolveFavorLevel(short favor)
-    { try { return CommonUtils.GetFavorString(favor); } catch { return null; } }
+    { try { return Strip(CommonUtils.GetFavorString(favor)); } catch { return null; } }
 
     public static string? ResolveFiveElementName(sbyte type)
-    { try { return CommonUtils.GetFiveElementsNameByType(type); } catch { return null; } }
+    { try { return Strip(CommonUtils.GetFiveElementsNameByType(type)); } catch { return null; } }
 
     public static string? ResolveOrgGradeTitle(object orgInfo, sbyte gender, short age, int templateId)
-    { try { return CommonUtils.GetOrganizationGradeString((GameData.Domains.Character.OrganizationInfo)orgInfo, gender, age, templateId); } catch { return null; } }
+    { try { return Strip(CommonUtils.GetOrganizationGradeString((GameData.Domains.Character.OrganizationInfo)orgInfo, gender, age, templateId)); } catch { return null; } }
 
     public static string? ResolveCharmLevel(short charm, sbyte gender, short age, short clothDisplayId, bool isFixedCharacter, bool faceVisible)
-    { try { return CommonUtils.GetCharmLevelText(charm, gender, age, clothDisplayId, isFixedCharacter, faceVisible); } catch { return null; } }
+    { try { return Strip(CommonUtils.GetCharmLevelText(charm, gender, age, clothDisplayId, isFixedCharacter, faceVisible)); } catch { return null; } }
 
     public static string? ResolveAlertnessLevel(int alertness)
-    { try { return CommonUtils.GetAlertnessNameByValue(alertness); } catch { return null; } }
+    { try { return Strip(CommonUtils.GetAlertnessNameByValue(alertness)); } catch { return null; } }
 
     public static string? ResolveFameName(sbyte fameType)
-    { try { return CommonUtils.GetFameString(fameType); } catch { return null; } }
+    { try { return Strip(CommonUtils.GetFameString(fameType)); } catch { return null; } }
 
     public static string? ResolveHappinessName(sbyte happiness)
-    { try { return CommonUtils.GetHappinessString(happiness); } catch { return null; } }
+    { try { return Strip(CommonUtils.GetHappinessString(happiness)); } catch { return null; } }
 
     public static string? ResolveGenderName(sbyte gender)
-    { try { return CommonUtils.GetGenderString((CommonUtils.EDisplayGender)gender); } catch { return null; } }
+    { try { return Strip(CommonUtils.GetGenderString((CommonUtils.EDisplayGender)gender)); } catch { return null; } }
 
     public static string? ResolveSkillGrowthName(int growthType, short actualAge)
-    { try { return CommonUtils.GetSkillGrowthString(growthType, actualAge); } catch { return null; } }
+    { try { return Strip(CommonUtils.GetSkillGrowthString(growthType, actualAge)); } catch { return null; } }
 
     // ========== Config 查 3 项 ==========
 
