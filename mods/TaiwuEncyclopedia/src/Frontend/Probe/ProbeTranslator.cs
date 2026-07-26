@@ -116,7 +116,9 @@ public static class ProbeTranslator
 
     // ========== 数组 Key 常量 ==========
 
-    private static readonly string[] PersonalityKeyNames = { "沉稳","聪颖","热忱","勇毅","坚毅","幸运","洞察" };
+    // 权威值: 反编译 TaiwuEventTagHandler.PersonalityTypeName + Language_CN/ui_language.txt 交叉验证
+    // (沉稳/热忱/勇毅/幸运/洞察 是按英文 key 字面硬翻的旧值, 全错; 游戏UI实际用 冷静/热情/勇壮/福缘/合道)
+    private static readonly string[] PersonalityKeyNames = { "冷静","聪颖","热情","勇壮","坚毅","福缘","合道" };
     private static readonly string[] MainAttributeKeyNames = { "膂力","灵敏","定力","体质","根骨","悟性" };
     private static readonly string[] ResourceKeyNames = { "食物","木材","金铁","玉石","织物","药材","银钱","威望" };
     private static readonly string[] CombatSkillTypeKeyNames = { "内功","身法","绝技","拳掌","指法","腿法","暗器","剑法","刀法","长兵","杂学","软兵","射御","乐理" };
