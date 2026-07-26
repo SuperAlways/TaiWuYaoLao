@@ -240,7 +240,8 @@ public sealed class GameStateProvider : IGameStateProvider
         }
 
         // 3. 内力层: RequestTaiwuNeiliProportionDisplayData (P-TW-002)
-        GameData.Domains.Taiwu.Display.TaiwuNeiliProportionDisplayData neili = null;
+        // 预实例化: 1.0.72 Serializer 缺 null 守卫, 传 null 会 NRE (见 game-bug-report-1.0.72-serializer.md)
+        GameData.Domains.Taiwu.Display.TaiwuNeiliProportionDisplayData neili = new GameData.Domains.Taiwu.Display.TaiwuNeiliProportionDisplayData();
         bool done2 = false;
         try
         {
@@ -281,7 +282,8 @@ public sealed class GameStateProvider : IGameStateProvider
         }
 
         // 4. 属性层: GetCharacterAttributeDisplayData (P-TW-003)
-        GameData.Domains.Character.Display.CharacterAttributeDisplayData attr = null;
+        // 预实例化: 1.0.72 Serializer 缺 null 守卫, 传 null 会 NRE (见 game-bug-report-1.0.72-serializer.md)
+        GameData.Domains.Character.Display.CharacterAttributeDisplayData attr = new GameData.Domains.Character.Display.CharacterAttributeDisplayData();
         bool done3 = false;
         try
         {
@@ -504,7 +506,8 @@ public sealed class GameStateProvider : IGameStateProvider
         }
 
         // 2. 属性层: GetCharacterAttributeDisplayData (P-NPC-002)
-        GameData.Domains.Character.Display.CharacterAttributeDisplayData attr = null;
+        // 预实例化: 1.0.72 Serializer 缺 null 守卫, 传 null 会 NRE (见 game-bug-report-1.0.72-serializer.md)
+        GameData.Domains.Character.Display.CharacterAttributeDisplayData attr = new GameData.Domains.Character.Display.CharacterAttributeDisplayData();
         bool done2 = false;
         try
         {
