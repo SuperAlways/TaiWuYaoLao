@@ -1,78 +1,80 @@
+using Newtonsoft.Json;
+
 namespace TaiwuEncyclopedia.Core.Probe.Dto;
 
 public sealed class NpcSnapshot
 {
-    public int CharId { get; set; }
-    public string Name { get; set; } = "";
-    public int GenderRaw { get; set; }
-    public string? GenderName { get; set; }
-    public int Age { get; set; }
-    public int StanceRaw { get; set; }
-    public string? StanceName { get; set; }
-    public short FavorRaw { get; set; }
-    public string? FavorLevel { get; set; }
-    public ushort RelationBits { get; set; }
-    public string[]? RelationFlags { get; set; }
-    public int SectTemplateId { get; set; }
-    public string? SectName { get; set; }
-    public string? SectDesc { get; set; }
-    public string? SectVow { get; set; }
-    public string? SectStory { get; set; }
-    public int GradeRaw { get; set; }
-    public string? GradeLevel { get; set; }
-    public int ConsummateLevel { get; set; }
-    public int Charm { get; set; }
-    public string? CharmLevel { get; set; }
-    public int Alertness { get; set; }
-    public string? AlertnessLevel { get; set; }
-    public int[] FeatureIds { get; set; } = System.Array.Empty<int>();
-    public string[]? FiveElementKeys { get; set; }
-    public string[]? FeatureNames { get; set; }
-    public int Health { get; set; }
-    public int MaxHealth { get; set; }
-    public int Happiness { get; set; }
-    public string? HappinessName { get; set; }
-    public int Fame { get; set; }
-    public string? FameName { get; set; }
-    public sbyte[] Personalities { get; set; } = System.Array.Empty<sbyte>();
-    public string[]? PersonalityKeys { get; set; }
-    public string? LocationText { get; set; }
-    public int AliveState { get; set; }
-    public bool CompletelyInfected { get; set; }
-    public int InfluencePower { get; set; }
-    public string? OrgFullTitle { get; set; }
-    public string? ConsummateGrade { get; set; }
-    public string? AliveStateName { get; set; }
-    // 属性层(同 TaiwuSnapshot 属性字段)
-    public short[] CurMainAttributes { get; set; } = new short[6];
-    public string[]? MainAttributeKeys { get; set; }
-    public short[] MaxMainAttributes { get; set; } = new short[6];
-    public int[] AtkHit { get; set; } = new int[4];
-    public string[]? AtkHitKeys { get; set; }
-    public int AtkPenetrateOuter { get; set; }
-    public int AtkPenetrateInner { get; set; }
-    public int[] DefHit { get; set; } = new int[4];
-    public string[]? DefHitKeys { get; set; }
-    public int DefPenetrateOuter { get; set; }
-    public int DefPenetrateInner { get; set; }
-    public int MoveSpeed { get; set; }
-    public int CastSpeed { get; set; }
-    public int AttackSpeed { get; set; }
-    public int InnerRatio { get; set; }
-    public int PoisonResistOuter { get; set; }
-    public int PoisonResistInner { get; set; }
-    // 资质层(同 TaiwuSnapshot 资质字段)
-    public short[] CombatSkillQualifications { get; set; } = new short[14];
-    public string[]? CombatSkillTypeKeys { get; set; }
-    public short[] CombatSkillAttainments { get; set; } = new short[14];
-    public int CombatSkillGrowthType { get; set; }
-    public string? CombatSkillGrowthName { get; set; }
-    public short[] LifeSkillQualifications { get; set; } = System.Array.Empty<short>();
-    public string[]? LifeSkillTypeKeys { get; set; }
-    public short[] LifeSkillAttainments { get; set; } = System.Array.Empty<short>();
-    public int LifeSkillGrowthType { get; set; }
-    public string? LifeSkillGrowthName { get; set; }
-    public int DivinePower { get; set; }
-    public int GhostTechnique { get; set; }
-    public string[] Errors { get; set; } = System.Array.Empty<string>();
+    [JsonProperty("角色ID")] public int CharId { get; set; }
+    [JsonProperty("名号")] public string Name { get; set; } = "";
+    [JsonProperty("性别值")] public int GenderRaw { get; set; }
+    [JsonProperty("性别")] public string? GenderName { get; set; }
+    [JsonProperty("年龄")] public int Age { get; set; }
+    [JsonProperty("立场值")] public int StanceRaw { get; set; }
+    [JsonProperty("立场")] public string? StanceName { get; set; }
+    [JsonProperty("好感值")] public short FavorRaw { get; set; }
+    [JsonProperty("好感")] public string? FavorLevel { get; set; }
+    [JsonProperty("关系位")] public ushort RelationBits { get; set; }
+    [JsonProperty("关系")] public string[]? RelationFlags { get; set; }
+    [JsonProperty("门派ID")] public int SectTemplateId { get; set; }
+    [JsonProperty("门派")] public string? SectName { get; set; }
+    [JsonProperty("门派简介")] public string? SectDesc { get; set; }
+    [JsonProperty("门派誓约")] public string? SectVow { get; set; }
+    [JsonProperty("门派背景")] public string? SectStory { get; set; }
+    [JsonProperty("品级值")] public int GradeRaw { get; set; }
+    [JsonProperty("品级")] public string? GradeLevel { get; set; }
+    [JsonProperty("身份头衔")] public string? OrgFullTitle { get; set; }
+    [JsonProperty("精纯值")] public int ConsummateLevel { get; set; }
+    [JsonProperty("精纯品级")] public string? ConsummateGrade { get; set; }
+    [JsonProperty("魅力值")] public int Charm { get; set; }
+    [JsonProperty("魅力等级")] public string? CharmLevel { get; set; }
+    [JsonProperty("警觉值")] public int Alertness { get; set; }
+    [JsonProperty("警觉")] public string? AlertnessLevel { get; set; }
+    [JsonProperty("特性ID")] public int[] FeatureIds { get; set; } = System.Array.Empty<int>();
+    [JsonProperty("五行名")] public string[]? FiveElementKeys { get; set; }
+    [JsonProperty("特性")] public string[]? FeatureNames { get; set; }
+    [JsonProperty("当前气血")] public int Health { get; set; }
+    [JsonProperty("气血上限")] public int MaxHealth { get; set; }
+    [JsonProperty("心情值")] public int Happiness { get; set; }
+    [JsonProperty("心情")] public string? HappinessName { get; set; }
+    [JsonProperty("侠名值")] public int Fame { get; set; }
+    [JsonProperty("侠名")] public string? FameName { get; set; }
+    [JsonProperty("性格值")] public sbyte[] Personalities { get; set; } = System.Array.Empty<sbyte>();
+    [JsonProperty("性格")] public string[]? PersonalityKeys { get; set; }
+    [JsonProperty("所在地")] public string? LocationText { get; set; }
+    [JsonProperty("存活状态值")] public int AliveState { get; set; }
+    [JsonProperty("存活状态")] public string? AliveStateName { get; set; }
+    [JsonProperty("蛊毒满身")] public bool CompletelyInfected { get; set; }
+    [JsonProperty("影响力")] public int InfluencePower { get; set; }
+    // 属性层
+    [JsonProperty("当前主属性")] public short[] CurMainAttributes { get; set; } = new short[6];
+    [JsonProperty("主属性名")] public string[]? MainAttributeKeys { get; set; }
+    [JsonProperty("主属性上限")] public short[] MaxMainAttributes { get; set; } = new short[6];
+    [JsonProperty("力道")] public int[] AtkHit { get; set; } = new int[4];
+    [JsonProperty("力道名")] public string[]? AtkHitKeys { get; set; }
+    [JsonProperty("破体")] public int AtkPenetrateOuter { get; set; }
+    [JsonProperty("破气")] public int AtkPenetrateInner { get; set; }
+    [JsonProperty("卸力")] public int[] DefHit { get; set; } = new int[4];
+    [JsonProperty("卸力名")] public string[]? DefHitKeys { get; set; }
+    [JsonProperty("御体")] public int DefPenetrateOuter { get; set; }
+    [JsonProperty("御气")] public int DefPenetrateInner { get; set; }
+    [JsonProperty("移动速度")] public int MoveSpeed { get; set; }
+    [JsonProperty("施展速度")] public int CastSpeed { get; set; }
+    [JsonProperty("攻击速度")] public int AttackSpeed { get; set; }
+    [JsonProperty("内功发挥")] public int InnerRatio { get; set; }
+    [JsonProperty("外毒抗")] public int PoisonResistOuter { get; set; }
+    [JsonProperty("内毒抗")] public int PoisonResistInner { get; set; }
+    // 资质层
+    [JsonProperty("武学资质")] public short[] CombatSkillQualifications { get; set; } = new short[14];
+    [JsonProperty("武学类型名")] public string[]? CombatSkillTypeKeys { get; set; }
+    [JsonProperty("武学造诣")] public short[] CombatSkillAttainments { get; set; } = new short[14];
+    [JsonProperty("武学成长值")] public int CombatSkillGrowthType { get; set; }
+    [JsonProperty("武学成长")] public string? CombatSkillGrowthName { get; set; }
+    [JsonProperty("技艺资质")] public short[] LifeSkillQualifications { get; set; } = System.Array.Empty<short>();
+    [JsonProperty("技艺类型名")] public string[]? LifeSkillTypeKeys { get; set; }
+    [JsonProperty("技艺造诣")] public short[] LifeSkillAttainments { get; set; } = System.Array.Empty<short>();
+    [JsonProperty("技艺成长值")] public int LifeSkillGrowthType { get; set; }
+    [JsonProperty("技艺成长")] public string? LifeSkillGrowthName { get; set; }
+    [JsonProperty("神力")] public int DivinePower { get; set; }
+    [JsonProperty("鬼术")] public int GhostTechnique { get; set; }
+    [JsonProperty("错误")] public string[] Errors { get; set; } = System.Array.Empty<string>();
 }
