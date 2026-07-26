@@ -1,8 +1,8 @@
 return {
-  Title = "药老随身AI V1.0.04",
+  Title = "药老随身AI V1.0.05",
   Source = 0,
   FileId = 0,
-  Version = "1.0.04",
+  Version = "1.0.05",
   GameVersion = "1.0.56.0",
   Author = "alwayssuper",
   Cover = "cover.png",
