@@ -24,16 +24,16 @@ public sealed class TaiwuSnapshot
     [JsonProperty("精纯品级")] public string? ConsummateGrade { get; set; }
     [JsonProperty("魅力值")] public int Charm { get; set; }
     [JsonProperty("魅力等级")] public string? CharmLevel { get; set; }
-    [JsonProperty("警觉值")] public int Alertness { get; set; }
-    [JsonProperty("警觉")] public string? AlertnessLevel { get; set; }
+    [JsonProperty("戒心值")] public int Alertness { get; set; }
+    [JsonProperty("戒心")] public string? AlertnessLevel { get; set; }
     [JsonProperty("特性ID")] public int[] FeatureIds { get; set; } = System.Array.Empty<int>();
     [JsonProperty("特性")] public string[]? FeatureNames { get; set; }
     [JsonProperty("当前气血")] public int Health { get; set; }
     [JsonProperty("气血上限")] public int MaxHealth { get; set; }
     [JsonProperty("心情值")] public int Happiness { get; set; }
     [JsonProperty("心情")] public string? HappinessName { get; set; }
-    [JsonProperty("侠名值")] public int Fame { get; set; }
-    [JsonProperty("侠名")] public string? FameName { get; set; }
+    [JsonProperty("名誉值")] public int Fame { get; set; }
+    [JsonProperty("名誉")] public string? FameName { get; set; }
     [JsonProperty("七元赋性值")] public sbyte[] Personalities { get; set; } = System.Array.Empty<sbyte>();
     [JsonProperty("七元赋性")] public string[]? PersonalityKeys { get; set; }
     [JsonProperty("所在地")] public string? LocationText { get; set; }
