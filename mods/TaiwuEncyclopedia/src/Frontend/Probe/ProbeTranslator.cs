@@ -34,7 +34,7 @@ public static class ProbeTranslator
         if ((bits & (1|8|64)) > 0) l.Add("父母");
         if ((bits & (2|16|128)) > 0) l.Add("子女");
         if ((bits & (4|32|256)) > 0) l.Add("兄弟姐妹");
-        if ((bits & 512) > 0) l.Add("义结金兰");
+        if ((bits & 512) > 0) l.Add("结义");
         if ((bits & 1024) > 0) l.Add("夫妻");
         if ((bits & (2048|4096)) > 0) l.Add("师徒");
         if ((bits & 8192) > 0) l.Add("挚友");
@@ -110,7 +110,17 @@ public static class ProbeTranslator
 
     public static string? ResolveLocationText(GameData.Domains.Map.Location location)
     {
-        try { return $"区域{location.AreaId}"; }
+        try
+        {
+            if (!location.IsValid()) return null;
+            var wmm = SingletonObject.getInstance<WorldMapModel>();
+            if (wmm == null) return null;
+            var area = Strip(wmm.GetAreaName(location.AreaId));
+            var block = Strip(wmm.GetBlockName(location));
+            if (string.IsNullOrEmpty(area) && string.IsNullOrEmpty(block)) return null;
+            if (string.IsNullOrEmpty(block) || area == block) return area;
+            return string.IsNullOrEmpty(area) ? block : $"{area}·{block}";
+        }
         catch { return null; }
     }
 
@@ -139,9 +149,63 @@ public static class ProbeTranslator
     // (沉稳/热忱/勇毅/幸运/洞察 是按英文 key 字面硬翻的旧值, 全错; 游戏UI实际用 冷静/热情/勇壮/福缘/合道)
     private static readonly string[] PersonalityKeyNames = { "冷静","聪颖","热情","勇壮","坚毅","福缘","合道" };
     private static readonly string[] MainAttributeKeyNames = { "膂力","灵敏","定力","体质","根骨","悟性" };
-    private static readonly string[] ResourceKeyNames = { "食物","木材","金铁","玉石","织物","药材","银钱","威望" };
-    private static readonly string[] CombatSkillTypeKeyNames = { "内功","身法","绝技","拳掌","指法","腿法","暗器","剑法","刀法","长兵","杂学","软兵","射御","乐理" };
-    private static readonly string[] FiveElementKeyNames = { "金","木","水","火","土" };
+
+    // 权威值: Language_CN/ui_language.txt LK_FiveElements_Type_0..4 (旧硬编码 金木水火土 是错的)
+    private static readonly string[] FiveElementFallbackNames = { "金刚","紫霞","玄阴","纯阳","归元" };
+    private static string[]? _fiveElementKeys;
+    private static string[]? FiveElementKeysCache => _fiveElementKeys ??= BuildFiveElementKeys();
+    private static string[]? BuildFiveElementKeys()
+    {
+        try
+        {
+            var keys = new string[5];
+            for (int i = 0; i < 5; i++)
+            {
+                var name = Strip(LocalStringManager.Get($"LK_FiveElements_Type_{i}"));
+                keys[i] = string.IsNullOrEmpty(name) ? FiveElementFallbackNames[i] : name;
+            }
+            return keys;
+        }
+        catch { return FiveElementFallbackNames; }
+    }
+
+    // 权威值: Config.ResourceType (8 项资源). 无硬编码兜底, 失败留 null.
+    private static string[]? _resourceKeys;
+    private static string[]? ResourceKeysCache => _resourceKeys ??= BuildResourceKeys();
+    private static string[]? BuildResourceKeys()
+    {
+        try
+        {
+            var keys = new System.Collections.Generic.List<string>();
+            for (sbyte i = 0; i < 8; i++)
+            {
+                var item = Config.ResourceType.Instance[i];
+                if (item == null) break;
+                keys.Add(item.Name);
+            }
+            return keys.Count > 0 ? keys.ToArray() : null;
+        }
+        catch { return null; }
+    }
+
+    // 权威值: Config.CombatSkillType (14 项功法类型). 失败留 null.
+    private static string[]? _combatSkillTypeKeys;
+    private static string[]? CombatSkillTypeKeysCache => _combatSkillTypeKeys ??= BuildCombatSkillTypeKeys();
+    private static string[]? BuildCombatSkillTypeKeys()
+    {
+        try
+        {
+            var keys = new System.Collections.Generic.List<string>();
+            for (sbyte i = 0; ; i++)
+            {
+                var item = Config.CombatSkillType.Instance[i];
+                if (item == null) break;
+                keys.Add(item.Name);
+            }
+            return keys.Count > 0 ? keys.ToArray() : null;
+        }
+        catch { return null; }
+    }
 
     // ========== 门派详情(Config.Organization) ==========
 
@@ -205,9 +269,9 @@ public static class ProbeTranslator
         // 填充平行 Key 数组
         s.PersonalityKeys ??= PersonalityKeyNames;
         s.MainAttributeKeys ??= MainAttributeKeyNames;
-        s.ResourceKeys ??= ResourceKeyNames;
-        s.CombatSkillTypeKeys ??= CombatSkillTypeKeyNames;
-        s.FiveElementKeys ??= FiveElementKeyNames;
+        s.ResourceKeys ??= ResourceKeysCache;
+        s.CombatSkillTypeKeys ??= CombatSkillTypeKeysCache;
+        s.FiveElementKeys ??= FiveElementKeysCache;
         // LifeSkillTypeKeys 从 Config 动态获取
         if (s.LifeSkillTypeKeys == null)
         {
@@ -261,8 +325,8 @@ public static class ProbeTranslator
         // 填充平行 Key 数组
         s.PersonalityKeys ??= PersonalityKeyNames;
         s.MainAttributeKeys ??= MainAttributeKeyNames;
-        s.CombatSkillTypeKeys ??= CombatSkillTypeKeyNames;
-        s.FiveElementKeys ??= FiveElementKeyNames;
+        s.CombatSkillTypeKeys ??= CombatSkillTypeKeysCache;
+        s.FiveElementKeys ??= FiveElementKeysCache;
         if (s.LifeSkillTypeKeys == null)
         {
             try
