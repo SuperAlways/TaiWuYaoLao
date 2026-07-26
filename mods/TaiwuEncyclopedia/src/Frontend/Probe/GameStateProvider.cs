@@ -1,8 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using GameData.Domains.Character;
+using GameData.Domains.Character.Display;
 using GameData.Domains.CombatSkill;
+using GameData.Domains.Taiwu;
+using GameData.Domains.Taiwu.Display;
 using GameData.Serializer;
 using GameData.Utilities;
 using TaiwuEncyclopedia.Core.Probe;
@@ -164,7 +169,7 @@ public sealed class GameStateProvider : IGameStateProvider
         var snap = new TaiwuSnapshot();
         var errors = new List<string>();
 
-        // 1. 太吾 charId
+        // 1. 太吾 charId(同步)
         int taiwuId = -1;
         try { taiwuId = SingletonObject.getInstance<BasicGameData>().TaiwuCharId; }
         catch (Exception e) { errors.Add("TaiwuCharId: " + e.Message); }
@@ -178,13 +183,250 @@ public sealed class GameStateProvider : IGameStateProvider
 
         snap.CharId = taiwuId;
 
-        // Just try to get as much as we can without field access
-        // For now, just mark in errors that we're stubbed
-        errors.Add("GetTaiwu: Implementation stubbed - game API types not available");
+        // 2. 画像层: GetCharacterDisplayData (P-TW-001)
+        CharacterDisplayData? dd = null;
+        bool done1 = false;
+        try
+        {
+            CharacterDomainMethod.AsyncCall.GetCharacterDisplayData(
+                null, taiwuId,
+                (offset, pool) =>
+                {
+                    try { Serializer.Deserialize(pool, offset, ref dd); }
+                    catch (Exception e) { errors.Add("GetCharacterDisplayData deser: " + e.Message); }
+                    finally { done1 = true; }
+                });
+        }
+        catch (Exception e) { errors.Add("GetCharacterDisplayData: " + e.Message); done1 = true; }
+        yield return WaitDone(() => done1);
+
+        if (dd != null)
+        {
+            try { snap.Name = NameCenter.GetMonasticTitleOrDisplayName(dd, false) ?? ""; }
+            catch (Exception e) { errors.Add("NameCenter.GetMonasticTitleOrDisplayName: " + e.Message); }
+            snap.GenderRaw = dd.Gender;
+            snap.Age = dd.ActualAge;
+            snap.StanceRaw = dd.BehaviorType;
+            snap.SectTemplateId = dd.OrgInfo.OrgTemplateId;
+            snap.GradeRaw = dd.OrgInfo.Grade;
+            snap.ConsummateLevel = dd.ConsummateLevel;
+            snap.Charm = dd.Charm;
+            snap.Alertness = dd.Alertness;
+            snap.FeatureIds = dd.FeatureIds?.Select(x => (int)x).ToArray() ?? Array.Empty<int>();
+            snap.Health = dd.Health;
+            snap.MaxHealth = dd.LeftMaxHealth;
+            snap.Happiness = dd.Happiness;
+            snap.Fame = dd.FameType;
+            snap.Personalities = new sbyte[7];
+            try
+            {
+                var personalities = dd.Personalities;
+                for (int i = 0; i < 7; i++)
+                    snap.Personalities[i] = personalities[i];
+            }
+            catch (Exception e) { errors.Add("Personalities: " + e.Message); }
+            snap.AliveState = dd.AliveState;
+            snap.CompletelyInfected = dd.CompletelyInfected;
+            snap.InfluencePower = dd.InfluencePower;
+            snap.LocationText = ProbeTranslator.ResolveLocationText(dd.Location);
+        }
+        else
+        {
+            collector.AddFailed("GetCharacterDisplayData", "P-TW-001",
+                new InvalidOperationException("dd null after AsyncCall"));
+        }
+
+        // 3. 内力层: RequestTaiwuNeiliProportionDisplayData (P-TW-002)
+        TaiwuNeiliProportionDisplayData? neili = null;
+        bool done2 = false;
+        try
+        {
+            TaiwuDomainMethod.AsyncCall.RequestTaiwuNeiliProportionDisplayData(
+                null,
+                (offset, pool) =>
+                {
+                    try { Serializer.Deserialize(pool, offset, ref neili); }
+                    catch (Exception e) { errors.Add("RequestTaiwuNeiliProportionDisplayData deser: " + e.Message); }
+                    finally { done2 = true; }
+                });
+        }
+        catch (Exception e) { errors.Add("RequestTaiwuNeiliProportionDisplayData: " + e.Message); done2 = true; }
+        yield return WaitDone(() => done2);
+
+        if (neili != null)
+        {
+            snap.NeiliTypeRaw = neili.DestType;
+            snap.FiveElementsProportion = new int[5];
+            try
+            {
+                var proportion = neili.NeiliProportion;
+                for (int i = 0; i < 5; i++)
+                    snap.FiveElementsProportion[i] = proportion[i];
+            }
+            catch (Exception e) { errors.Add("NeiliProportion: " + e.Message); }
+            try
+            {
+                var neiliType = Config.NeiliType.Instance[neili.DestType];
+                snap.FiveElementIndex = neiliType?.FiveElements ?? 0;
+            }
+            catch (Exception e) { errors.Add("Config.NeiliType: " + e.Message); }
+        }
+        else
+        {
+            collector.AddFailed("RequestTaiwuNeiliProportionDisplayData", "P-TW-002",
+                new InvalidOperationException("neili null after AsyncCall"));
+        }
+
+        // 4. 属性层: GetCharacterAttributeDisplayData (P-TW-003)
+        CharacterAttributeDisplayData? attr = null;
+        bool done3 = false;
+        try
+        {
+            CharacterDomainMethod.AsyncCall.GetCharacterAttributeDisplayData(
+                null, taiwuId,
+                (offset, pool) =>
+                {
+                    try { Serializer.Deserialize(pool, offset, ref attr); }
+                    catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData deser: " + e.Message); }
+                    finally { done3 = true; }
+                });
+        }
+        catch (Exception e) { errors.Add("GetCharacterAttributeDisplayData: " + e.Message); done3 = true; }
+        yield return WaitDone(() => done3);
+
+        if (attr != null)
+        {
+            snap.CurMainAttributes = new short[6];
+            snap.MaxMainAttributes = new short[6];
+            try
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    snap.CurMainAttributes[i] = attr.CurMainAttributes[i];
+                    snap.MaxMainAttributes[i] = attr.MaxMainAttributes[i];
+                }
+            }
+            catch (Exception e) { errors.Add("MainAttributes: " + e.Message); }
+            try { snap.AtkHitOuter = attr.AtkHitAttribute[0]; snap.AtkHitInner = attr.AtkHitAttribute[1]; }
+            catch (Exception e) { errors.Add("AtkHitAttribute: " + e.Message); }
+            try { snap.AtkPenetrateOuter = attr.AtkPenetrability.Outer; snap.AtkPenetrateInner = attr.AtkPenetrability.Inner; }
+            catch (Exception e) { errors.Add("AtkPenetrability: " + e.Message); }
+            try { snap.DefHitOuter = attr.DefHitAttribute[0]; snap.DefHitInner = attr.DefHitAttribute[1]; }
+            catch (Exception e) { errors.Add("DefHitAttribute: " + e.Message); }
+            try { snap.DefPenetrateOuter = attr.DefPenetrability.Outer; snap.DefPenetrateInner = attr.DefPenetrability.Inner; }
+            catch (Exception e) { errors.Add("DefPenetrability: " + e.Message); }
+            snap.MoveSpeed = attr.MoveSpeed;
+            snap.CastSpeed = attr.CastSpeed;
+            snap.AttackSpeed = attr.AttackSpeed;
+            snap.InnerRatio = attr.InnerRatio;
+            // PoisonResists mapping skipped - unknown structure
+        }
+        else
+        {
+            collector.AddFailed("GetCharacterAttributeDisplayData", "P-TW-003",
+                new InvalidOperationException("attr null after AsyncCall"));
+        }
+
+        // 5. 资源层: GetCharacterItemsDisplayData (P-TW-004)
+        CharacterItemsDisplayData? items = null;
+        bool done4 = false;
+        try
+        {
+            CharacterDomainMethod.AsyncCall.GetCharacterItemsDisplayData(
+                null, taiwuId,
+                (offset, pool) =>
+                {
+                    try { Serializer.Deserialize(pool, offset, ref items); }
+                    catch (Exception e) { errors.Add("GetCharacterItemsDisplayData deser: " + e.Message); }
+                    finally { done4 = true; }
+                });
+        }
+        catch (Exception e) { errors.Add("GetCharacterItemsDisplayData: " + e.Message); done4 = true; }
+        yield return WaitDone(() => done4);
+
+        if (items != null)
+        {
+            snap.Resources = new int[8];
+            try
+            {
+                for (int i = 0; i < 8; i++)
+                    snap.Resources[i] = items.Resources[i];
+            }
+            catch (Exception e) { errors.Add("Resources: " + e.Message); }
+        }
+        else
+        {
+            collector.AddFailed("GetCharacterItemsDisplayData", "P-TW-004",
+                new InvalidOperationException("items null after AsyncCall"));
+        }
+
+        // 6. 资质层: GetCharacterMenuAttainmentDisplayData (P-TW-005)
+        CharacterMenuAttainmentDisplayData? att = null;
+        bool done5 = false;
+        try
+        {
+            CharacterDomainMethod.AsyncCall.GetCharacterMenuAttainmentDisplayData(
+                null, taiwuId,
+                (offset, pool) =>
+                {
+                    try { Serializer.Deserialize(pool, offset, ref att); }
+                    catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData deser: " + e.Message); }
+                    finally { done5 = true; }
+                });
+        }
+        catch (Exception e) { errors.Add("GetCharacterMenuAttainmentDisplayData: " + e.Message); done5 = true; }
+        yield return WaitDone(() => done5);
+
+        if (att != null)
+        {
+            snap.CombatSkillQualifications = new short[14];
+            snap.CombatSkillAttainments = new short[14];
+            try
+            {
+                for (int i = 0; i < 14; i++)
+                {
+                    snap.CombatSkillQualifications[i] = att.CombatSkillQualifications[i];
+                    snap.CombatSkillAttainments[i] = att.CombatSkillAttainments[i];
+                }
+            }
+            catch (Exception e) { errors.Add("CombatSkillQualifications/Attainments: " + e.Message); }
+            snap.CombatSkillGrowthType = att.CombatSkillGrowthType;
+            try
+            {
+                // LifeSkillQualifications/LifeSkillAttainments 需要获取长度
+                var lifeQ = new List<short>();
+                var lifeA = new List<short>();
+                int idx = 0;
+                while (true)
+                {
+                    try
+                    {
+                        lifeQ.Add(att.LifeSkillQualifications[idx]);
+                        lifeA.Add(att.LifeSkillAttainments[idx]);
+                        idx++;
+                    }
+                    catch { break; }
+                }
+                snap.LifeSkillQualifications = lifeQ.ToArray();
+                snap.LifeSkillAttainments = lifeA.ToArray();
+            }
+            catch (Exception e) { errors.Add("LifeSkillQualifications/Attainments: " + e.Message); }
+            snap.LifeSkillGrowthType = att.LifeSkillGrowthType;
+            snap.DivinePower = att.DivinePower;
+            snap.GhostTechnique = att.GhostTechnique;
+        }
+        else
+        {
+            collector.AddFailed("GetCharacterMenuAttainmentDisplayData", "P-TW-005",
+                new InvalidOperationException("att null after AsyncCall"));
+        }
+
+        // 7. 翻译(Frontend ProbeTranslator)
+        try { ProbeTranslator.Translate(snap); }
+        catch (Exception e) { errors.Add("Translate: " + e.Message); }
 
         snap.Errors = errors.ToArray();
         tcs.TrySetResult(snap);
-        yield break;
     }
 
     private IEnumerator FetchNpcCoroutine(
